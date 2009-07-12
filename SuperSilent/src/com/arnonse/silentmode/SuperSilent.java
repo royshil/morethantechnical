@@ -42,7 +42,6 @@ public class SuperSilent extends Activity {
         
 		Button myButton = (Button) findViewById(R.id.StartTimeBtn);
 		myButton.setOnClickListener(new OnClickListener() {
-			@Override
 			public void onClick(View v) {
 				showDialog(START_TIME_PICKER_DIALOG);
 			}
@@ -66,7 +65,6 @@ public class SuperSilent extends Activity {
 		
 			Button doneBtn = (Button)layout.findViewById(R.id.SetTimerDoneBtn);
 			doneBtn.setOnClickListener(new OnClickListener(){
-				@Override
 				public void onClick(View v) {
 					SuperSilent.this.dismissDialog(START_TIME_PICKER_DIALOG);
 				}
