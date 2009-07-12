@@ -22,6 +22,8 @@ public class TestService extends Service{
 	{
 		super.onCreate();
 		_startService();
+		//AppUtils.showToastShort(MAIN_ACTIVITY, "MyService started");
+
 	}
 	
 	@Override
