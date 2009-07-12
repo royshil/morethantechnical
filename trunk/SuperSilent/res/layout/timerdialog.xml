@@ -8,24 +8,12 @@
 		android:layout_gravity="center_horizontal" android:text="Set timer"
 		android:textSize="20px">
 	</TextView>
-	<LinearLayout android:id="@+id/LinearLayout02"
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent" android:gravity="center_horizontal"
-		android:layout_marginTop="10px">
-		<EditText android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="15"
-			android:width="100px" android:gravity="center"
-			android:id="@+id/TimerMinutesInput">
-		</EditText>
-		<TextView android:id="@+id/TextView02"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:text="minutes"
-			android:textSize="18px" android:layout_marginLeft="5px">
-		</TextView>
-	</LinearLayout>
+	<TimePicker android:id="@+id/TimePicker01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TimePicker>
 	<Button android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_gravity="center_horizontal" android:text="Done"
 		android:layout_marginTop="10px" android:id="@+id/SetTimerDoneBtn">
 	</Button>
+
+
 </LinearLayout>
