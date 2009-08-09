@@ -1,0 +1,563 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1D3623260D0F684500981E51 /* FaceDetector1AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* FaceDetector1AppDelegate.m */; };
+		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
+		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
+		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
+		F84A35251026F1A60098387D /* facedetect.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A35241026F1A60098387D /* facedetect.c */; };
+		F84A35C110270B8E0098387D /* FaceDetectView.mm in Sources */ = {isa = PBXBuildFile; fileRef = F84A35C010270B8E0098387D /* FaceDetectView.mm */; };
+		F84A362710271C1F0098387D /* IMG_0007.JPG in Resources */ = {isa = PBXBuildFile; fileRef = F84A362610271C1F0098387D /* IMG_0007.JPG */; };
+		F84A368D102727EE0098387D /* adler32.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3678102727EE0098387D /* adler32.c */; };
+		F84A368E102727EE0098387D /* compress.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3679102727EE0098387D /* compress.c */; };
+		F84A368F102727EE0098387D /* crc32.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A367A102727EE0098387D /* crc32.c */; };
+		F84A3690102727EE0098387D /* deflate.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A367C102727EE0098387D /* deflate.c */; };
+		F84A3691102727EE0098387D /* example.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A367E102727EE0098387D /* example.c */; };
+		F84A3692102727EE0098387D /* gzio.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A367F102727EE0098387D /* gzio.c */; };
+		F84A3693102727EE0098387D /* infback.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3680102727EE0098387D /* infback.c */; };
+		F84A3694102727EE0098387D /* inffast.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3681102727EE0098387D /* inffast.c */; };
+		F84A3695102727EE0098387D /* inflate.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3684102727EE0098387D /* inflate.c */; };
+		F84A3696102727EE0098387D /* inftrees.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3686102727EE0098387D /* inftrees.c */; };
+		F84A3697102727EE0098387D /* trees.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A3688102727EE0098387D /* trees.c */; };
+		F84A3698102727EE0098387D /* uncompr.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A368A102727EE0098387D /* uncompr.c */; };
+		F84A3699102727EE0098387D /* zutil.c in Sources */ = {isa = PBXBuildFile; fileRef = F84A368B102727EE0098387D /* zutil.c */; };
+		F84A36E01027309A0098387D /* haarcascade_eye.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36CD1027309A0098387D /* haarcascade_eye.xml */; };
+		F84A36E11027309A0098387D /* haarcascade_eye_tree_eyeglasses.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36CE1027309A0098387D /* haarcascade_eye_tree_eyeglasses.xml */; };
+		F84A36E21027309A0098387D /* haarcascade_frontalface_alt.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36CF1027309A0098387D /* haarcascade_frontalface_alt.xml */; };
+		F84A36E31027309A0098387D /* haarcascade_frontalface_alt2.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D01027309A0098387D /* haarcascade_frontalface_alt2.xml */; };
+		F84A36E41027309A0098387D /* haarcascade_frontalface_alt_tree.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D11027309A0098387D /* haarcascade_frontalface_alt_tree.xml */; };
+		F84A36E51027309A0098387D /* haarcascade_frontalface_default.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D21027309A0098387D /* haarcascade_frontalface_default.xml */; };
+		F84A36E61027309A0098387D /* haarcascade_fullbody.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D31027309A0098387D /* haarcascade_fullbody.xml */; };
+		F84A36E71027309A0098387D /* haarcascade_lefteye_2splits.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D41027309A0098387D /* haarcascade_lefteye_2splits.xml */; };
+		F84A36E81027309A0098387D /* haarcascade_lowerbody.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D51027309A0098387D /* haarcascade_lowerbody.xml */; };
+		F84A36E91027309A0098387D /* haarcascade_mcs_eyepair_big.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D61027309A0098387D /* haarcascade_mcs_eyepair_big.xml */; };
+		F84A36EA1027309A0098387D /* haarcascade_mcs_eyepair_small.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D71027309A0098387D /* haarcascade_mcs_eyepair_small.xml */; };
+		F84A36EB1027309A0098387D /* haarcascade_mcs_lefteye.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D81027309A0098387D /* haarcascade_mcs_lefteye.xml */; };
+		F84A36EC1027309A0098387D /* haarcascade_mcs_mouth.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36D91027309A0098387D /* haarcascade_mcs_mouth.xml */; };
+		F84A36ED1027309A0098387D /* haarcascade_mcs_nose.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DA1027309A0098387D /* haarcascade_mcs_nose.xml */; };
+		F84A36EE1027309A0098387D /* haarcascade_mcs_righteye.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DB1027309A0098387D /* haarcascade_mcs_righteye.xml */; };
+		F84A36EF1027309A0098387D /* haarcascade_mcs_upperbody.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DC1027309A0098387D /* haarcascade_mcs_upperbody.xml */; };
+		F84A36F01027309A0098387D /* haarcascade_profileface.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DD1027309A0098387D /* haarcascade_profileface.xml */; };
+		F84A36F11027309A0098387D /* haarcascade_righteye_2splits.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DE1027309A0098387D /* haarcascade_righteye_2splits.xml */; };
+		F84A36F21027309A0098387D /* haarcascade_upperbody.xml in Resources */ = {isa = PBXBuildFile; fileRef = F84A36DF1027309A0098387D /* haarcascade_upperbody.xml */; };
+		F84A3722102805380098387D /* mycvHaarDetectObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F84A3721102805380098387D /* mycvHaarDetectObjects.cpp */; };
+		F84A397D10286D3D0098387D /* CameraTestAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F84A397110286D3D0098387D /* CameraTestAppDelegate.m */; };
+		F84A397E10286D3D0098387D /* Surface.m in Sources */ = {isa = PBXBuildFile; fileRef = F84A397610286D3D0098387D /* Surface.m */; };
+		F84A397F10286D3D0098387D /* SurfaceAccelerator.m in Sources */ = {isa = PBXBuildFile; fileRef = F84A397810286D3D0098387D /* SurfaceAccelerator.m */; };
+		F84A3A05102875E90098387D /* PhotoLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F84A3A04102875E90098387D /* PhotoLibrary.framework */; };
+		F84A3A97102974390098387D /* FaceAugmentingView.m in Sources */ = {isa = PBXBuildFile; fileRef = F84A3A96102974390098387D /* FaceAugmentingView.m */; };
+		F84A3AC3102977760098387D /* bowler-hat-black-w-alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = F84A3AC2102977760098387D /* bowler-hat-black-w-alpha.png */; };
+		F84A3B5510299ABA0098387D /* FaceDetectorView.xib in Resources */ = {isa = PBXBuildFile; fileRef = F84A3B5410299ABA0098387D /* FaceDetectorView.xib */; };
+		F84A3BA21029A7B90098387D /* FaceDetectorViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F84A3BA11029A7B90098387D /* FaceDetectorViewController.mm */; };
+		F84A3BFB1029AE510098387D /* bandana.png in Resources */ = {isa = PBXBuildFile; fileRef = F84A3BF91029AE510098387D /* bandana.png */; };
+		F84A3BFC1029AE510098387D /* tie-w-alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = F84A3BFA1029AE510098387D /* tie-w-alpha.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		1D3623240D0F684500981E51 /* FaceDetector1AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FaceDetector1AppDelegate.h; sourceTree = "<group>"; };
+		1D3623250D0F684500981E51 /* FaceDetector1AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FaceDetector1AppDelegate.m; sourceTree = "<group>"; };
+		1D6058910D05DD3D006BFB54 /* FaceDetector1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceDetector1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		32CA4F630368D1EE00C91783 /* FaceDetector1_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FaceDetector1_Prefix.pch; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F84A34C31026D58C0098387D /* cv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cv.h; sourceTree = "<group>"; };
+		F84A34C41026D58C0098387D /* cvaux.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvaux.h; sourceTree = "<group>"; };
+		F84A34C51026D58C0098387D /* cvcompat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvcompat.h; sourceTree = "<group>"; };
+		F84A34C61026D58C0098387D /* cvstreams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvstreams.h; sourceTree = "<group>"; };
+		F84A34C71026D58C0098387D /* cvtypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvtypes.h; sourceTree = "<group>"; };
+		F84A34C81026D58C0098387D /* cvver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvver.h; sourceTree = "<group>"; };
+		F84A34C91026D58C0098387D /* cvwimage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvwimage.h; sourceTree = "<group>"; };
+		F84A34CA1026D58C0098387D /* cxcore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxcore.h; sourceTree = "<group>"; };
+		F84A34CB1026D58C0098387D /* cxerror.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxerror.h; sourceTree = "<group>"; };
+		F84A34CC1026D58C0098387D /* cxflann.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxflann.h; sourceTree = "<group>"; };
+		F84A34CD1026D58C0098387D /* cxmisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxmisc.h; sourceTree = "<group>"; };
+		F84A34CE1026D58C0098387D /* cxtypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxtypes.h; sourceTree = "<group>"; };
+		F84A34CF1026D58C0098387D /* highgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = highgui.h; sourceTree = "<group>"; };
+		F84A34D01026D58C0098387D /* ml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ml.h; sourceTree = "<group>"; };
+		F84A34DD1026D69B0098387D /* cv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cv.hpp; sourceTree = "<group>"; };
+		F84A34DE1026D69B0098387D /* cvaux.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cvaux.hpp; sourceTree = "<group>"; };
+		F84A34DF1026D69B0098387D /* cvvidsurv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cvvidsurv.hpp; sourceTree = "<group>"; };
+		F84A34E01026D69B0098387D /* cxcore.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cxcore.hpp; sourceTree = "<group>"; };
+		F84A34E11026D69B0098387D /* cxmat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cxmat.hpp; sourceTree = "<group>"; };
+		F84A34E21026D69B0098387D /* cxoperations.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cxoperations.hpp; sourceTree = "<group>"; };
+		F84A34E31026D69B0098387D /* highgui.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = highgui.hpp; sourceTree = "<group>"; };
+		F84A35241026F1A60098387D /* facedetect.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = facedetect.c; path = ../../Downloads/opencv/trunk/opencv/samples/c/facedetect.c; sourceTree = SOURCE_ROOT; };
+		F84A35BF10270B8E0098387D /* FaceDetectView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FaceDetectView.h; sourceTree = "<group>"; };
+		F84A35C010270B8E0098387D /* FaceDetectView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FaceDetectView.mm; sourceTree = "<group>"; };
+		F84A362610271C1F0098387D /* IMG_0007.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_0007.JPG; sourceTree = "<group>"; };
+		F84A3678102727EE0098387D /* adler32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = adler32.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/adler32.c; sourceTree = SOURCE_ROOT; };
+		F84A3679102727EE0098387D /* compress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = compress.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/compress.c; sourceTree = SOURCE_ROOT; };
+		F84A367A102727EE0098387D /* crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crc32.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/crc32.c; sourceTree = SOURCE_ROOT; };
+		F84A367B102727EE0098387D /* crc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crc32.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/crc32.h; sourceTree = SOURCE_ROOT; };
+		F84A367C102727EE0098387D /* deflate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = deflate.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/deflate.c; sourceTree = SOURCE_ROOT; };
+		F84A367D102727EE0098387D /* deflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deflate.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/deflate.h; sourceTree = SOURCE_ROOT; };
+		F84A367E102727EE0098387D /* example.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = example.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/example.c; sourceTree = SOURCE_ROOT; };
+		F84A367F102727EE0098387D /* gzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gzio.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/gzio.c; sourceTree = SOURCE_ROOT; };
+		F84A3680102727EE0098387D /* infback.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/infback.c; sourceTree = SOURCE_ROOT; };
+		F84A3681102727EE0098387D /* inffast.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inffast.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inffast.c; sourceTree = SOURCE_ROOT; };
+		F84A3682102727EE0098387D /* inffast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inffast.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inffast.h; sourceTree = SOURCE_ROOT; };
+		F84A3683102727EE0098387D /* inffixed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inffixed.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inffixed.h; sourceTree = SOURCE_ROOT; };
+		F84A3684102727EE0098387D /* inflate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inflate.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inflate.c; sourceTree = SOURCE_ROOT; };
+		F84A3685102727EE0098387D /* inflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inflate.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inflate.h; sourceTree = SOURCE_ROOT; };
+		F84A3686102727EE0098387D /* inftrees.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inftrees.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inftrees.c; sourceTree = SOURCE_ROOT; };
+		F84A3687102727EE0098387D /* inftrees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inftrees.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/inftrees.h; sourceTree = SOURCE_ROOT; };
+		F84A3688102727EE0098387D /* trees.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = trees.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/trees.c; sourceTree = SOURCE_ROOT; };
+		F84A3689102727EE0098387D /* trees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trees.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/trees.h; sourceTree = SOURCE_ROOT; };
+		F84A368A102727EE0098387D /* uncompr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uncompr.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/uncompr.c; sourceTree = SOURCE_ROOT; };
+		F84A368B102727EE0098387D /* zutil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = zutil.c; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/zutil.c; sourceTree = SOURCE_ROOT; };
+		F84A368C102727EE0098387D /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zutil.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/zlib/zutil.h; sourceTree = SOURCE_ROOT; };
+		F84A369A102728470098387D /* zconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zconf.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/include/zconf.h; sourceTree = SOURCE_ROOT; };
+		F84A369B102728470098387D /* zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zlib.h; path = ../../Downloads/opencv/trunk/opencv/3rdparty/include/zlib.h; sourceTree = SOURCE_ROOT; };
+		F84A36CD1027309A0098387D /* haarcascade_eye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_eye.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_eye.xml; sourceTree = SOURCE_ROOT; };
+		F84A36CE1027309A0098387D /* haarcascade_eye_tree_eyeglasses.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_eye_tree_eyeglasses.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml; sourceTree = SOURCE_ROOT; };
+		F84A36CF1027309A0098387D /* haarcascade_frontalface_alt.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_frontalface_alt.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D01027309A0098387D /* haarcascade_frontalface_alt2.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt2.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_frontalface_alt2.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D11027309A0098387D /* haarcascade_frontalface_alt_tree.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_alt_tree.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_frontalface_alt_tree.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D21027309A0098387D /* haarcascade_frontalface_default.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_frontalface_default.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_frontalface_default.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D31027309A0098387D /* haarcascade_fullbody.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_fullbody.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_fullbody.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D41027309A0098387D /* haarcascade_lefteye_2splits.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_lefteye_2splits.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_lefteye_2splits.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D51027309A0098387D /* haarcascade_lowerbody.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_lowerbody.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_lowerbody.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D61027309A0098387D /* haarcascade_mcs_eyepair_big.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_eyepair_big.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_eyepair_big.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D71027309A0098387D /* haarcascade_mcs_eyepair_small.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_eyepair_small.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_eyepair_small.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D81027309A0098387D /* haarcascade_mcs_lefteye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_lefteye.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_lefteye.xml; sourceTree = SOURCE_ROOT; };
+		F84A36D91027309A0098387D /* haarcascade_mcs_mouth.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_mouth.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_mouth.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DA1027309A0098387D /* haarcascade_mcs_nose.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_nose.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_nose.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DB1027309A0098387D /* haarcascade_mcs_righteye.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_righteye.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_righteye.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DC1027309A0098387D /* haarcascade_mcs_upperbody.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_mcs_upperbody.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_mcs_upperbody.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DD1027309A0098387D /* haarcascade_profileface.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_profileface.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_profileface.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DE1027309A0098387D /* haarcascade_righteye_2splits.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_righteye_2splits.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_righteye_2splits.xml; sourceTree = SOURCE_ROOT; };
+		F84A36DF1027309A0098387D /* haarcascade_upperbody.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = haarcascade_upperbody.xml; path = ../../Downloads/opencv/trunk/opencv/data/haarcascades/haarcascade_upperbody.xml; sourceTree = SOURCE_ROOT; };
+		F84A3721102805380098387D /* mycvHaarDetectObjects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mycvHaarDetectObjects.cpp; sourceTree = "<group>"; };
+		F84A397010286D3D0098387D /* CameraTestAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraTestAppDelegate.h; sourceTree = "<group>"; };
+		F84A397110286D3D0098387D /* CameraTestAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraTestAppDelegate.m; sourceTree = "<group>"; };
+		F84A397210286D3D0098387D /* CDAnonStruct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDAnonStruct.h; sourceTree = "<group>"; };
+		F84A397310286D3D0098387D /* MusicLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MusicLibrary.h; sourceTree = "<group>"; };
+		F84A397410286D3D0098387D /* PhotoLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhotoLibrary.h; sourceTree = "<group>"; };
+		F84A397510286D3D0098387D /* Surface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Surface.h; sourceTree = "<group>"; };
+		F84A397610286D3D0098387D /* Surface.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Surface.m; sourceTree = "<group>"; };
+		F84A397710286D3D0098387D /* SurfaceAccelerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SurfaceAccelerator.h; sourceTree = "<group>"; };
+		F84A397810286D3D0098387D /* SurfaceAccelerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SurfaceAccelerator.m; sourceTree = "<group>"; };
+		F84A397910286D3D0098387D /* TelephonyUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TelephonyUI.h; sourceTree = "<group>"; };
+		F84A397A10286D3D0098387D /* UIProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIProgressHUD.h; sourceTree = "<group>"; };
+		F84A397B10286D3D0098387D /* UIPushButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPushButton.h; sourceTree = "<group>"; };
+		F84A397C10286D3D0098387D /* UIThreePartButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIThreePartButton.h; sourceTree = "<group>"; };
+		F84A3A04102875E90098387D /* PhotoLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotoLibrary.framework; path = System/Library/PrivateFrameworks/PhotoLibrary.framework; sourceTree = SDKROOT; };
+		F84A3A95102974390098387D /* FaceAugmentingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FaceAugmentingView.h; sourceTree = "<group>"; };
+		F84A3A96102974390098387D /* FaceAugmentingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FaceAugmentingView.m; sourceTree = "<group>"; };
+		F84A3AC2102977760098387D /* bowler-hat-black-w-alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "bowler-hat-black-w-alpha.png"; path = "../../Downloads/bowler-hat-black-w-alpha.png"; sourceTree = SOURCE_ROOT; };
+		F84A3B5410299ABA0098387D /* FaceDetectorView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = FaceDetectorView.xib; sourceTree = "<group>"; };
+		F84A3BA01029A7B90098387D /* FaceDetectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FaceDetectorViewController.h; sourceTree = "<group>"; };
+		F84A3BA11029A7B90098387D /* FaceDetectorViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FaceDetectorViewController.mm; sourceTree = "<group>"; };
+		F84A3BF91029AE510098387D /* bandana.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bandana.png; path = ../../Downloads/bandana.png; sourceTree = SOURCE_ROOT; };
+		F84A3BFA1029AE510098387D /* tie-w-alpha.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "tie-w-alpha.png"; path = "../../Downloads/tie-w-alpha.png"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D60588F0D05DD3D006BFB54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
+				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
+				F84A3A05102875E90098387D /* PhotoLibrary.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				F84A396F10286D150098387D /* Camera */,
+				F84A34F51026EF9E0098387D /* zlib */,
+				F84A34C21026D58C0098387D /* include */,
+				1D3623240D0F684500981E51 /* FaceDetector1AppDelegate.h */,
+				1D3623250D0F684500981E51 /* FaceDetector1AppDelegate.m */,
+				F84A35241026F1A60098387D /* facedetect.c */,
+				F84A35BF10270B8E0098387D /* FaceDetectView.h */,
+				F84A35C010270B8E0098387D /* FaceDetectView.mm */,
+				F84A3721102805380098387D /* mycvHaarDetectObjects.cpp */,
+				F84A3A95102974390098387D /* FaceAugmentingView.h */,
+				F84A3A96102974390098387D /* FaceAugmentingView.m */,
+				F84A3BA01029A7B90098387D /* FaceDetectorViewController.h */,
+				F84A3BA11029A7B90098387D /* FaceDetectorViewController.mm */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D6058910D05DD3D006BFB54 /* FaceDetector1.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
+			isa = PBXGroup;
+			children = (
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = CustomTemplate;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32CA4F630368D1EE00C91783 /* FaceDetector1_Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F84A3BF91029AE510098387D /* bandana.png */,
+				F84A3BFA1029AE510098387D /* tie-w-alpha.png */,
+				F84A3AC2102977760098387D /* bowler-hat-black-w-alpha.png */,
+				F84A36F31027309C0098387D /* haarcascades */,
+				F84A362610271C1F0098387D /* IMG_0007.JPG */,
+				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+				F84A3B5410299ABA0098387D /* FaceDetectorView.xib */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F84A3A04102875E90098387D /* PhotoLibrary.framework */,
+				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
+				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F84A34C21026D58C0098387D /* include */ = {
+			isa = PBXGroup;
+			children = (
+				F84A34DD1026D69B0098387D /* cv.hpp */,
+				F84A34DE1026D69B0098387D /* cvaux.hpp */,
+				F84A34DF1026D69B0098387D /* cvvidsurv.hpp */,
+				F84A34E01026D69B0098387D /* cxcore.hpp */,
+				F84A34E11026D69B0098387D /* cxmat.hpp */,
+				F84A34E21026D69B0098387D /* cxoperations.hpp */,
+				F84A34E31026D69B0098387D /* highgui.hpp */,
+				F84A34C31026D58C0098387D /* cv.h */,
+				F84A34C41026D58C0098387D /* cvaux.h */,
+				F84A34C51026D58C0098387D /* cvcompat.h */,
+				F84A34C61026D58C0098387D /* cvstreams.h */,
+				F84A34C71026D58C0098387D /* cvtypes.h */,
+				F84A34C81026D58C0098387D /* cvver.h */,
+				F84A34C91026D58C0098387D /* cvwimage.h */,
+				F84A34CA1026D58C0098387D /* cxcore.h */,
+				F84A34CB1026D58C0098387D /* cxerror.h */,
+				F84A34CC1026D58C0098387D /* cxflann.h */,
+				F84A34CD1026D58C0098387D /* cxmisc.h */,
+				F84A34CE1026D58C0098387D /* cxtypes.h */,
+				F84A34CF1026D58C0098387D /* highgui.h */,
+				F84A34D01026D58C0098387D /* ml.h */,
+			);
+			name = include;
+			path = ../../Downloads/opencv/trunk/OpenCV.lib/include;
+			sourceTree = SOURCE_ROOT;
+		};
+		F84A34F51026EF9E0098387D /* zlib */ = {
+			isa = PBXGroup;
+			children = (
+				F84A369A102728470098387D /* zconf.h */,
+				F84A369B102728470098387D /* zlib.h */,
+				F84A3678102727EE0098387D /* adler32.c */,
+				F84A3679102727EE0098387D /* compress.c */,
+				F84A367A102727EE0098387D /* crc32.c */,
+				F84A367B102727EE0098387D /* crc32.h */,
+				F84A367C102727EE0098387D /* deflate.c */,
+				F84A367D102727EE0098387D /* deflate.h */,
+				F84A367E102727EE0098387D /* example.c */,
+				F84A367F102727EE0098387D /* gzio.c */,
+				F84A3680102727EE0098387D /* infback.c */,
+				F84A3681102727EE0098387D /* inffast.c */,
+				F84A3682102727EE0098387D /* inffast.h */,
+				F84A3683102727EE0098387D /* inffixed.h */,
+				F84A3684102727EE0098387D /* inflate.c */,
+				F84A3685102727EE0098387D /* inflate.h */,
+				F84A3686102727EE0098387D /* inftrees.c */,
+				F84A3687102727EE0098387D /* inftrees.h */,
+				F84A3688102727EE0098387D /* trees.c */,
+				F84A3689102727EE0098387D /* trees.h */,
+				F84A368A102727EE0098387D /* uncompr.c */,
+				F84A368B102727EE0098387D /* zutil.c */,
+				F84A368C102727EE0098387D /* zutil.h */,
+			);
+			name = zlib;
+			sourceTree = "<group>";
+		};
+		F84A36F31027309C0098387D /* haarcascades */ = {
+			isa = PBXGroup;
+			children = (
+				F84A36CD1027309A0098387D /* haarcascade_eye.xml */,
+				F84A36CE1027309A0098387D /* haarcascade_eye_tree_eyeglasses.xml */,
+				F84A36CF1027309A0098387D /* haarcascade_frontalface_alt.xml */,
+				F84A36D01027309A0098387D /* haarcascade_frontalface_alt2.xml */,
+				F84A36D11027309A0098387D /* haarcascade_frontalface_alt_tree.xml */,
+				F84A36D21027309A0098387D /* haarcascade_frontalface_default.xml */,
+				F84A36D31027309A0098387D /* haarcascade_fullbody.xml */,
+				F84A36D41027309A0098387D /* haarcascade_lefteye_2splits.xml */,
+				F84A36D51027309A0098387D /* haarcascade_lowerbody.xml */,
+				F84A36D61027309A0098387D /* haarcascade_mcs_eyepair_big.xml */,
+				F84A36D71027309A0098387D /* haarcascade_mcs_eyepair_small.xml */,
+				F84A36D81027309A0098387D /* haarcascade_mcs_lefteye.xml */,
+				F84A36D91027309A0098387D /* haarcascade_mcs_mouth.xml */,
+				F84A36DA1027309A0098387D /* haarcascade_mcs_nose.xml */,
+				F84A36DB1027309A0098387D /* haarcascade_mcs_righteye.xml */,
+				F84A36DC1027309A0098387D /* haarcascade_mcs_upperbody.xml */,
+				F84A36DD1027309A0098387D /* haarcascade_profileface.xml */,
+				F84A36DE1027309A0098387D /* haarcascade_righteye_2splits.xml */,
+				F84A36DF1027309A0098387D /* haarcascade_upperbody.xml */,
+			);
+			name = haarcascades;
+			sourceTree = "<group>";
+		};
+		F84A396F10286D150098387D /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				F84A397010286D3D0098387D /* CameraTestAppDelegate.h */,
+				F84A397110286D3D0098387D /* CameraTestAppDelegate.m */,
+				F84A397210286D3D0098387D /* CDAnonStruct.h */,
+				F84A397310286D3D0098387D /* MusicLibrary.h */,
+				F84A397410286D3D0098387D /* PhotoLibrary.h */,
+				F84A397510286D3D0098387D /* Surface.h */,
+				F84A397610286D3D0098387D /* Surface.m */,
+				F84A397710286D3D0098387D /* SurfaceAccelerator.h */,
+				F84A397810286D3D0098387D /* SurfaceAccelerator.m */,
+				F84A397910286D3D0098387D /* TelephonyUI.h */,
+				F84A397A10286D3D0098387D /* UIProgressHUD.h */,
+				F84A397B10286D3D0098387D /* UIPushButton.h */,
+				F84A397C10286D3D0098387D /* UIThreePartButton.h */,
+			);
+			name = Camera;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D6058900D05DD3D006BFB54 /* FaceDetector1 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "FaceDetector1" */;
+			buildPhases = (
+				1D60588D0D05DD3D006BFB54 /* Resources */,
+				1D60588E0D05DD3D006BFB54 /* Sources */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FaceDetector1;
+			productName = FaceDetector1;
+			productReference = 1D6058910D05DD3D006BFB54 /* FaceDetector1.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "FaceDetector1" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D6058900D05DD3D006BFB54 /* FaceDetector1 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1D60588D0D05DD3D006BFB54 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */,
+				F84A362710271C1F0098387D /* IMG_0007.JPG in Resources */,
+				F84A36E01027309A0098387D /* haarcascade_eye.xml in Resources */,
+				F84A36E11027309A0098387D /* haarcascade_eye_tree_eyeglasses.xml in Resources */,
+				F84A36E21027309A0098387D /* haarcascade_frontalface_alt.xml in Resources */,
+				F84A36E31027309A0098387D /* haarcascade_frontalface_alt2.xml in Resources */,
+				F84A36E41027309A0098387D /* haarcascade_frontalface_alt_tree.xml in Resources */,
+				F84A36E51027309A0098387D /* haarcascade_frontalface_default.xml in Resources */,
+				F84A36E61027309A0098387D /* haarcascade_fullbody.xml in Resources */,
+				F84A36E71027309A0098387D /* haarcascade_lefteye_2splits.xml in Resources */,
+				F84A36E81027309A0098387D /* haarcascade_lowerbody.xml in Resources */,
+				F84A36E91027309A0098387D /* haarcascade_mcs_eyepair_big.xml in Resources */,
+				F84A36EA1027309A0098387D /* haarcascade_mcs_eyepair_small.xml in Resources */,
+				F84A36EB1027309A0098387D /* haarcascade_mcs_lefteye.xml in Resources */,
+				F84A36EC1027309A0098387D /* haarcascade_mcs_mouth.xml in Resources */,
+				F84A36ED1027309A0098387D /* haarcascade_mcs_nose.xml in Resources */,
+				F84A36EE1027309A0098387D /* haarcascade_mcs_righteye.xml in Resources */,
+				F84A36EF1027309A0098387D /* haarcascade_mcs_upperbody.xml in Resources */,
+				F84A36F01027309A0098387D /* haarcascade_profileface.xml in Resources */,
+				F84A36F11027309A0098387D /* haarcascade_righteye_2splits.xml in Resources */,
+				F84A36F21027309A0098387D /* haarcascade_upperbody.xml in Resources */,
+				F84A3AC3102977760098387D /* bowler-hat-black-w-alpha.png in Resources */,
+				F84A3B5510299ABA0098387D /* FaceDetectorView.xib in Resources */,
+				F84A3BFB1029AE510098387D /* bandana.png in Resources */,
+				F84A3BFC1029AE510098387D /* tie-w-alpha.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D60588E0D05DD3D006BFB54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				1D3623260D0F684500981E51 /* FaceDetector1AppDelegate.m in Sources */,
+				F84A35251026F1A60098387D /* facedetect.c in Sources */,
+				F84A35C110270B8E0098387D /* FaceDetectView.mm in Sources */,
+				F84A368D102727EE0098387D /* adler32.c in Sources */,
+				F84A368E102727EE0098387D /* compress.c in Sources */,
+				F84A368F102727EE0098387D /* crc32.c in Sources */,
+				F84A3690102727EE0098387D /* deflate.c in Sources */,
+				F84A3691102727EE0098387D /* example.c in Sources */,
+				F84A3692102727EE0098387D /* gzio.c in Sources */,
+				F84A3693102727EE0098387D /* infback.c in Sources */,
+				F84A3694102727EE0098387D /* inffast.c in Sources */,
+				F84A3695102727EE0098387D /* inflate.c in Sources */,
+				F84A3696102727EE0098387D /* inftrees.c in Sources */,
+				F84A3697102727EE0098387D /* trees.c in Sources */,
+				F84A3698102727EE0098387D /* uncompr.c in Sources */,
+				F84A3699102727EE0098387D /* zutil.c in Sources */,
+				F84A3722102805380098387D /* mycvHaarDetectObjects.cpp in Sources */,
+				F84A397D10286D3D0098387D /* CameraTestAppDelegate.m in Sources */,
+				F84A397E10286D3D0098387D /* Surface.m in Sources */,
+				F84A397F10286D3D0098387D /* SurfaceAccelerator.m in Sources */,
+				F84A3A97102974390098387D /* FaceAugmentingView.m in Sources */,
+				F84A3BA21029A7B90098387D /* FaceDetectorViewController.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1D6058940D05DD3E006BFB54 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = FaceDetector1_Prefix.pch;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = Info.plist;
+				OTHER_LDFLAGS = (
+					/Users/innovationlabs/Downloads/opencv/trunk/OpenCV.lib/libcxcore.a,
+					/Users/innovationlabs/Downloads/opencv/trunk/OpenCV.lib/libml.a,
+					/Users/innovationlabs/Downloads/opencv/trunk/OpenCV.lib/libhighgui.a,
+					/Users/innovationlabs/Downloads/opencv/trunk/OpenCV.lib/libcvaux.a,
+					/Users/innovationlabs/Downloads/opencv/trunk/OpenCV.lib/libcv.a,
+				);
+				PRODUCT_NAME = FaceDetector1;
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
+			};
+			name = Debug;
+		};
+		1D6058950D05DD3E006BFB54 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = FaceDetector1_Prefix.pch;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = FaceDetector1;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = iphoneos2.1;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = iphoneos2.2.1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D6058960D05DD3E006BFB54 /* Build configuration list for PBXNativeTarget "FaceDetector1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D6058940D05DD3E006BFB54 /* Debug */,
+				1D6058950D05DD3E006BFB54 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "FaceDetector1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}
