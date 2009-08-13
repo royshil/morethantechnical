@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="password"></string>
+    <string name="cellnum"></string>
+    <string name="hello">Hello World, PeleSms!</string>
+    <string name="app_name">peleSms</string>
+<string name="nonet">Cannot use this app without an active network</string>
+<string name="invalidtarget">Cannot peleSms to this number</string>
+<string name="invaliduser">Invalid username</string>
+<string name="invalidpwd">Invalid password</string>
+<string name="menuconfig">Config</string>
+<string name="menuclear">Clear</string>
+<string name="menucontact">Select Contact</string>
+<string name="errmsglong">Message is too long</string>
+<string name="errmsgblank">Message is blank</string>
+<string name="errnum">Invalid number</string>
+
+
+
+
+
+<string name="invalidlogin">Invalid Login</string>
+</resources>
