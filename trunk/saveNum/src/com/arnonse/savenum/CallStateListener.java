@@ -18,34 +18,29 @@ public class CallStateListener extends PhoneStateListener {
 
 	}
 
-	// Thread t = new Thread(new Runnable(){
-	// public void run(){
-	// try {
-	// Thread.sleep(1000*60);
-	// } catch (InterruptedException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// clearNotification();
-	// }
-	// });
+/*
+	Thread t = new Thread(new Runnable(){
+		public void run(){
+			try {
+				Thread.sleep(1000*60);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			clearNotification();
+		}
+	});
+*/
 
 	public void onCallStateChanged(int state, String incomingNumber) {
 		switch (state) {
 		case TelephonyManager.CALL_STATE_IDLE:
-
-			// t.start();
 			clearNotification();
-			// Log.d("DEBUG", "IDLE");
 			break;
 		case TelephonyManager.CALL_STATE_OFFHOOK:
-
-			// t.stop();
 			activateNotification();
-
 			break;
 		case TelephonyManager.CALL_STATE_RINGING:
-			// Log.d("DEBUG", "RINGING");
 			break;
 		}
 	}
