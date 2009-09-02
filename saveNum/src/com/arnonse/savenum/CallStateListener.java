@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 //import android.util.Log;
+import android.text.ClipboardManager;
 
 public class CallStateListener extends PhoneStateListener {
 
@@ -75,9 +76,11 @@ public class CallStateListener extends PhoneStateListener {
 	private void handleRemoveNotification() {
 
 		cancelTimer();
-
+		
+		ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
+		
 		int timeout = Integer.parseInt(prefs.getString("suspendTime", "0")) * 1000;
-		if (timeout == 0)
+		if ((timeout == 0) || (clipboard.getText().toString().equals("")))
 			clearNotification();
 		else {
 
