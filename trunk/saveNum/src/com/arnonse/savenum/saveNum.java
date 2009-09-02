@@ -2,27 +2,35 @@ package com.arnonse.savenum;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 public class saveNum extends Activity {
-	/** Called when the activity is first created. */
 
 	EditText phnNum;
 	Button btnAdd;
 	Button btnDial;
 	private boolean monitorChange = true;
+	SharedPreferences prefs;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Initialize preferences manager
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		
+		
 		setContentView(R.layout.main);
 		setTheme(android.R.style.Theme_Dialog);
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -35,6 +43,7 @@ public class saveNum extends Activity {
 		if (clipboard.getText().toString().equals("")) {
 			btnAdd.setText(getString(R.string.btnSetText));
 		}
+		adjustInputType();
 
 		phnNum.addTextChangedListener(new TextWatcher() {
 
@@ -95,5 +104,33 @@ public class saveNum extends Activity {
 	public void showToast(String s) {
 		Toast.makeText(getBaseContext(), s, Toast.LENGTH_SHORT).show();
 	}
+	
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		startActivity(new Intent(this, SaveNumSettings.class));
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		adjustInputType();
+	}
+	
+	private void adjustInputType()
+	{
+		boolean allowFullString = prefs.getBoolean("allowString", false);
+		if (allowFullString)
+		{
+			phnNum.setInputType(InputType.TYPE_CLASS_TEXT);
+		}
+		else
+		{
+			phnNum.setInputType(InputType.TYPE_CLASS_PHONE);
+		}
+	}
+
+	
 }

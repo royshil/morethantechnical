@@ -7,4 +7,19 @@
 <string name="strDial">Dial</string>
 
 <string name="btnClear">Clear Clipboard</string>
+
+
+<string-array name="entries"><item>Disable</item>
+<item>10 secs</item>
+<item>30 secs</item>
+<item>1 min</item>
+<item>2 mins</item>
+</string-array>
+
+<string-array name="entryValues"><item>0</item>
+<item>10</item>
+<item>30</item>
+<item>60</item>
+<item>120</item>
+</string-array>
 </resources>
