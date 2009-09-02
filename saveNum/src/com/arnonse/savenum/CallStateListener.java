@@ -77,7 +77,7 @@ public class CallStateListener extends PhoneStateListener {
 	
 	private void handleRemoveNotification() {
 		cancelTimer();
-		
+
 		int timeout = Integer.parseInt(prefs.getString("suspendTime", "0"))*1000;
 		if (timeout==0)
 			clearNotification();
@@ -87,9 +87,7 @@ public class CallStateListener extends PhoneStateListener {
 			t.schedule(new TimerTask() {
 				@Override
 				public void run(){
-					synchronized(this) {                               
-						clearNotification();
-					}
+					clearNotification();
 				}
 			}, timeout);
 		}
