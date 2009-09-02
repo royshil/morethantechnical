@@ -12,26 +12,28 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+//import android.util.Log;
 
 public class CallStateListener extends PhoneStateListener {
 
 	Context ctx = null;
 	SharedPreferences prefs;
 	Timer t = null;
-	
+
 	CallStateListener(Context ctx) {
 		super();
 		this.ctx = ctx;
 		prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 	}
 
-
 	public void onCallStateChanged(int state, String incomingNumber) {
 		switch (state) {
 		case TelephonyManager.CALL_STATE_IDLE:
+			//Log.d("DEBUG", "CALL STATE IDLE ****************");
 			handleRemoveNotification();
 			break;
 		case TelephonyManager.CALL_STATE_OFFHOOK:
+			//Log.d("DEBUG", "CALL STATE ACTIVE ***************");
 			activateNotification();
 			break;
 		case TelephonyManager.CALL_STATE_RINGING:
@@ -39,13 +41,10 @@ public class CallStateListener extends PhoneStateListener {
 		}
 	}
 
-
-
-
 	public void activateNotification() {
-		
+
 		cancelTimer();
-		
+
 		final int APP_ID = 0;
 
 		NotificationManager mManager = (NotificationManager) ctx
@@ -60,33 +59,32 @@ public class CallStateListener extends PhoneStateListener {
 		notification.setLatestEventInfo(ctx, "Number Saver",
 				"Click to open application", contentIntent);
 		notification.flags = Notification.FLAG_ONGOING_EVENT;
-		
+
 		mManager.notify(APP_ID, notification);
 
 	}
 
-
 	private void cancelTimer() {
-		if (t!=null)
-		{
+		if (t != null) {
 			t.cancel();
 			t.purge();
 			t = null;
 		}
 	}
-	
+
 	private void handleRemoveNotification() {
+
 		cancelTimer();
 
-		int timeout = Integer.parseInt(prefs.getString("suspendTime", "0"))*1000;
-		if (timeout==0)
+		int timeout = Integer.parseInt(prefs.getString("suspendTime", "0")) * 1000;
+		if (timeout == 0)
 			clearNotification();
-		else
-		{
+		else {
+
 			t = new Timer(true);
 			t.schedule(new TimerTask() {
 				@Override
-				public void run(){
+				public void run() {
 					clearNotification();
 				}
 			}, timeout);
@@ -98,6 +96,7 @@ public class CallStateListener extends PhoneStateListener {
 		NotificationManager mNotificationManager = (NotificationManager) ctx
 				.getSystemService(ns);
 		mNotificationManager.cancel(0);
+		// pickedup=false;
 	}
 
 }
