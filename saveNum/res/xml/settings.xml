@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+<CheckBoxPreference android:summary="Full string or phone number input" android:disableDependentsState="true" android:key="allowString" android:title="Allow typing string" android:defaultValue="false"></CheckBoxPreference>
+<ListPreference android:key="suspendTime" android:summary="How much time notification icon should be suspended before removed, after an active call" android:title="Suspend notification" android:dialogTitle="Choose delay time" android:entries="@array/entries" android:entryValues="@array/entryValues"></ListPreference>
+
+</PreferenceScreen>
