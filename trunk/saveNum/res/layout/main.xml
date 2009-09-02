@@ -4,4 +4,5 @@
 <EditText android:layout_height="wrap_content" android:layout_y="26dip" android:hint="Enter number" android:layout_x="5dip" android:inputType="phone" android:layout_width="200dip" android:id="@+id/phnNum"></EditText>
 <Button android:layout_x="5dip" android:layout_y="80dip" android:id="@+id/btnAdd" android:layout_height="50dip" android:text="@string/btnClear" android:layout_width="100dip"></Button>
 <Button android:layout_y="80dip" android:text="@string/strDial" android:layout_height="50dip" android:id="@+id/btnDial" android:layout_width="100dip" android:layout_x="105dip"></Button>
+<TextView android:layout_height="wrap_content" android:id="@+id/TextView02" android:layout_width="wrap_content" android:text="Press MENU for options" android:layout_y="130dip" android:textSize="12dip" android:layout_x="40dip"></TextView>
 </AbsoluteLayout>
