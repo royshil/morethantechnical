@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, saveNum!</string>
+    <string name="app_name">Number Saver</string>
+<string name="btnSetText">Copy to Clipboard</string>
+<string name="copied">Text Copied to Clipboard</string>
+<string name="strDial">Dial</string>
+
+<string name="btnClear">Clear Clipboard</string>
+</resources>
