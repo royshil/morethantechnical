@@ -36,11 +36,9 @@ public class CallStateListener extends PhoneStateListener {
 	public void onCallStateChanged(int state, String incomingNumber) {
 		switch (state) {
 		case TelephonyManager.CALL_STATE_IDLE:
-			//Log.d("DEBUG", "CALL STATE IDLE ****************");
 			handleRemoveNotification();
 			break;
 		case TelephonyManager.CALL_STATE_OFFHOOK:
-			//Log.d("DEBUG", "CALL STATE ACTIVE ***************");
 			activateNotification();
 			break;
 		case TelephonyManager.CALL_STATE_RINGING:
@@ -75,6 +73,12 @@ public class CallStateListener extends PhoneStateListener {
 			t.cancel();
 			t.purge();
 			t = null;
+		}
+		
+		if (hasLock)
+		{
+			wl.release();
+			hasLock=false;
 		}
 	}
 
