@@ -1,6 +1,7 @@
 package com.arnonse.savenum;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -81,6 +83,10 @@ public class saveNum extends Activity {
 					ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 					clipboard.setText(phnNum.getText());
 					showToast(getString(R.string.copied));
+					
+					InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);   
+					imm.hideSoftInputFromWindow(phnNum.getWindowToken(), 0);  
+
 					finish();
 				}
 			}
