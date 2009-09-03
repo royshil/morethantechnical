@@ -98,7 +98,7 @@ public class CallStateListener extends PhoneStateListener {
 				hasLock = true;
 			}
 
-			t = new Timer(true);
+			t = new Timer();
 			t.schedule(new TimerTask() {
 				@Override
 				public void run() {
