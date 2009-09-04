@@ -170,6 +170,7 @@ public class saveNum extends Activity {
 		if (iHaveTurnedOnSpeakerphone)
 		{
 			audioman.setSpeakerphoneOn(false);
+			iHaveTurnedOnSpeakerphone=false;
 		}
 	}
 
