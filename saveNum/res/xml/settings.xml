@@ -5,4 +5,5 @@
 <CheckBoxPreference android:disableDependentsState="true" android:key="allowString" android:defaultValue="false" android:title="Allow text input" android:summary="Allow full text and not only phone number"></CheckBoxPreference>
 <ListPreference android:key="suspendTime" android:title="Suspend notification" android:dialogTitle="Choose delay time" android:entries="@array/entries" android:entryValues="@array/entryValues" android:summary="Suspend notification icon if a there is a number in memory"></ListPreference>
 
+<CheckBoxPreference android:key="speaker" android:title="Turn-on Speakerphone" android:summary="Auto-Turn on speakerphone when saving a number"></CheckBoxPreference>
 </PreferenceScreen>
