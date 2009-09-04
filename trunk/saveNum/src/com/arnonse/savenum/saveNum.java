@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+//import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -24,14 +27,18 @@ public class saveNum extends Activity {
 	Button btnAdd;
 	Button btnDial;
 	private boolean monitorChange = true;
+	private static boolean iHaveTurnedOnSpeakerphone = false;
 	SharedPreferences prefs;
+	AudioManager audioman;
+	TelephonyManager telephoneman;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// Initialize preferences manager
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		
+		audioman = (AudioManager) getSystemService(AUDIO_SERVICE);
+		telephoneman = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		
 		setContentView(R.layout.main);
 		setTheme(android.R.style.Theme_Dialog);
@@ -135,6 +142,34 @@ public class saveNum extends Activity {
 		else
 		{
 			phnNum.setInputType(InputType.TYPE_CLASS_PHONE);
+		}
+	}
+
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		if (ShouldIStartSpeakerphone())
+		{
+			audioman.setSpeakerphoneOn(true);
+			iHaveTurnedOnSpeakerphone=true;
+		}
+	}
+
+	private boolean ShouldIStartSpeakerphone() {
+		return 
+		( 		prefs.getBoolean("speaker", false) &&
+				!audioman.isSpeakerphoneOn() && 
+				(telephoneman.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK)
+		);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if (iHaveTurnedOnSpeakerphone)
+		{
+			audioman.setSpeakerphoneOn(false);
 		}
 	}
 
