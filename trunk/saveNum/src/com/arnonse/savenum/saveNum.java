@@ -160,6 +160,7 @@ public class saveNum extends Activity {
 		return 
 		( 		prefs.getBoolean("speaker", false) &&
 				!audioman.isSpeakerphoneOn() && 
+				!audioman.isBluetoothScoOn() &&
 				(telephoneman.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK)
 		);
 	}
