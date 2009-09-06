@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AbsoluteLayout android:id="@+id/AbsoluteLayout01" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:minHeight="150dip" android:minWidth="210dip"><TextView android:id="@+id/TextView01" android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_y="3dip" android:layout_x="5dip" android:text="Number to store"></TextView>
+<EditText android:layout_height="wrap_content" android:layout_y="26dip" android:hint="Enter number" android:layout_x="5dip" android:inputType="phone" android:layout_width="200dip" android:id="@+id/phnNum"></EditText>
+<Button android:layout_x="5dip" android:layout_y="80dip" android:id="@+id/btnAdd" android:layout_height="50dip" android:text="@string/btnClear" android:layout_width="100dip"></Button>
+<Button android:layout_y="80dip" android:text="@string/strDial" android:layout_height="50dip" android:id="@+id/btnDial" android:layout_width="100dip" android:layout_x="105dip"></Button>
+<TextView android:layout_height="wrap_content" android:id="@+id/TextView02" android:layout_width="wrap_content" android:text="Press MENU for options" android:layout_y="130dip" android:textSize="12dip" android:layout_x="40dip"></TextView>
+</AbsoluteLayout>
