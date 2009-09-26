@@ -63,7 +63,8 @@ public class CallStateListener extends PhoneStateListener {
 
 		notification.setLatestEventInfo(ctx, "Number Saver",
 				"Click to open application", contentIntent);
-		notification.flags = Notification.FLAG_ONGOING_EVENT;
+		if (prefs.getBoolean("ongoing", true))
+				notification.flags = Notification.FLAG_ONGOING_EVENT;
 
 		mManager.notify(APP_ID, notification);
 	}
