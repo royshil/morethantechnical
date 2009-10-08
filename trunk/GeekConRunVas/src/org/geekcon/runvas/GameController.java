@@ -2,6 +2,7 @@ package org.geekcon.runvas;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLException;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -16,6 +18,10 @@ import org.eclipse.swt.events.KeyListener;
 import org.geekcon.runvas.utils.Face;
 import org.geekcon.runvas.utils.Vector3D;
 import org.geekcon.runvas.utils.Vertex;
+
+import com.sun.opengl.util.texture.Texture;
+import com.sun.opengl.util.texture.TextureCoords;
+import com.sun.opengl.util.texture.TextureIO;
 
 
 public class GameController implements KeyListener, java.awt.event.MouseListener, MouseMotionListener,
@@ -50,36 +56,11 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 
 	public GameController() {
 		model = new GameModel();
-		model.setLookAtLocation(new Vector3D(.5f,.5f,0f));
+		model.setLookAtLocation(new Vector3D(0f,0f,0f));
 		model.getEyeLocation().z = 1f;
 	    
 	    renderer = new GameRenderer(this);
-	    
-	    //Grass rectangle
-	    DefaultController dc = new DefaultController();
-	    dc.getModel().setLocation(Vector3D.origin);
-	    ArrayList<Vertex> vs = dc.getModel().getVertices();
-	    Vertex a = new Vertex(0,0,0);
-	    a.setNormal(Vector3D.Yaxis);
-		vs.add(a);
-	    Vertex b = new Vertex(0,1,0);
-	    b.setNormal(Vector3D.Yaxis);
-		vs.add(b);
-	    Vertex c = new Vertex(1,1,0);
-	    c.setNormal(Vector3D.Yaxis);
-		vs.add(c);
-	    Vertex d = new Vertex(1,0,0);
-	    d.setNormal(Vector3D.Yaxis);
-		vs.add(d);
-	    ArrayList<Face> fs = dc.getModel().getQuadFaces();
-	    fs.add(Face.createQuadFace(a, b, c, d, new Vector3D(0,1,0), false));
-	    model.getGameobjects().add(dc);
-	    
-	    Strip strip = new Strip();
-	    runvasObjIdToStrip.put(1, strip);
-		model.getGameobjects().add(strip);
-		model.getDynamicObjects().add(strip);
-		
+	    		
 		try {
 			UDPServerThread serverThread = new UDPServerThread();
 			serverThread.rnvsObjCtrlr = this;
@@ -93,7 +74,15 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	@Override
 	public void incomingRunvasObject(RunVasObject o) {
 		System.out.println("handle incoming runvas object: "+o);
-		
+		if(runvasObjIdToStrip.containsKey(o.id)) {
+			runvasObjIdToStrip.get(o.id).addToStrip(o);
+		} else {
+			Strip p = new Strip();
+			p.addToStrip(o);
+			runvasObjIdToStrip.put(o.id, p);
+			model.getGameobjects().add(p);
+			model.getDynamicObjects().add(p);
+		}
 	}
 
 	public void drawGame(GL gl, GLAutoDrawable drawable, long diff) {
@@ -146,12 +135,16 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 
 	private void updateCameraPosition(long diff) {
 		if(!stickyCam) return;
-/*		float diffInSec = (float)diff / 1000f;
-		AbstractPlayerController player = model.getCurrentPlayer(); //.getPlayers().get(model.getCurrentPlayerObjectIndex());
-		if(player==null) return;
+		float diffInSec = (float)diff / 1000f;
 		Vector3D eyeLocation = model.getEyeLocation();
 		Vector3D lookAtLocation = model.getLookAtLocation();
 		Vector3D camDirUp = model.getCameraDirectionUp();
+		Vector3D.moveAVecToBVecByDiff(diffInSec, eyeLocation, model.DEFAULT_EYE_LOCATION);
+		Vector3D.moveAVecToBVecByDiff(diffInSec, lookAtLocation, Vector3D.origin);
+		Vector3D.moveAVecToBVecByDiff(diffInSec, camDirUp, Vector3D.Yaxis);
+		
+		/*		AbstractPlayerController player = model.getCurrentPlayer(); //.getPlayers().get(model.getCurrentPlayerObjectIndex());
+		if(player==null) return;
 		Vector3D pLoc = player.getModel().getLocation();
 		Vector3D pDirUp = player.getDirectionUp();
 		Vector3D pDirForward = player.getDirectionForeward();
@@ -225,6 +218,12 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 			}
 			stickyCam = false;
 			return;
+		}
+		if(e.character == 't') {
+		    Strip strip = new Strip();
+		    runvasObjIdToStrip.put(1, strip);
+			model.getGameobjects().add(strip);
+			model.getDynamicObjects().add(strip);
 		}
 //		if (e.character == SWT.ESC) {
 //			lastMode = model.getMode();
@@ -413,6 +412,52 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	public void init(GL gl) {
 		renderer.init(gl);
 		
-//		model.getWorld().init();
+		//Grass rectangle
+	    Texture tex = null;
+		try {
+			tex = TextureIO.newTexture(new FileInputStream("grass.jpg"), true, "png");
+		    tex.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+		    tex.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+		} catch (GLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+	    
+		final Texture fTex = tex;
+	    DefaultController dc = new DefaultController() {
+	    	@Override
+	    	public void additionalRotation(GL gl) {
+	    		super.additionalRotation(gl);
+	    		fTex.enable();
+	    		fTex.bind();
+	    	}
+	    	@Override
+	    	public void additionalDraw(GL gl) {
+	    		super.additionalDraw(gl);
+	    		fTex.disable();
+	    	}
+	    };
+	    dc.getModel().setLocation(Vector3D.origin);
+	    ArrayList<Vertex> vs = dc.getModel().getVertices();
+	    Vertex a = new Vertex(-1,-1,0);
+	    a.setNormal(Vector3D.Zaxis);
+		vs.add(a);
+	    Vertex b = new Vertex(-1,1,0);
+	    b.setNormal(Vector3D.Zaxis);
+		vs.add(b);
+	    Vertex c = new Vertex(1,1,0);
+	    c.setNormal(Vector3D.Zaxis);
+		vs.add(c);
+	    Vertex d = new Vertex(1,-1,0);
+	    d.setNormal(Vector3D.Zaxis);
+		vs.add(d);
+	    ArrayList<Face> fs = dc.getModel().getQuadFaces();
+	    Face fc = Face.createQuadFace(a, b, c, d, new Vector3D(0,0,1), false);
+	    TextureCoords tc = fTex.getImageTexCoords();
+	    float texC[] = new float[] {tc.top(),tc.right(),tc.top(),tc.left(),tc.bottom(),tc.left(),tc.bottom(),tc.right()};
+	    fc.setTexCoords(texC);
+		fs.add(fc);
+	    model.getGameobjects().add(dc);
 	}
 }

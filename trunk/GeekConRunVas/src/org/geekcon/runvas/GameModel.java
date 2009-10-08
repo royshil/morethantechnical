@@ -9,7 +9,7 @@ public class GameModel {
 //	private static final double CHANCE_FOR_PACKAGE = 0.8;
 	public static final float CAMERA_SPEED = 6f;
 	public static final Vector3D DEFAULT_CAMERA_ROTATION = new Vector3D(90f,0f,0f);
-	public static final Vector3D DEFAULT_EYE_LOCATION = new Vector3D(0f,1.5f,0f);
+	public static final Vector3D DEFAULT_EYE_LOCATION = new Vector3D(0f,0f,2.5f);
 	private List<IController> gameobjects = new ArrayList<IController>();
 	private List<IController> dynamicObjects = new ArrayList<IController>();
 //	private WorldMeshObject world;

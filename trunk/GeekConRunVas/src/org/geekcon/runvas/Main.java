@@ -172,6 +172,8 @@ public class Main implements GLEventListener, Runnable
 	    GL gl = drawable.getGL();
 
 	    gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+	    gl.glClearColor(0.1f, 0.1f, .3f, 0.0f);
+
 
 //	    gl.glMatrixMode(GL.GL_PROJECTION);
 
