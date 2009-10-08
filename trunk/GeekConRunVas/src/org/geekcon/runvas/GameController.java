@@ -2,7 +2,9 @@ package org.geekcon.runvas;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL;
@@ -16,7 +18,8 @@ import org.geekcon.runvas.utils.Vector3D;
 import org.geekcon.runvas.utils.Vertex;
 
 
-public class GameController implements KeyListener, java.awt.event.MouseListener, MouseMotionListener {
+public class GameController implements KeyListener, java.awt.event.MouseListener, MouseMotionListener,
+	IRunvasObjectsController	 {
 	
 	private GameModel model;
 	
@@ -31,9 +34,11 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 
 	private boolean wireframe = false;
 	
-	private boolean worldInit = false;
+//	private boolean worldInit = false;
 
 	private boolean moveBack;
+	
+	HashMap<Integer, Strip> runvasObjIdToStrip = new HashMap<Integer, Strip>();
 	
 	public Vector3D getEyeLocation() {
 		return model.getEyeLocation();
@@ -45,18 +50,12 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 
 	public GameController() {
 		model = new GameModel();
-		
-//		LevelsController.buildLevel(model,1);
-//		
-//		model.setCurrentLevel(1);
-//
-//	    model.setMode(GameModel.Mode.MAIN_MENU);
+		model.setLookAtLocation(new Vector3D(.5f,.5f,0f));
+		model.getEyeLocation().z = 1f;
 	    
 	    renderer = new GameRenderer(this);
 	    
-//	    menuController = new MenuController(this.model);
-//		model.getGameobjects().add(menuController);
-	    
+	    //Grass rectangle
 	    DefaultController dc = new DefaultController();
 	    dc.getModel().setLocation(Vector3D.origin);
 	    ArrayList<Vertex> vs = dc.getModel().getVertices();
@@ -76,7 +75,25 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	    fs.add(Face.createQuadFace(a, b, c, d, new Vector3D(0,1,0), false));
 	    model.getGameobjects().add(dc);
 	    
-	    model.getGameobjects().add(new Strip());
+	    Strip strip = new Strip();
+	    runvasObjIdToStrip.put(1, strip);
+		model.getGameobjects().add(strip);
+		model.getDynamicObjects().add(strip);
+		
+		try {
+			UDPServerThread serverThread = new UDPServerThread();
+			serverThread.rnvsObjCtrlr = this;
+//			serverThread.start();
+			System.out.println("Runvas server online.");
+		} catch (IOException e) {
+			System.err.println("Runvas server is offline!: " + e.getLocalizedMessage());
+		}
+	}
+
+	@Override
+	public void incomingRunvasObject(RunVasObject o) {
+		System.out.println("handle incoming runvas object: "+o);
+		
 	}
 
 	public void drawGame(GL gl, GLAutoDrawable drawable, long diff) {

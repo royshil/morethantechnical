@@ -65,9 +65,9 @@ public abstract class AbstractRenderer implements IRenderer {
 			gl.glEnd();
 			gl.glEnable(GL.GL_LIGHTING);
 		} else {
-			if (displayListID < 0) {
-				displayListID = gl.glGenLists(1);
-				gl.glNewList(displayListID, GL.GL_COMPILE_AND_EXECUTE);
+//			if (displayListID < 0) {
+//				displayListID = gl.glGenLists(1);
+//				gl.glNewList(displayListID, GL.GL_COMPILE_AND_EXECUTE);
 
 				// Draw triangle
 				gl.glBegin(GL.GL_TRIANGLES);
@@ -82,10 +82,10 @@ public abstract class AbstractRenderer implements IRenderer {
 					quadFace.glDraw(gl);
 				}
 				gl.glEnd();
-				gl.glEndList();
-			} else {
-				gl.glCallList(displayListID);
-			}
+//				gl.glEndList();
+//			} else {
+//				gl.glCallList(displayListID);
+//			}
 		}
 
 		gl.glPopMatrix();
