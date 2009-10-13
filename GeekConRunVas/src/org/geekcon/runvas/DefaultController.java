@@ -18,4 +18,8 @@ public class DefaultController extends AbstractController {
     public IRenderer getRenderer() {
             return r;
     }
+
+	@Override
+	public void additionalDrawingWithModel(GL gl) {
+	}
 }

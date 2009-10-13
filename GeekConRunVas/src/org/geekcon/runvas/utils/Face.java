@@ -76,7 +76,9 @@ public class Face {
 			if(v.vcolor != null && v.vcolor.length == 4) {
 				gl.glColor4fv(FloatBuffer.wrap(v.vcolor));
 			}
-			gl.glNormal3f(v.normal.x, v.normal.y, v.normal.z);
+			if(v.normal != null) {
+				gl.glNormal3f(v.normal.x, v.normal.y, v.normal.z);
+			}
 			gl.glVertex3f(v.x,v.y,v.z);
 		}
 //		gl.glEnd();
