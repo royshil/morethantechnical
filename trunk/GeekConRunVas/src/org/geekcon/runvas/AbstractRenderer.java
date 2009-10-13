@@ -1,5 +1,7 @@
 package org.geekcon.runvas;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL;
 
 import org.geekcon.runvas.utils.Face;
@@ -52,15 +54,20 @@ public abstract class AbstractRenderer implements IRenderer {
 		// float mat_emission[]={0f, 0f, 0f, 1.0f};
 		// gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_EMISSION,
 		// FloatBuffer.wrap(mat_emission));
+		
+		getController().additionalDrawingWithModel(gl);
 
+		ArrayList<Face> quadFaces = model.getQuadFaces();
 		if (drawWireframe) {
 			gl.glDisable(GL.GL_LIGHTING);
 			gl.glBegin(GL.GL_LINES);
 			for (Face triFace : model.getTriFaces()) {
 				triFace.glDrawWireframe(gl);
 			}
-			for (Face quadFace : model.getQuadFaces()) {
-				quadFace.glDrawWireframe(gl);
+			synchronized (quadFaces) {
+				for (Face quadFace : quadFaces) {
+					quadFace.glDrawWireframe(gl);
+				}
 			}
 			gl.glEnd();
 			gl.glEnable(GL.GL_LIGHTING);
@@ -78,8 +85,10 @@ public abstract class AbstractRenderer implements IRenderer {
 
 				// Draw rectangles
 				gl.glBegin(GL.GL_QUADS);
-				for (Face quadFace : model.getQuadFaces()) {
-					quadFace.glDraw(gl);
+				synchronized (quadFaces) {
+					for (Face quadFace : quadFaces) {
+						quadFace.glDraw(gl);
+					}
 				}
 				gl.glEnd();
 //				gl.glEndList();

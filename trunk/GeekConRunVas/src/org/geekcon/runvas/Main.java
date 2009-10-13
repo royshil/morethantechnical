@@ -20,11 +20,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-/* *******************************************
- * check out our demo at 
- * http://www.youtube.com/watch?v=XbQ0Qd3gHZM
- * ****************************************** 
- */
 
 
 public class Main implements GLEventListener, Runnable
@@ -47,7 +42,7 @@ public class Main implements GLEventListener, Runnable
 	void runMain(Display display)
 	{
 		final Shell shell = new Shell(display);
-		shell.setText("Snails3D");
+		shell.setText("RunVas");
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.marginHeight = 0;
 		gridLayout.marginWidth = 0;
@@ -123,6 +118,7 @@ public class Main implements GLEventListener, Runnable
 		}
 		
 		repaintThread.interrupt();
+		game.stopUDPThread();
 	}
 
 
@@ -152,8 +148,8 @@ public class Main implements GLEventListener, Runnable
 	    gl.glLightfv(GL.GL_LIGHT1, GL.GL_DIFFUSE, FloatBuffer.wrap(d));
 	    float[] s = {.5f,.5f,.5f,1f};
 	    gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, FloatBuffer.wrap(s));
-	    float[] p = { -5f, 5f, 0f, 1f };
-	    gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, FloatBuffer.wrap(p));
+//	    float[] p = { -5f, 5f, 0f, 1f };
+//	    gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, FloatBuffer.wrap(p));
 	    
 	    gl.glEnable(GL.GL_LIGHT1);
 	    gl.glEnable(GL.GL_LIGHTING);
@@ -173,7 +169,6 @@ public class Main implements GLEventListener, Runnable
 
 	    gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 	    gl.glClearColor(0.1f, 0.1f, .3f, 0.0f);
-
 
 //	    gl.glMatrixMode(GL.GL_PROJECTION);
 

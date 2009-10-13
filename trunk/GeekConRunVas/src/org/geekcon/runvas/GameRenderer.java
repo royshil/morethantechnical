@@ -77,6 +77,10 @@ public class GameRenderer {
 //			gl.glDisable(GL.GL_LIGHT3);
 //		}
 		
+	    float[] p = { 1f, 0f, 1f, 1f };
+	    gl.glLightfv(GL.GL_LIGHT1, GL.GL_POSITION, FloatBuffer.wrap(p));
+
+		
 	    Vector3D eye = controller.getEyeLocation();
 	    final GLU glu = new GLU();
 	    Vector3D lookAtLocation = controller.getLookAtLocation();

@@ -24,4 +24,6 @@ public interface IController {
     
     boolean shouldBeRemoved();
 
+	void additionalDrawingWithModel(GL gl);
+
 }

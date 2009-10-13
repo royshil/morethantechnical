@@ -12,7 +12,6 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLException;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.geekcon.runvas.utils.Face;
@@ -27,6 +26,10 @@ import com.sun.opengl.util.texture.TextureIO;
 public class GameController implements KeyListener, java.awt.event.MouseListener, MouseMotionListener,
 	IRunvasObjectsController	 {
 	
+	private static final String CANVAS_TEXTURE_FILENAME = "canvas3.jpg";
+
+	private static final float SPIN_VIEW_RADIUS = 2.5f;
+
 	private GameModel model;
 	
 	private GameRenderer renderer;
@@ -45,6 +48,18 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	private boolean moveBack;
 	
 	HashMap<Integer, Strip> runvasObjIdToStrip = new HashMap<Integer, Strip>();
+
+	private RunvasObjectsStreamer serverThread;
+
+	private boolean m_drawModeOn;
+
+	private boolean m_spinView = false;
+
+	private int m_spinViewCurrentAngle = 0;
+
+	private int m_drawModeOnStripId = 0;
+
+	private boolean m_logOn = false;
 	
 	public Vector3D getEyeLocation() {
 		return model.getEyeLocation();
@@ -62,26 +77,32 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	    renderer = new GameRenderer(this);
 	    		
 		try {
-			UDPServerThread serverThread = new UDPServerThread();
-			serverThread.rnvsObjCtrlr = this;
-//			serverThread.start();
-			System.out.println("Runvas server online.");
+			serverThread = new UDPServerThread();
 		} catch (IOException e) {
-			System.err.println("Runvas server is offline!: " + e.getLocalizedMessage());
+			e.printStackTrace();
 		}
+//		serverThread = new RunvasObjectFileReader();
+		serverThread.rnvsObjCtrlr = this;
+		serverThread.serverOn = false;
 	}
 
 	@Override
 	public void incomingRunvasObject(RunVasObject o) {
-		System.out.println("handle incoming runvas object: "+o);
+		if(m_logOn) System.out.println("handle incoming runvas object: "+o);
 		if(runvasObjIdToStrip.containsKey(o.id)) {
 			runvasObjIdToStrip.get(o.id).addToStrip(o);
 		} else {
 			Strip p = new Strip();
 			p.addToStrip(o);
 			runvasObjIdToStrip.put(o.id, p);
-			model.getGameobjects().add(p);
-			model.getDynamicObjects().add(p);
+			List<IController> gameobjects = model.getGameobjects();
+			synchronized (gameobjects) {
+				gameobjects.add(p);
+			}
+			List<IController> dynamicObjects = model.getDynamicObjects();
+			synchronized (dynamicObjects) {
+				dynamicObjects.add(p);
+			}
 		}
 	}
 
@@ -134,14 +155,27 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 //	}
 
 	private void updateCameraPosition(long diff) {
-		if(!stickyCam) return;
+		if(!stickyCam && !m_spinView) return;
 		float diffInSec = (float)diff / 1000f;
 		Vector3D eyeLocation = model.getEyeLocation();
 		Vector3D lookAtLocation = model.getLookAtLocation();
 		Vector3D camDirUp = model.getCameraDirectionUp();
-		Vector3D.moveAVecToBVecByDiff(diffInSec, eyeLocation, model.DEFAULT_EYE_LOCATION);
 		Vector3D.moveAVecToBVecByDiff(diffInSec, lookAtLocation, Vector3D.origin);
-		Vector3D.moveAVecToBVecByDiff(diffInSec, camDirUp, Vector3D.Yaxis);
+		if(stickyCam) {
+			Vector3D.moveAVecToBVecByDiff(diffInSec, camDirUp, Vector3D.Yaxis);
+			Vector3D.moveAVecToBVecByDiff(diffInSec, eyeLocation, GameModel.DEFAULT_EYE_LOCATION);
+		} else if (m_spinView) {
+			float angle = ((float)m_spinViewCurrentAngle / 560f) * (float)Math.PI * 2f;
+			Vector3D.moveAVecToBVecByDiff(
+					diffInSec, 
+					eyeLocation, 
+					new Vector3D((float)Math.sin(angle)*SPIN_VIEW_RADIUS,
+							(float)Math.cos(angle)*SPIN_VIEW_RADIUS,
+							GameModel.DEFAULT_EYE_LOCATION.z*.5f));
+			m_spinViewCurrentAngle++;
+			m_spinViewCurrentAngle = m_spinViewCurrentAngle % 560;
+			Vector3D.moveAVecToBVecByDiff(diffInSec, camDirUp, Vector3D.Zaxis);
+		}
 		
 		/*		AbstractPlayerController player = model.getCurrentPlayer(); //.getPlayers().get(model.getCurrentPlayerObjectIndex());
 		if(player==null) return;
@@ -202,6 +236,7 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	public void keyPressed(KeyEvent e) {
 		if(e.character == 's') {
 			stickyCam = !stickyCam;
+			if(stickyCam) m_spinView = false;
 			return;
 		}
 		if(e.character == 'w') {
@@ -219,11 +254,53 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 			stickyCam = false;
 			return;
 		}
-		if(e.character == 't') {
-		    Strip strip = new Strip();
-		    runvasObjIdToStrip.put(1, strip);
-			model.getGameobjects().add(strip);
-			model.getDynamicObjects().add(strip);
+//		if(e.character == 't') {
+//		    Strip strip = new Strip();
+//		    runvasObjIdToStrip.put(1, strip);
+//			model.getGameobjects().add(strip);
+//			model.getDynamicObjects().add(strip);
+//			return;
+//		}
+		if(e.character == 'u') {
+			if(serverThread.serverOn) {
+				serverThread.serverOn = false;
+				try {
+					serverThread.join();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			} else {
+				serverThread.serverOn = true;
+				serverThread.start();
+			}
+			return;
+		}
+		if(e.character == 'd') {
+			m_drawModeOn = true;
+			return;
+		}
+		if(e.character == 'e') {
+			m_spinView = !m_spinView;
+			stickyCam = !m_spinView;
+			return;
+		}
+		if(e.character=='c') {
+			ArrayList<IController> rem = new ArrayList<IController>();
+			for (IController ic : model.getGameobjects()) {
+				if (ic instanceof Strip) {
+					Strip s = (Strip) ic;
+					rem.add(s);
+				}
+			}
+			synchronized (model.getGameobjects()) {
+				model.getGameobjects().removeAll(rem);
+				model.getDynamicObjects().removeAll(rem);
+			}
+			return;
+		}
+		if(e.character=='l') {
+			m_logOn = !m_logOn;
+			System.out.println("Log " + (m_logOn?"on":"off"));
 		}
 //		if (e.character == SWT.ESC) {
 //			lastMode = model.getMode();
@@ -288,6 +365,9 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	}*/
 
 	public void keyReleased(KeyEvent e) {
+		if(e.character == 'd') {
+			m_drawModeOn = false;
+		}
 //		if(model.getMode() == GameModel.Mode.PLAYER_IS_MOVING) {
 //			AbstractPlayerController player = model.getPlayers().get(model.getCurrentPlayerObjectIndex());
 //			if (player != null) player.handleKey(e,false);
@@ -314,6 +394,7 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 			stickyCam = false;
 			moveBack = true;
 		}
+		if(m_drawModeOn) m_drawModeOnStripId++;
 	}
 
 	public void mouseReleased(java.awt.event.MouseEvent e) {
@@ -327,34 +408,48 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 
 	public void mouseDragged(java.awt.event.MouseEvent e) {
 		String modifiersExText = MouseEvent.getModifiersExText(e.getModifiersEx());
-		Vector3D eyeLocation = model.getEyeLocation();
-		if(modifiersExText.equals("Button1")) {
-			if(m_lastPosX > 0 || m_laspPosY > 0) {
-				float dx = e.getX() - m_lastPosX;
-				float dy = e.getY() - m_laspPosY;
+		
+		float dx = e.getX() - m_lastPosX;
+		float dy = e.getY() - m_laspPosY;
+
+		if(m_drawModeOn) {
+			RunVasObject o = new RunVasObject();
+			o.id = m_drawModeOnStripId;
+			o.loc[0] = e.getX(); o.loc[1] = e.getY();
+			o.color[0] = 250;
+			o.size = 10;
+			o.speed[0] = dx;
+			o.speed[1] = dy;
+			
+			incomingRunvasObject(o);
+		} else {
+			Vector3D eyeLocation = model.getEyeLocation();
+			if(modifiersExText.equals("Button1")) {
+				if(m_lastPosX > 0 || m_laspPosY > 0) {
+		
+					Vector3D lookAtLocation = model.getLookAtLocation();
+					Vector3D left = lookAtLocation.minus(eyeLocation).crossProduct(model.getCameraDirectionUp()).getNormalized();
+					eyeLocation.setTo(eyeLocation.add(left.multiply(dx/-100f)));
 	
-				Vector3D lookAtLocation = model.getLookAtLocation();
-				Vector3D left = lookAtLocation.minus(eyeLocation).crossProduct(model.getCameraDirectionUp()).getNormalized();
-				eyeLocation.setTo(eyeLocation.add(left.multiply(dx/-100f)));
-
-				Vector3D up = model.getCameraDirectionUp(); //model.getLookAtLocation().minus(eyeLocation).crossProduct(model.getCameraDirectionUp());
-				eyeLocation.setTo(eyeLocation.add(up.multiply(dy/100f)));
-				model.setCameraDirectionUp(left.crossProduct(lookAtLocation.minus(eyeLocation)).getNormalized());
-
-//				eyeLocation.z += dy/100f;
-			}
-		} else if (modifiersExText.equals("Button3")) {
-			if(m_lastPosX > 0 || m_laspPosY > 0) {
-				float dx = e.getX() - m_lastPosX;
-//				float dy = e.getY() - m_laspPosY;
-				
-//				AbstractPlayerController player = model.getCurrentPlayer(); //.getPlayers().get(model.getCurrentPlayerObjectIndex());
-//				if(player != null) {
-					Vector3D fromEyeToPlayer = eyeLocation.minus(model.lookAtLocation);
-					eyeLocation.x += fromEyeToPlayer.x * (dx / 100f);
-					eyeLocation.y += fromEyeToPlayer.y * (dx / 100f);
-					eyeLocation.z += fromEyeToPlayer.z * (dx / 100f);
-//				}
+					Vector3D up = model.getCameraDirectionUp(); //model.getLookAtLocation().minus(eyeLocation).crossProduct(model.getCameraDirectionUp());
+					eyeLocation.setTo(eyeLocation.add(up.multiply(dy/100f)));
+					model.setCameraDirectionUp(left.crossProduct(lookAtLocation.minus(eyeLocation)).getNormalized());
+	
+	//				eyeLocation.z += dy/100f;
+				}
+			} else if (modifiersExText.equals("Button3")) {
+				if(m_lastPosX > 0 || m_laspPosY > 0) {
+	//				float dx = e.getX() - m_lastPosX;
+	//				float dy = e.getY() - m_laspPosY;
+					
+	//				AbstractPlayerController player = model.getCurrentPlayer(); //.getPlayers().get(model.getCurrentPlayerObjectIndex());
+	//				if(player != null) {
+						Vector3D fromEyeToPlayer = eyeLocation.minus(model.lookAtLocation);
+						eyeLocation.x += fromEyeToPlayer.x * (dx / 100f);
+						eyeLocation.y += fromEyeToPlayer.y * (dx / 100f);
+						eyeLocation.z += fromEyeToPlayer.z * (dx / 100f);
+	//				}
+				}
 			}
 		}
 		
@@ -415,7 +510,7 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 		//Grass rectangle
 	    Texture tex = null;
 		try {
-			tex = TextureIO.newTexture(new FileInputStream("grass.jpg"), true, "png");
+			tex = TextureIO.newTexture(new FileInputStream(CANVAS_TEXTURE_FILENAME), true, "png");
 		    tex.setTexParameteri(GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
 		    tex.setTexParameteri(GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 		} catch (GLException e) {
@@ -438,18 +533,20 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	    		fTex.disable();
 	    	}
 	    };
-	    dc.getModel().setLocation(Vector3D.origin);
+	    
+	    dc.getModel().setLocation(new Vector3D(0,0,-0.2f));
+	    dc.getModel().setScale(1f);
 	    ArrayList<Vertex> vs = dc.getModel().getVertices();
-	    Vertex a = new Vertex(-1,-1,0);
+	    Vertex a = new Vertex(-1f,-1f,0);
 	    a.setNormal(Vector3D.Zaxis);
 		vs.add(a);
-	    Vertex b = new Vertex(-1,1,0);
+	    Vertex b = new Vertex(1f,-1f,0);
 	    b.setNormal(Vector3D.Zaxis);
 		vs.add(b);
-	    Vertex c = new Vertex(1,1,0);
+	    Vertex c = new Vertex(1f,1f,0);
 	    c.setNormal(Vector3D.Zaxis);
 		vs.add(c);
-	    Vertex d = new Vertex(1,-1,0);
+	    Vertex d = new Vertex(-1f,1f,0);
 	    d.setNormal(Vector3D.Zaxis);
 		vs.add(d);
 	    ArrayList<Face> fs = dc.getModel().getQuadFaces();
@@ -459,5 +556,38 @@ public class GameController implements KeyListener, java.awt.event.MouseListener
 	    fc.setTexCoords(texC);
 		fs.add(fc);
 	    model.getGameobjects().add(dc);
+	    
+	    
+	    /*
+	    dc = new DefaultController();
+	    dc.getModel().setLocation(new Vector3D(-1f,0f,1f));
+	    vs = dc.getModel().getVertices();
+	    a = new Vertex(-1,0,0);
+	    a.setNormal(Vector3D.Zaxis);
+		vs.add(a);
+	    b = new Vertex(-1,0,1);
+	    b.setNormal(Vector3D.Zaxis);
+		vs.add(b);
+	    c = new Vertex(1,0,1);
+	    c.setNormal(Vector3D.Zaxis);
+		vs.add(c);
+	    d = new Vertex(1,0,0);
+	    d.setNormal(Vector3D.Zaxis);
+		vs.add(d);
+	    fs = dc.getModel().getQuadFaces();
+	    fc = Face.createQuadFace(a, b, c, d, new Vector3D(0,0,1), false);
+
+	    model.getGameobjects().add(dc);
+	    */
+	}
+
+	public void stopUDPThread() {
+		serverThread.serverOn = false;
+		serverThread.interrupt();
+		try {
+			serverThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
