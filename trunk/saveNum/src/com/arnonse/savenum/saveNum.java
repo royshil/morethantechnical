@@ -22,7 +22,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class saveNum extends Activity {
-
+ 
 	EditText phnNum;
 	Button btnAdd;
 	Button btnDial;
