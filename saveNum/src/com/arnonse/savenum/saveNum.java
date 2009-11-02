@@ -173,6 +173,13 @@ public class saveNum extends Activity {
 			audioman.setSpeakerphoneOn(false);
 			iHaveTurnedOnSpeakerphone=false;
 		}
+		
+		
+		if (prefs.getBoolean("autosave", false) && !phnNum.getText().equals(""))
+		{
+			ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+			clipboard.setText(phnNum.getText());
+		}
 	}
 
 	
