@@ -22,4 +22,5 @@
 <item>60</item>
 <item>120</item>
 </string-array>
+<string name="btnAddContact">Add Contact</string>
 </resources>
