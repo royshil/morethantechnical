@@ -8,6 +8,8 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Contacts.People;
+import android.provider.Contacts.Intents.Insert;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.Editable;
@@ -26,6 +28,7 @@ public class saveNum extends Activity {
 	EditText phnNum;
 	Button btnAdd;
 	Button btnDial;
+	Button btnAddContact;
 	private boolean monitorChange = true;
 	private static boolean iHaveTurnedOnSpeakerphone = false;
 	SharedPreferences prefs;
@@ -48,7 +51,7 @@ public class saveNum extends Activity {
 
 		btnAdd = (Button) findViewById(R.id.btnAdd);
 		btnDial = (Button) findViewById(R.id.btnDial);
-
+		btnAddContact = (Button) findViewById(R.id.btnAddContact);
 		if (clipboard.getText().toString().equals("")) {
 			btnAdd.setText(getString(R.string.btnSetText));
 		}
@@ -105,6 +108,15 @@ public class saveNum extends Activity {
 				performDial();
 			}
 
+		});
+		
+		btnAddContact.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View v)
+			{
+				if (!phnNum.getText().toString().equals(""))
+					AddContact(phnNum.getText().toString());
+			}
 		});
 	}
 
@@ -180,6 +192,14 @@ public class saveNum extends Activity {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 			clipboard.setText(phnNum.getText());
 		}
+	}
+	
+	private void AddContact(String number)
+	{
+		 Intent createIntent = new Intent(Intent.ACTION_INSERT_OR_EDIT);                        
+		 createIntent.setType(People.CONTENT_ITEM_TYPE);                        
+		 createIntent.putExtra(Insert.PHONE, number);
+		 startActivity(createIntent);
 	}
 
 	
