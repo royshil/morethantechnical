@@ -24,7 +24,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class saveNum extends Activity {
- 
+
 	EditText phnNum;
 	Button btnAdd;
 	Button btnDial;
@@ -42,12 +42,20 @@ public class saveNum extends Activity {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		audioman = (AudioManager) getSystemService(AUDIO_SERVICE);
 		telephoneman = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		
+
 		setContentView(R.layout.main);
 		setTheme(android.R.style.Theme_Dialog);
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 		phnNum = (EditText) findViewById(R.id.phnNum);
-		phnNum.setText(clipboard.getText());
+
+		if (!prefs.getBoolean("useClipboard", true))
+		{
+			phnNum.setText(prefs.getString("savedNum", ""));
+		}
+		else
+		{
+			phnNum.setText(clipboard.getText());
+		}
 
 		btnAdd = (Button) findViewById(R.id.btnAdd);
 		btnDial = (Button) findViewById(R.id.btnDial);
@@ -83,17 +91,18 @@ public class saveNum extends Activity {
 
 		btnAdd.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				if (btnAdd.getText().equals(getString(R.string.btnClear))) {
-					ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-					clipboard.setText("");
+				if (btnAdd.getText().equals(getString(R.string.btnClear))) 
+				{
+					SetText("");
 					phnNum.setText("");
 					btnAdd.setText(getString(R.string.btnSetText));
-				} else if (btnAdd.getText().equals(
+				} 
+				else if (btnAdd.getText().equals(
 						getString(R.string.btnSetText))) {
-					ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-					clipboard.setText(phnNum.getText());
+
+					SetText(phnNum.getText().toString());
 					showToast(getString(R.string.copied));
-					
+
 					InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);   
 					imm.hideSoftInputFromWindow(phnNum.getWindowToken(), 0);  
 
@@ -109,7 +118,7 @@ public class saveNum extends Activity {
 			}
 
 		});
-		
+
 		btnAddContact.setOnClickListener(new View.OnClickListener()
 		{
 			public void onClick(View v)
@@ -129,7 +138,7 @@ public class saveNum extends Activity {
 	public void showToast(String s) {
 		Toast.makeText(getBaseContext(), s, Toast.LENGTH_SHORT).show();
 	}
-	
+
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
@@ -143,7 +152,7 @@ public class saveNum extends Activity {
 		super.onResume();
 		adjustInputType();
 	}
-	
+
 	private void adjustInputType()
 	{
 		boolean allowFullString = prefs.getBoolean("allowString", false);
@@ -185,22 +194,35 @@ public class saveNum extends Activity {
 			audioman.setSpeakerphoneOn(false);
 			iHaveTurnedOnSpeakerphone=false;
 		}
-		
-		
+
+
 		if (prefs.getBoolean("autosave", false) && !phnNum.getText().equals(""))
+		{
+			SetText(phnNum.getText().toString());
+		}
+	}
+
+	private void AddContact(String number)
+	{
+		Intent createIntent = new Intent(Intent.ACTION_INSERT_OR_EDIT);                        
+		createIntent.setType(People.CONTENT_ITEM_TYPE);                        
+		createIntent.putExtra(Insert.PHONE, number);
+		startActivity(createIntent);
+	}
+	
+	private void SetText(String Text)
+	{
+		if (prefs.getBoolean("useClipboard", true))
 		{
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 			clipboard.setText(phnNum.getText());
 		}
-	}
-	
-	private void AddContact(String number)
-	{
-		 Intent createIntent = new Intent(Intent.ACTION_INSERT_OR_EDIT);                        
-		 createIntent.setType(People.CONTENT_ITEM_TYPE);                        
-		 createIntent.putExtra(Insert.PHONE, number);
-		 startActivity(createIntent);
+		else
+		{
+			prefs.edit().putString("savedNum", Text).commit();
+		}
+		
 	}
 
-	
+
 }
