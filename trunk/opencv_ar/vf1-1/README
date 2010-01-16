@@ -1,0 +1,24 @@
+Variable focal length solver.
+
+Before use, make sure you read and agree to the terms
+and conditions listed in the COPYRIGHT file.
+
+The C++ library is made from the following files:
+  vf_solve.cxx         Main routine.
+  vf_solve.h
+  vf_10_33.cxx         Generated code.
+  vf_10_33.h
+  vf_eig.cxx           Solves general real eigenproblem.
+  vf_eig.h
+  vf_qr.cxx            QR reduction with column pivoting.
+  vf_qr.h
+Call the function vf_solve(); all other functions are internal.
+You will need to link against LAPACK (+ BLAS), or to include
+the source or object files for DGEEV and DGEQP3 in the library.
+
+There is a very simple test program in testprog.cxx
+
+Compiling with GCC
+------------------
+Linking to the FORTRAN code can usually be accomplished using
+the linker options -llapack -lblas -lg2c.
