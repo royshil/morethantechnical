@@ -1,0 +1,34 @@
+Copyright Frederik Schaffalitzky, 2005. All Rights Reserved.
+
+Permission to use [*] this software for academic purposes is hereby
+granted without fee or royalty, subject to the following conditions.
+
+1. The software is provided "as is" by the copyright holder, with
+absolutely no actual or implied warranty of correctness, fitness,
+intellectual property ownership, or anything else whatsoever. You use
+the software entirely at your own risk. In no event shall the copyright
+holder be liable for any direct, indirect or perceived damage whatsoever
+connected with the use of this work.
+
+2. The software may not be distributed [*], whether in its original
+or modified form, without explicit written consent from the copyright
+holder.
+
+3. The copyright holder retains all copyright to the work.
+
+4. Any scholarly work, research or publication making use of this
+software must explicitly acknowledge the copyright holder. In the
+case of a publication, citation of the work, and authors thereof,
+titled "A Minimal Solution for Relative Pose with Unknown Focal Length"
+and published in the IEEE Conference on Computer Vision and Pattern
+Recognition in San Diego, 2005, is deemed sufficient acknowledgement.
+
+Permission to use or distribute [*] this software for commercial or
+military purposes, or under any conditions not covered by the conditions
+1-4 above, is NOT granted. Such permission may be obtained subject to
+explicit prior written consent from the copyright holder.
+
+[*] `Use' denotes any use whatsoever including downloading, compilation,
+execution and modification. `Distribution' includes any distribution of
+the software and any derived works such as object files, executable
+programs and libraries.

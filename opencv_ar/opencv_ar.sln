@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "opencv_ar", "opencv_ar\opencv_ar.vcproj", "{589C22EC-2BC7-47D8-AF2E-DB13844C388F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vf1-1", "vf1-1\vf1-1.vcproj", "{5B0BFE33-D1FF-48C7-A8A8-71DA30F9B543}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vgg_funcs", "vgg_funcs\vgg_funcs.vcproj", "{01B015A0-6447-4201-995E-F9D180DDFAA7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{589C22EC-2BC7-47D8-AF2E-DB13844C388F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{589C22EC-2BC7-47D8-AF2E-DB13844C388F}.Debug|Win32.Build.0 = Debug|Win32
+		{589C22EC-2BC7-47D8-AF2E-DB13844C388F}.Release|Win32.ActiveCfg = Release|Win32
+		{589C22EC-2BC7-47D8-AF2E-DB13844C388F}.Release|Win32.Build.0 = Release|Win32
+		{5B0BFE33-D1FF-48C7-A8A8-71DA30F9B543}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5B0BFE33-D1FF-48C7-A8A8-71DA30F9B543}.Debug|Win32.Build.0 = Debug|Win32
+		{5B0BFE33-D1FF-48C7-A8A8-71DA30F9B543}.Release|Win32.ActiveCfg = Release|Win32
+		{5B0BFE33-D1FF-48C7-A8A8-71DA30F9B543}.Release|Win32.Build.0 = Release|Win32
+		{01B015A0-6447-4201-995E-F9D180DDFAA7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{01B015A0-6447-4201-995E-F9D180DDFAA7}.Debug|Win32.Build.0 = Debug|Win32
+		{01B015A0-6447-4201-995E-F9D180DDFAA7}.Release|Win32.ActiveCfg = Release|Win32
+		{01B015A0-6447-4201-995E-F9D180DDFAA7}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
