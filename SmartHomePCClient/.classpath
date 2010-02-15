@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Java/swt-3.5.1-win32-x86/swt-debug.jar" sourcepath="C:/Java/swt-3.5.1-win32-x86/src.zip"/>
+	<classpathentry kind="lib" path="C:/Java/swt-3.5.1-win32-x86/swt.jar" sourcepath="C:/Java/swt-3.5.1-win32-x86/src.zip"/>
+	<classpathentry kind="con" path="SWT_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
