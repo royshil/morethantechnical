@@ -1,0 +1,272 @@
+package smarthome;
+
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Text;
+
+public class SmartHomeWidget {
+
+	private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="10,10"
+	private Group stations_grp = null;
+	private Composite station1_cmpst = null;
+	private Canvas canvas = null;
+	private Composite composite = null;
+	private Button checkBox = null;
+	private Composite composite3 = null;
+	private Button button = null;
+	private Button button1 = null;
+	private Label label = null;
+	private Composite station1_cmpst1 = null;
+	private Label label1 = null;
+	private Canvas canvas1 = null;
+	private Composite composite1 = null;
+	private Button checkBox1 = null;
+	private Composite station1_cmpst2 = null;
+	private Label label2 = null;
+	private Canvas canvas2 = null;
+	private Composite composite2 = null;
+	private Button checkBox3 = null;
+	private Label label3 = null;
+	private Button button2 = null;
+	private Button button3 = null;
+	public Text textArea = null;
+	private Label label4 = null;
+	private Button radioButton = null;
+	private Button radioButton1 = null;
+	private Button radioButton2 = null;
+	/**
+	 * This method initializes sShell
+	 * @param display 
+	 */
+	public void createSShell() {
+		GridData gridData8 = new GridData();
+		gridData8.horizontalAlignment = GridData.FILL;
+		gridData8.horizontalSpan = 2;
+		gridData8.verticalSpan = 2;
+		gridData8.heightHint = 100;
+		gridData8.verticalAlignment = GridData.CENTER;
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		sShell = new Shell();
+		sShell.setText("Smart Home Client");
+		sShell.setLayout(gridLayout);
+		createStations_grp();
+		createComposite3();
+		sShell.setSize(new Point(358, 325));
+		label4 = new Label(getsShell(), SWT.NONE);
+		label4.setText("Log");
+		Label filler = new Label(getsShell(), SWT.NONE);
+		textArea = new Text(getsShell(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+		textArea.setLayoutData(gridData8);
+	}
+
+	public Shell getsShell() {
+		return sShell;
+	}
+
+	/**
+	 * This method initializes stations_grp	
+	 *
+	 */
+	private void createStations_grp() {
+		GridLayout gridLayout1 = new GridLayout();
+		gridLayout1.numColumns = 3;
+		gridLayout1.horizontalSpacing = 6;
+		stations_grp = new Group(getsShell(), SWT.NONE);
+		stations_grp.setText("Stations");
+		createStation1_cmpst();
+		stations_grp.setLayout(gridLayout1);
+		createStation1_cmpst1();
+		createStation1_cmpst2();
+	}
+
+	/**
+	 * This method initializes station1_cmpst	
+	 *
+	 */
+	private void createStation1_cmpst() {
+		GridData gridData = new GridData();
+		gridData.grabExcessVerticalSpace = false;
+		gridData.horizontalIndent = 0;
+		gridData.heightHint = -1;
+		gridData.grabExcessHorizontalSpace = false;
+		RowLayout rowLayout = new RowLayout();
+		rowLayout.type = org.eclipse.swt.SWT.VERTICAL;
+		rowLayout.wrap = true;
+		rowLayout.pack = true;
+		rowLayout.spacing = 3;
+		rowLayout.marginTop = 3;
+		rowLayout.justify = false;
+		rowLayout.fill = false;
+		station1_cmpst = new Composite(stations_grp, SWT.BORDER);
+		radioButton = new Button(station1_cmpst, SWT.RADIO);
+		radioButton.setText("Station 1");
+		label = new Label(station1_cmpst, SWT.NONE);
+		label.setText("Temperature");
+		createCanvas();
+		station1_cmpst.setLayoutData(gridData);
+		station1_cmpst.setLayout(rowLayout);
+		createComposite();
+	}
+
+	/**
+	 * This method initializes canvas	
+	 *
+	 */
+	private void createCanvas() {
+		canvas = new Canvas(station1_cmpst, SWT.NONE);
+	}
+
+	/**
+	 * This method initializes composite	
+	 *
+	 */
+	private void createComposite() {
+		GridData gridData3 = new GridData();
+		gridData3.horizontalAlignment = GridData.BEGINNING;
+		gridData3.grabExcessHorizontalSpace = false;
+		gridData3.verticalAlignment = GridData.CENTER;
+		composite = new Composite(station1_cmpst, SWT.NONE);
+		composite.setLayout(new GridLayout());
+		checkBox = new Button(composite, SWT.CHECK);
+		checkBox.setText("Button");
+		checkBox.setLayoutData(gridData3);
+	}
+
+	/**
+	 * This method initializes composite3	
+	 *
+	 */
+	private void createComposite3() {
+		GridData gridData7 = new GridData();
+		gridData7.horizontalAlignment = GridData.FILL;
+		gridData7.verticalAlignment = GridData.CENTER;
+		GridData gridData6 = new GridData();
+		gridData6.horizontalAlignment = GridData.FILL;
+		gridData6.verticalAlignment = GridData.CENTER;
+		GridData gridData5 = new GridData();
+		gridData5.horizontalAlignment = GridData.FILL;
+		gridData5.verticalAlignment = GridData.CENTER;
+		GridData gridData4 = new GridData();
+		gridData4.horizontalAlignment = GridData.FILL;
+		gridData4.verticalAlignment = GridData.CENTER;
+		GridData gridData2 = new GridData();
+		gridData2.horizontalAlignment = GridData.CENTER;
+		gridData2.verticalAlignment = GridData.BEGINNING;
+		GridData gridData1 = new GridData();
+		gridData1.horizontalAlignment = GridData.FILL;
+		gridData1.verticalAlignment = GridData.CENTER;
+		composite3 = new Composite(getsShell(), SWT.NONE);
+		composite3.setLayout(new GridLayout());
+		composite3.setLayoutData(gridData2);
+		button = new Button(composite3, SWT.NONE);
+		button.setText("Test Stations");
+		button.setLayoutData(gridData4);
+		button1 = new Button(composite3, SWT.NONE);
+		button1.setText("Poll Temp");
+		button1.setLayoutData(gridData1);
+		label3 = new Label(composite3, SWT.NONE);
+		label3.setText("");
+		label3.setLayoutData(gridData5);
+		button2 = new Button(composite3, SWT.NONE);
+		button2.setText("Turn ON");
+		button2.setLayoutData(gridData6);
+		button3 = new Button(composite3, SWT.NONE);
+		button3.setText("Turn OFF");
+		button3.setLayoutData(gridData7);
+	}
+
+	/**
+	 * This method initializes station1_cmpst1	
+	 *
+	 */
+	private void createStation1_cmpst1() {
+		RowLayout rowLayout1 = new RowLayout();
+		rowLayout1.type = SWT.VERTICAL;
+		rowLayout1.justify = false;
+		rowLayout1.marginTop = 3;
+		rowLayout1.pack = true;
+		rowLayout1.spacing = 3;
+		rowLayout1.wrap = true;
+		rowLayout1.fill = false;
+		station1_cmpst1 = new Composite(stations_grp, SWT.BORDER);
+		station1_cmpst1.setLayout(rowLayout1);
+		radioButton1 = new Button(station1_cmpst1, SWT.RADIO);
+		radioButton1.setText("Station 2");
+		label1 = new Label(station1_cmpst1, SWT.NONE);
+		label1.setText("Temperature");
+		createCanvas1();
+		createComposite1();
+	}
+
+	/**
+	 * This method initializes canvas1	
+	 *
+	 */
+	private void createCanvas1() {
+		canvas1 = new Canvas(station1_cmpst1, SWT.NONE);
+	}
+
+	/**
+	 * This method initializes composite1	
+	 *
+	 */
+	private void createComposite1() {
+		composite1 = new Composite(station1_cmpst1, SWT.NONE);
+		composite1.setLayout(new GridLayout());
+		checkBox1 = new Button(composite1, SWT.CHECK);
+		checkBox1.setText("Button");
+	}
+
+	/**
+	 * This method initializes station1_cmpst2	
+	 *
+	 */
+	private void createStation1_cmpst2() {
+		RowLayout rowLayout2 = new RowLayout();
+		rowLayout2.type = SWT.VERTICAL;
+		rowLayout2.justify = false;
+		rowLayout2.marginTop = 3;
+		rowLayout2.pack = true;
+		rowLayout2.spacing = 3;
+		rowLayout2.wrap = true;
+		rowLayout2.fill = false;
+		station1_cmpst2 = new Composite(stations_grp, SWT.BORDER);
+		station1_cmpst2.setLayout(rowLayout2);
+		radioButton2 = new Button(station1_cmpst2, SWT.RADIO);
+		radioButton2.setText("Station 3");
+		label2 = new Label(station1_cmpst2, SWT.NONE);
+		label2.setText("Temperature");
+		createCanvas2();
+		createComposite2();
+	}
+
+	/**
+	 * This method initializes canvas2	
+	 *
+	 */
+	private void createCanvas2() {
+		canvas2 = new Canvas(station1_cmpst2, SWT.NONE);
+	}
+
+	/**
+	 * This method initializes composite2	
+	 *
+	 */
+	private void createComposite2() {
+		composite2 = new Composite(station1_cmpst2, SWT.NONE);
+		composite2.setLayout(new GridLayout());
+		checkBox3 = new Button(composite2, SWT.CHECK);
+		checkBox3.setText("Button");
+	}
+}
