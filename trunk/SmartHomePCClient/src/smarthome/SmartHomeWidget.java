@@ -18,7 +18,7 @@ public class SmartHomeWidget {
 
 	private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="10,10"
 	private Group stations_grp = null;
-	private Composite station1_cmpst = null;
+	public Composite station1_cmpst = null;
 	private Canvas canvas = null;
 	private Composite composite = null;
 	private Button checkBox = null;
@@ -26,12 +26,12 @@ public class SmartHomeWidget {
 	private Button button = null;
 	private Button button1 = null;
 	private Label label = null;
-	private Composite station1_cmpst1 = null;
+	public Composite station1_cmpst1 = null;
 	private Label label1 = null;
 	private Canvas canvas1 = null;
 	private Composite composite1 = null;
 	private Button checkBox1 = null;
-	private Composite station1_cmpst2 = null;
+	public Composite station1_cmpst2 = null;
 	private Label label2 = null;
 	private Canvas canvas2 = null;
 	private Composite composite2 = null;
