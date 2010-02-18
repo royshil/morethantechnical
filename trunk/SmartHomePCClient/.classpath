@@ -5,5 +5,16 @@
 	<classpathentry kind="lib" path="C:/Java/swt-3.5.1-win32-x86/swt-debug.jar" sourcepath="C:/Java/swt-3.5.1-win32-x86/src.zip"/>
 	<classpathentry kind="lib" path="C:/Java/swt-3.5.1-win32-x86/swt.jar" sourcepath="C:/Java/swt-3.5.1-win32-x86/src.zip"/>
 	<classpathentry kind="con" path="SWT_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Java/GiovynetSerialPort1.3/SerialPort.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Java/GiovynetSerialPort1.3/javadoc/"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Java/GiovynetSerialPort1.3"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Java/rxtx-2.1-7-bins-r2/RXTXcomm.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Java/rxtx-2.1-7-bins-r2/Windows/i368-mingw32"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
