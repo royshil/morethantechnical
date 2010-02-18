@@ -1,74 +1,49 @@
 package smarthome;
 
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
-public class SmartHomeMain implements Runnable {
-	private SerialPort serialPort;
-	private InputStream mInputFromPort;
-	private Thread listenerThread;
-	private boolean m_running;
+public class SmartHomeMain implements ISmartHomeGUI {
+	
+	public CommSmartHomeListener smartHomeListener;
+	protected boolean m_shouldCancel = false;
+	private SmartHomeWidget m_shell;
+	private Composite[] m_stations;
+
+	public SmartHomeMain(SmartHomeWidget shell) {
+		smartHomeListener = new CommSmartHomeListener(this);
+
+		m_shell = shell;
+		
+		m_stations = new Composite[] {m_shell.station1_cmpst,
+				m_shell.station1_cmpst1,m_shell.station1_cmpst2};
+		
+		redColor = new Color(Display.getDefault(), new RGB(255,0,0));
+		greenColor = new Color(Display.getDefault(), new RGB(0,255,0));
+
+		initWidget(shell);
+	}
 
 	public static void main(java.lang.String[] args) {
 		final Display display = new Display();
 		final SmartHomeWidget shell = new SmartHomeWidget();
 		shell.createSShell();
 		final Shell getsShell = shell.getsShell();
-		
-//		final int time = 500;
-//		Runnable timer = new Runnable() {
-//			public void run() {
-//				if (getsShell.isDisposed())
-//					return;
-//				Point point = display.getCursorLocation();
-//				Rectangle rect = getsShell.getBounds();
-//				if (rect.contains(point)) {
-//					shell.textArea.append("IN");
-//				} else {
-//					shell.textArea.append("OUT");
-//				}
-//				display.timerExec(time, this);
-//			}
-//		};
-//		display.timerExec(time, timer);
-
-		shell.station1_cmpst.setBackground(new Color(display, new RGB(255,0,0)));
-		shell.station1_cmpst1.setBackground(new Color(display, new RGB(255,0,0)));
-		shell.station1_cmpst2.setBackground(new Color(display, new RGB(255,0,0)));
-		shell.station1_cmpst.setEnabled(false);
-		shell.station1_cmpst1.setEnabled(false);
-		shell.station1_cmpst2.setEnabled(false);
+				
+		final SmartHomeMain main = new SmartHomeMain(shell);
 		
 		getsShell.open();
-
-		//TODO: any errors should be displayed on GUI
-		SmartHomeMain main = null;
-		try {
-			main = new SmartHomeMain(shell);
-//			main.startListener();
-		} catch (NoSuchPortException e) {
-			shell.textArea.append(e.getLocalizedMessage());
-//			e.printStackTrace();
-		} catch (PortInUseException e) {
-			shell.textArea.append(e.getLocalizedMessage());
-//			e.printStackTrace();
-		} catch (UnsupportedCommOperationException e) {
-			shell.textArea.append(e.getLocalizedMessage());
-//			e.printStackTrace();
-		}
 
 		while (!getsShell.isDisposed()) {
 			if (!display.readAndDispatch())
@@ -77,7 +52,7 @@ public class SmartHomeMain implements Runnable {
 		
 		if(main != null) {
 			try {
-				main.stopListener();
+				main.smartHomeListener.stopListener();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -86,95 +61,150 @@ public class SmartHomeMain implements Runnable {
 		display.dispose();
 	}
 
-	private void startListener() {
-		m_running = true;
-		listenerThread.start();
-	}
+	public Color redColor;//new Color(Display.getDefault(), new RGB(255,0,0));  //  @jve:decl-index=0:
+	public Color greenColor;//new Color(Display.getDefault(), new RGB(255,0,0));  //  @jve:decl-index=0:
 
-	private void stopListener() throws InterruptedException {
-		m_running = false;
-		listenerThread.join();
-		serialPort.close();
-	}
+	/**
+	 * initialize the widget appearance
+	 * @param shell
+	 */
+	private void initWidget(final SmartHomeWidget shell) {
+		final Shell getsShell = shell.getsShell();
+		getsShell.setBackgroundMode(SWT.INHERIT_FORCE);		
 
-	private SmartHomeWidget m_shell;
-	public SmartHomeMain(SmartHomeWidget shell) throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException {
-		m_shell = shell;
-		init();
-		listenerThread = new Thread(this);
-	}
+		for (int i = 0; i < 3; i++) stationDown(i);
 
-	private boolean init() throws NoSuchPortException, PortInUseException,
-			UnsupportedCommOperationException {
-		CommPortIdentifier portIdentifier = CommPortIdentifier
-				.getPortIdentifier("COM4");
-		if (portIdentifier.isCurrentlyOwned()) {
-			m_shell.textArea.append("Port in use!");
-			return false;
-		}
-
-		m_shell.textArea.append("name=" + portIdentifier.getName());
-
-		serialPort = (SerialPort) portIdentifier.open("ListPortClass", 38400);
-
-		int b = serialPort.getBaudRate();
-
-		m_shell.textArea.append("baud=" + Integer.toString(b));
-
-		serialPort.setSerialPortParams(38400, SerialPort.DATABITS_8,
-				SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-
-		try {
-			mInputFromPort = serialPort.getInputStream();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		serialPort.setDTR(false);
-		serialPort.setRTS(false);
-
-		return true;
-	}
-
-	private void startComListner() throws InterruptedException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(
-				mInputFromPort));
-
-		char[] cbuf = new char[128];
-		while(m_running) {
-			Thread.sleep(30);
-			int read;
-			try {
-				read = br.read(cbuf, 0, 128);
-				if (read == 0) {
-					continue;
+		shell.button_connect.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(SmartHomeMain.this.isM_shouldCancel()) {
+					SmartHomeMain.this.setM_shouldCancel(false);
+					shell.button_connect.setText("Connect");
+					shell.textArea.append("Trying to close thread.\n");
+					try {
+						SmartHomeMain.this.smartHomeListener.stopListener();
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				} else {
+					shell.button_connect.setText("Cancel");
+					SmartHomeMain.this.setM_shouldCancel(true);
+					try {
+						SmartHomeMain.this.smartHomeListener.startListener();
+					} catch (Exception e1) {
+						shell.textArea.append(e1.getLocalizedMessage());
+					}
 				}
-				final String string = new String(cbuf, 0, read);
-				System.out.print(string);
-				Display.getDefault().asyncExec(new Runnable() {
-		               public void run() {
-		            	   m_shell.textArea.append(string);
-		               }
-		            }
-				);
-			} catch (IOException e) {
-				;
 			}
+		});
+		
+		shell.button_R.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SmartHomeMain.this.smartHomeListener.setM_doReset(true);
+			}
+		});
+		
+		Listener listener = new Listener () {
+			public void handleEvent (Event e) {
+				Control [] children = getsShell.getChildren ();
+				for (int i=0; i<children.length; i++) {
+					Control child = children [i];
+					if (e.widget != child && child instanceof Button && (child.getStyle () & SWT.TOGGLE) != 0) {
+						((Button) child).setSelection (false);
+					}
+				}
+				((Button) e.widget).setSelection (true);
+			}
+		};
+		shell.radioButton_station1.addListener(SWT.Selection, listener);
+		shell.radioButton_station2.addListener(SWT.Selection, listener);
+		shell.radioButton_station3.addListener(SWT.Selection, listener);
+		
+		shell.button_turnON.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				SmartHomeMain.this.stationUp(1);
+			}
+		});
+		
+//		shell.button_connect.setEnabled(false);
+//		shell.combo.setEnabled(false);
+//		shell.button_R.setEnabled(false);
+//		Thread t = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				Display.getDefault().asyncExec(new Runnable() {
+//				       public void run() {
+//				    	   shell.textArea.append("querying OS for com ports... may take a while\n");
+//				       }
+//				    }
+//				);
+//				
+//				final Enumeration<?> en = CommPortIdentifier.getPortIdentifiers();
+//				
+//				while(en.hasMoreElements()) {
+//					Display.getDefault().asyncExec(new Runnable() {
+//					       public void run() {
+//									shell.combo.add(en.toString());
+//					       }
+//					    }
+//					);
+//				}
+//				Display.getDefault().asyncExec(new Runnable() {
+//				       public void run() {
+//							shell.textArea.append("DONE query\n");
+//							shell.button_connect.setEnabled(true);
+//							shell.combo.setEnabled(true);
+//							shell.button_R.setEnabled(true);
+//				       }
+//				}
+//				);
+//			}
+//		});
+//		t.start();
+		
+		for (int i = 1; i < 21; i++) {
+			shell.combo.add("COM"+i);
 		}
-
-		try {
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		shell.combo.select(0);
 	}
 
 	@Override
-	public void run() {
-		try {
-			startComListner();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public int getBaudRate() {
+		return Integer.parseInt(m_shell.text_baudRate.getText());
+	}
+
+	@Override
+	public String getCOMPort() {
+		return m_shell.combo.getItem(m_shell.combo.getSelectionIndex());
+	}
+
+	@Override
+	public void logMessage(final String s) {
+		Display.getDefault().asyncExec(new Runnable() {
+		       public void run() {
+		    	   m_shell.textArea.append(s + "\n");
+		       }
+	    	}
+		);
+	}
+
+	@Override
+	public void stationDown(int index) {
+		m_stations[index].setBackground(redColor);
+		m_stations[index].setEnabled(false);
+	}
+
+	@Override
+	public void stationUp(int index) {
+		m_stations[index].setBackground(greenColor);
+		m_stations[index].setEnabled(true);
+	}
+
+	public boolean isM_shouldCancel() {
+		return m_shouldCancel;
+	}
+	public void setM_shouldCancel(boolean mShouldCancel) {
+		m_shouldCancel = mShouldCancel;
 	}
 }

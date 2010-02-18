@@ -1,0 +1,214 @@
+package smarthome;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+/**
+ * A smart home listener that works with serial COM ports
+ * @author rshilkr
+ *
+ */
+public class CommSmartHomeListener extends AbstractSmartHomeListener implements Runnable, ISmartHomeMaster {
+	private SerialPort serialPort;
+	private InputStream mInputFromPort;
+	private OutputStream mOutputToPort;
+	private Thread listenerThread;
+	private boolean m_running;
+
+	private String m_comPort;
+	private int m_baudRate;
+	private boolean m_doReset = false;
+
+	public void startListener() throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException {
+		m_comPort = m_gui.getCOMPort();
+		m_baudRate = m_gui.getBaudRate();
+		m_running = true;
+		listenerThread.start();
+	}
+
+	public void stopListener() throws InterruptedException {
+		m_running = false;
+		if(listenerThread.isAlive()) {
+			logToTextArea("trying to shut down listener thread");
+			listenerThread.join(1000);
+			while(listenerThread.isAlive()) {
+				logToTextArea("Thread not dead yet - interrupt");
+				listenerThread.interrupt();
+				listenerThread.join(2000);
+			}
+			logToTextArea("Thread dead");
+		}
+	}
+
+	public CommSmartHomeListener(ISmartHomeGUI g) {
+		super(g);
+//		m_shell = shell;
+		listenerThread = new Thread(this);
+	}
+
+	private boolean init(String comPort, int baudRate) throws NoSuchPortException, PortInUseException,
+			UnsupportedCommOperationException, InterruptedException {
+		System.out.println("init()");
+		logToTextArea("Getting port identifier for " + comPort + ".. please wait");
+		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(comPort);
+		
+		if (portIdentifier.isCurrentlyOwned()) {
+			logToTextArea("Port in use!");
+			return false;
+		}
+
+		logToTextArea("Try to open port... "+comPort+"/"+baudRate+"/8N1");
+		serialPort = (SerialPort) portIdentifier.open("ListPortClass", baudRate);
+		
+		serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8,
+				SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+
+		try {
+			mInputFromPort = serialPort.getInputStream();
+			mOutputToPort = serialPort.getOutputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+			logToTextArea(e.getLocalizedMessage());
+			return false;
+		}
+		logToTextArea("Set DTR, Clear RTS");
+		serialPort.setRTS(false);
+		serialPort.setDTR(true);
+		
+		Thread.sleep(500);
+		
+		logToTextArea("Clear DTR");
+		serialPort.setDTR(false);
+
+		logToTextArea("Port open");
+		return true;
+	}
+
+	private void startComListner() throws InterruptedException {
+//		BufferedReader br = new BufferedReader(new InputStreamReader(mInputFromPort));
+//		InputStreamReader br = new InputStreamReader(mInputFromPort);
+//
+//		char[] cbuf = new char[128];
+//		CharBuffer cb = CharBuffer.wrap(cbuf);
+		byte[] bbuf = new byte[128];
+//		ByteBuffer bb = ByteBuffer.wrap(bbuf);
+		StringBuilder sb = new StringBuilder();
+		while(m_running) {
+			Thread.sleep(30);
+			int read;
+			try {
+//				read = br.read(cb);
+				read = mInputFromPort.read(bbuf, 0, bbuf.length);
+				if (read == 0) {
+					continue;
+				}
+//				System.out.println(new String(bbuf,0,read));
+				for (int i = 0; i < bbuf.length; i++) {
+					if(bbuf[i] == '\n') {
+						if(sb.length() > 0) {
+							//now sb contains a line
+							logToTextArea(sb.toString().trim());
+							sb = new StringBuilder();
+						}
+					} else if (bbuf[i] == '\r'){
+						//ignore CRs
+					} else {
+						sb.append((char)bbuf[i]);
+					}
+				}
+			} catch (IOException e) {
+				;
+			}
+			
+			if(m_doReset) {
+				logToTextArea("Set DTR, Clear RTS");
+				serialPort.setDTR(true);
+				
+				Thread.sleep(500);
+				
+				logToTextArea("Clear DTR");
+				serialPort.setDTR(false);
+				
+				m_doReset = false;
+			}
+		}
+
+		try {
+//			br.close();
+			mInputFromPort.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		logToTextArea("Listener thread running");
+		try {
+			if(!init(m_comPort,m_baudRate)) {
+				logToTextArea("Error opening listener port");
+			} else {
+				startComListner();
+			}
+		} catch (final Exception e) {
+			e.printStackTrace();
+			logToTextArea(e.getLocalizedMessage());
+		} finally {
+			logToTextArea("Closing port");
+			serialPort.close();
+			logToTextArea("Port closed.");
+		}
+	}
+
+	private void logToTextArea(final String string) {
+		m_gui.logMessage(string);
+	}
+	
+	public void setM_running(boolean mRunning) {
+		m_running = mRunning;
+	}
+	public boolean isM_doReset() {
+		return m_doReset;
+	}
+
+	public void setM_doReset(boolean mDoReset) {
+		m_doReset = mDoReset;
+	}
+
+	static final String pollTemplate = "m=poll_%d";
+	static final String testTemplate = "m=test_%d";
+	static final String toggleTemplate = "m=toggle_%d_%d_%d";
+	
+	@Override
+	public void poll(int index) {
+		byte[] buf = String.format(pollTemplate, index).getBytes();
+		writeToPort(buf);
+	}
+
+	@Override
+	public void testStation(int index) {
+		byte[] buf = String.format(testTemplate, index).getBytes();
+		writeToPort(buf);
+	}
+
+	@Override
+	public void toggle(int index, int switchNum, boolean onOff) {
+		byte[] buf = String.format(toggleTemplate, index,switchNum,onOff?1:0).getBytes();
+		writeToPort(buf);
+	}
+
+	private void writeToPort(byte[] buf) {
+		try {
+			mOutputToPort.write(buf);
+		} catch (IOException e) {
+			logToTextArea("ERROR: " + e.getLocalizedMessage());
+		}
+	}
+}
