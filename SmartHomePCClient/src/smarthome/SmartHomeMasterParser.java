@@ -1,6 +1,5 @@
 package smarthome;
 
-import java.io.Console;
 import java.util.StringTokenizer;
 
 public class SmartHomeMasterParser {

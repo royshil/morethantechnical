@@ -84,7 +84,8 @@ public class SmartHomeMain implements ISmartHomeGUI {
 	 */
 	private void initWidget(final SmartHomeWidget shell) {
 		final Shell getsShell = shell.getsShell();
-		getsShell.setBackgroundMode(SWT.INHERIT_FORCE);		
+		getsShell.setBackgroundMode(SWT.INHERIT_FORCE);	
+		shell.master_group.setBackgroundMode(SWT.INHERIT_NONE);
 
 		for (int i = 0; i < 3; i++) stationDown(i);
 
@@ -95,19 +96,31 @@ public class SmartHomeMain implements ISmartHomeGUI {
 					SmartHomeMain.this.setM_shouldCancel(false);
 					shell.button_connect.setText("Connect");
 					shell.textArea.append("Trying to close thread.\n");
-					try {
-						SmartHomeMain.this.smartHomeListener.stopListener();
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+					shell.combo.setEnabled(true);
+					if(shell.combo.getItem(shell.combo.getSelectionIndex()).equals("Simulator")) {
+						simulatorThread.interrupt();
+					} else {
+						try {
+							SmartHomeMain.this.smartHomeListener.stopListener();
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
 					}
 					shell.master_group.setBackground(defaultBackground);
+					shell.combo.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+					shell.text_baudRate.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 				} else {
 					shell.button_connect.setText("Cancel");
 					SmartHomeMain.this.setM_shouldCancel(true);
-					try {
-						SmartHomeMain.this.smartHomeListener.startListener();
-					} catch (Exception e1) {
-						shell.textArea.append(e1.getLocalizedMessage());
+					shell.combo.setEnabled(false);
+					if(shell.combo.getItem(shell.combo.getSelectionIndex()).equals("Simulator")) {
+						simulatorThread.start();
+					} else {
+						try {
+							SmartHomeMain.this.smartHomeListener.startListener();
+						} catch (Exception e1) {
+							shell.textArea.append(e1.getLocalizedMessage());
+						}
 					}
 				}
 			}
@@ -185,6 +198,7 @@ public class SmartHomeMain implements ISmartHomeGUI {
 		for (int i = 1; i < 21; i++) {
 			shell.combo.add("COM"+i);
 		}
+		shell.combo.add("Simulator");
 		shell.combo.select(0);
 		
 		PaintListener pl = new PaintListener() {

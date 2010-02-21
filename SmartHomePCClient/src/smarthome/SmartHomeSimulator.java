@@ -12,6 +12,14 @@ public class SmartHomeSimulator implements Runnable {
 	public void run() {
 		gui.logMessage("Simulator running");
 		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e1) {
+//			e1.printStackTrace();
+			return;
+		}
+		gui.master_online();
+		
 		boolean[] upstations = new boolean[3];
 		for (int i = 0; i < 3; i++) {
 			upstations[i] = (Math.random()>0.5)?true:false;
@@ -33,6 +41,10 @@ public class SmartHomeSimulator implements Runnable {
 //				e.printStackTrace();
 				break;
 			}
+		}
+		
+		for (int i = 0; i < 3; i++) {
+			if(upstations[i]) gui.stationDown(i);
 		}
 		gui.logMessage("Simulator done");
 	}
