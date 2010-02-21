@@ -27,4 +27,21 @@ public interface ISmartHomeGUI {
 	 * @return
 	 */
 	int getBaudRate();
+	
+	/**
+	 * set the temperature read of the station
+	 * @param index
+	 * @param temp
+	 */
+	void stationTemp(int index, int temp);
+	/**
+	 * show user that master module is responsive
+	 */
+	void master_online();
+	/**
+	 * show an error to the user
+	 * @param string
+	 * @param line
+	 */
+	void showError(String title, String description);
 }

@@ -25,6 +25,8 @@ public class CommSmartHomeListener extends AbstractSmartHomeListener implements 
 	private String m_comPort;
 	private int m_baudRate;
 	private boolean m_doReset = false;
+	
+	private SmartHomeMasterParser parser;
 
 	public void startListener() throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException {
 		m_comPort = m_gui.getCOMPort();
@@ -51,6 +53,8 @@ public class CommSmartHomeListener extends AbstractSmartHomeListener implements 
 		super(g);
 //		m_shell = shell;
 		listenerThread = new Thread(this);
+		
+		parser = new SmartHomeMasterParser(g);
 	}
 
 	private boolean init(String comPort, int baudRate) throws NoSuchPortException, PortInUseException,
@@ -97,32 +101,40 @@ public class CommSmartHomeListener extends AbstractSmartHomeListener implements 
 //
 //		char[] cbuf = new char[128];
 //		CharBuffer cb = CharBuffer.wrap(cbuf);
-		byte[] bbuf = new byte[128];
+//		byte[] bbuf = new byte[128];
 //		ByteBuffer bb = ByteBuffer.wrap(bbuf);
 		StringBuilder sb = new StringBuilder();
 		while(m_running) {
-			Thread.sleep(30);
-			int read;
+			Thread.sleep(1);
+//			int read;
 			try {
 //				read = br.read(cb);
-				read = mInputFromPort.read(bbuf, 0, bbuf.length);
-				if (read == 0) {
+//				read = mInputFromPort.read(bbuf, 0, bbuf.length);
+				int c = mInputFromPort.read();
+				if (c < 0) {
 					continue;
 				}
 //				System.out.println(new String(bbuf,0,read));
-				for (int i = 0; i < bbuf.length; i++) {
-					if(bbuf[i] == '\n') {
+//				for (int i = 0; i < bbuf.length; i++) {
+					if(c == '\n') {
 						if(sb.length() > 0) {
 							//now sb contains a line
-							logToTextArea(sb.toString().trim());
+							String line = sb.toString().trim();
+
+							if(line.startsWith("pc")) {
+								logToTextArea(line);
+								
+								parser.parseMasterCommand(line);
+							}
+							
 							sb = new StringBuilder();
 						}
-					} else if (bbuf[i] == '\r'){
+					} else if (c == '\r'){
 						//ignore CRs
 					} else {
-						sb.append((char)bbuf[i]);
+						sb.append((char)c);
 					}
-				}
+//				}
 			} catch (IOException e) {
 				;
 			}
