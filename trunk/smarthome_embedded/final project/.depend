@@ -1,0 +1,14 @@
+client_main.o: client_main.c pre_emptive_os/api/osapi.h \
+  pre_emptive_os/api/../api/general.h pre_emptive_os/api/general.h \
+  startup/printf_P.h startup/config.h startup/consol.h startup/ea_init.h \
+  startup/lpc2xxx.h startup/consol.h testXBee.h uart.h \
+  startup/../pre_emptive_os/api/general.h i2c.h smarthome_protocol.c
+testXBee.o: testXBee.c pre_emptive_os/api/osapi.h \
+  pre_emptive_os/api/../api/general.h pre_emptive_os/api/general.h \
+  startup/printf_P.h startup/config.h startup/consol.h startup/lpc2xxx.h \
+  startup/consol.h uart.h startup/../pre_emptive_os/api/general.h \
+  testXBee.h
+uart.o: uart.c pre_emptive_os/api/general.h startup/lpc2xxx.h uart.h \
+  startup/../pre_emptive_os/api/general.h irq/irqUart.h
+i2c.o: i2c.c i2c.h pre_emptive_os/api/general.h startup/lpc2xxx.h \
+  startup/../startup/config.h

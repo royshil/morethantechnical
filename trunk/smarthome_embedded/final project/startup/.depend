@@ -1,0 +1,3 @@
+consol.o: consol.c lpc2xxx.h config.h consol.h framework.h
+framework.o: framework.c lpc2xxx.h config.h framework.h consol.h
+startup.o: startup.S config.h
