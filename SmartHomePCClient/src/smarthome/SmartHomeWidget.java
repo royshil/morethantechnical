@@ -1,27 +1,25 @@
 package smarthome;
 
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 public class SmartHomeWidget {
 
 	private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="10,10"
 	private Group stations_grp = null;
 	public Composite station1_cmpst = null;
-	private Canvas canvas = null;
+	public Canvas canvas = null;
 	private Composite composite = null;
 	private Button checkBox = null;
 	private Composite composite3 = null;
@@ -30,12 +28,12 @@ public class SmartHomeWidget {
 	private Label label = null;
 	public Composite station1_cmpst1 = null;
 	private Label label1 = null;
-	private Canvas canvas1 = null;
+	public Canvas canvas1 = null;
 	private Composite composite1 = null;
 	private Button checkBox1 = null;
 	public Composite station1_cmpst2 = null;
 	private Label label2 = null;
-	private Canvas canvas2 = null;
+	public Canvas canvas2 = null;
 	private Composite composite2 = null;
 	private Button checkBox3 = null;
 	private Label label3 = null;
@@ -46,7 +44,7 @@ public class SmartHomeWidget {
 	public Button radioButton_station1 = null;
 	public Button radioButton_station2 = null;
 	public Button radioButton_station3 = null;
-	private Group group = null;
+	public Group master_group = null;
 	private Label label5 = null;
 	private Label label7 = null;
 	public Text text_baudRate = null;
@@ -126,7 +124,7 @@ public class SmartHomeWidget {
 		rowLayout.justify = false;
 		rowLayout.fill = false;
 		station1_cmpst = new Composite(stations_grp, SWT.BORDER);
-		radioButton_station1 = new Button(station1_cmpst, SWT.RADIO);
+		radioButton_station1 = new Button(station1_cmpst, SWT.RADIO | SWT.TOGGLE);
 		radioButton_station1.setText("Station 1");
 		label = new Label(station1_cmpst, SWT.NONE);
 		label.setText("Temperature");
@@ -142,6 +140,7 @@ public class SmartHomeWidget {
 	 */
 	private void createCanvas() {
 		canvas = new Canvas(station1_cmpst, SWT.NONE);
+		canvas.setData("name", new Integer(0));
 	}
 
 	/**
@@ -219,7 +218,7 @@ public class SmartHomeWidget {
 		rowLayout1.fill = false;
 		station1_cmpst1 = new Composite(stations_grp, SWT.BORDER);
 		station1_cmpst1.setLayout(rowLayout1);
-		radioButton_station2 = new Button(station1_cmpst1, SWT.RADIO);
+		radioButton_station2 = new Button(station1_cmpst1, SWT.RADIO| SWT.TOGGLE);
 		radioButton_station2.setText("Station 2");
 		label1 = new Label(station1_cmpst1, SWT.NONE);
 		label1.setText("Temperature");
@@ -233,6 +232,7 @@ public class SmartHomeWidget {
 	 */
 	private void createCanvas1() {
 		canvas1 = new Canvas(station1_cmpst1, SWT.NONE);
+		canvas1.setData("name", new Integer(1));
 	}
 
 	/**
@@ -261,7 +261,7 @@ public class SmartHomeWidget {
 		rowLayout2.fill = false;
 		station1_cmpst2 = new Composite(stations_grp, SWT.BORDER);
 		station1_cmpst2.setLayout(rowLayout2);
-		radioButton_station3 = new Button(station1_cmpst2, SWT.RADIO);
+		radioButton_station3 = new Button(station1_cmpst2, SWT.RADIO| SWT.TOGGLE);
 		radioButton_station3.setText("Station 3");
 		label2 = new Label(station1_cmpst2, SWT.NONE);
 		label2.setText("Temperature");
@@ -275,6 +275,7 @@ public class SmartHomeWidget {
 	 */
 	private void createCanvas2() {
 		canvas2 = new Canvas(station1_cmpst2, SWT.NONE);
+		canvas2.setData("name", new Integer(2));
 	}
 
 	/**
@@ -310,22 +311,22 @@ public class SmartHomeWidget {
 		gridData9.horizontalAlignment = GridData.FILL;
 		gridData9.verticalAlignment = GridData.CENTER;
 		gridData9.grabExcessHorizontalSpace = true;
-		group = new Group(getsShell(), SWT.NONE);
-		group.setText("Master");
-		group.setLayout(gridLayout2);
-		group.setLayoutData(gridData9);
-		label5 = new Label(group, SWT.NONE);
+		master_group = new Group(getsShell(), SWT.NONE);
+		master_group.setText("Master");
+		master_group.setLayout(gridLayout2);
+		master_group.setLayoutData(gridData9);
+		label5 = new Label(master_group, SWT.NONE);
 		label5.setText("COM port");
 		createCombo();
-		label7 = new Label(group, SWT.NONE);
+		label7 = new Label(master_group, SWT.NONE);
 		label7.setText("Baud");
-		text_baudRate = new Text(group, SWT.BORDER);
+		text_baudRate = new Text(master_group, SWT.BORDER);
 		text_baudRate.setText("38400");
 		text_baudRate.setLayoutData(gridData13);
-		button_connect = new Button(group, SWT.NONE);
+		button_connect = new Button(master_group, SWT.NONE);
 		button_connect.setText("Connect");
 		button_connect.setLayoutData(gridData11);
-		button_R = new Button(group, SWT.NONE);
+		button_R = new Button(master_group, SWT.NONE);
 		button_R.setText("R");
 	}
 
@@ -334,6 +335,6 @@ public class SmartHomeWidget {
 	 *
 	 */
 	private void createCombo() {
-		combo = new Combo(group, SWT.NONE);
+		combo = new Combo(master_group, SWT.NONE);
 	}
 }
