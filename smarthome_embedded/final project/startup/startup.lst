@@ -1,0 +1,510 @@
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 1
+
+
+   1              	# 1 "startup.S"
+   1              	#
+   1              	...
+   0              	
+   0              	
+   2              	# *** Startup Code (executed after Reset) ***
+   3              	#
+   4              	
+   5              	#include "config.h"
+   1              	/******************************************************************************
+   6              	
+   7              	# Standard definitions of Mode bits and Interrupt (I & F) flags in PSRs
+   8              	
+   9              	        .equ    Mode_USR,       0x10
+  10              	        .equ    Mode_FIQ,       0x11
+  11              	        .equ    Mode_IRQ,       0x12
+  12              	        .equ    Mode_SVC,       0x13
+  13              	        .equ    Mode_ABT,       0x17
+  14              	        .equ    Mode_UND,       0x1B
+  15              	        .equ    Mode_SYS,       0x1F
+  16              	
+  17              	        .equ    I_Bit,          0x80        /* when I bit is set, IRQ is disabled */
+  18              	        .equ    F_Bit,          0x40        /* when F bit is set, FIQ is disabled */
+  19              	
+  20              	        .equ    sram_bottom, SRAM_SADDR
+  21              	        .equ    sram_top,    SRAM_TOP
+  22              	        .equ    stackTop,    SRAM_TOP
+  23              	
+  24              	#define VAL_PLLCFG_MSEL  ((PLL_MUL - 1) << 0)
+  25              	#if (PLL_DIV == 1)
+  26              	#define PLL_DIV_VALUE 0x00
+  27              	#elif (PLL_DIV == 2)
+  28              	#define PLL_DIV_VALUE 0x01
+  29              	#elif (PLL_DIV == 4)
+  30              	#define PLL_DIV_VALUE 0x10
+  31              	#elif (PLL_DIV == 8)
+  32              	#define PLL_DIV_VALUE 0x11
+  33              	#endif
+  34              	#define VAL_PLLCFG_PSEL  (PLL_DIV_VALUE << 5)
+  35              	#define VAL_PLLCFG       (VAL_PLLCFG_MSEL | VAL_PLLCFG_PSEL)
+  36              	
+  37              	# Phase Locked Loop (PLL) definitions
+  38              	        .equ    PLL_BASE,       0xE01FC080  /* PLL Base Address */
+  39              	        .equ    PLLCON_OFS,     0x00        /* PLL Control Offset*/
+  40              	        .equ    PLLCFG_OFS,     0x04        /* PLL Configuration Offset */
+  41              	        .equ    PLLSTAT_OFS,    0x08        /* PLL Status Offset */
+  42              	        .equ    PLLFEED_OFS,    0x0C        /* PLL Feed Offset */
+  43              	        .equ    PLLCON_PLLE,    (1<<0)      /* PLL Enable */
+  44              	        .equ    PLLCON_PLLC,    (1<<1)      /* PLL Connect */
+  45              	        .equ    PLLSTAT_PLOCK,  (1<<10)     /* PLL Lock Status */
+  46              	
+  47              	#define HANDLER(HandlerLabel,HandleLabel) \
+  48              	HandlerLabel:                   ;\
+  49              	        sub   sp, sp, #4        ;\
+  50              	        stmfd sp!, {r0}         ;\
+  51              	        ldr   r0, =HandleLabel  ;\
+  52              	        ldr   r0, [r0]          ;\
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 2
+
+
+  53              	        str   r0, [sp,#4]       ;\
+  54              	        ldmfd sp!, {r0,pc}
+  55              	
+  56              	# Starupt Code must be linked first at Address at which it expects to run.
+  57              	
+  58              	        .text
+  59              	        .arm
+  60              	# ******************************************************************************
+  61              	#   Declare external function
+  62              	# ******************************************************************************
+  63              	        .extern lowLevelInit
+  64              	        .extern exceptionHandlerInit
+  65              	
+  66              	        .global _startup
+  67              	        .func   _startup
+  68              	_startup:
+  69              	
+  70              	# Exception Vectors
+  71              	# Mapped to Address 0.
+  72              	
+  73              	Vectors:
+  74              	_vectors:
+  75              	# If vectors are in FLASH, starting at 0x00000000
+  76              	#if (MAM_MAP == 1)
+  77:startup.S     ****                 B handleReset               /* jump to reset code              */
+  78:startup.S     ****                 B HandlerUndef              /* handlerUndef                    */
+  79:startup.S     ****                 B HandlerSWI                /* SWI interrupt handler           */
+  80:startup.S     ****                 B HandlerPabort             /* handlerPAbort                   */
+  81:startup.S     ****                 B HandlerDabort             /* handlerDAbort                   */
+  82:startup.S     ****                 NOP                         /* Reserved Vector                 */
+  83              	#if (IRQ_HANDLER == 0)
+  84:startup.S     ****                 B HandlerIRQ                /* handlerIRQ                      */
+  85              	#else
+  86              	                LDR PC,[PC,#-0xFF0]         /* jump to address supplied by VIC */
+  87              	#endif
+  88:startup.S     ****                 B HandlerFIQ                /* handlerFIQ                      */
+  89              	
+  90              	# Create handlers
+  91:startup.S     **** HANDLER(HandlerUndef,  HandleUndef)
+  92:startup.S     **** HANDLER(HandlerSWI,    HandleSWI)
+  93:startup.S     **** HANDLER(HandlerPabort, HandlePabort)
+  94:startup.S     **** HANDLER(HandlerDabort, HandleDabort)
+  95              	#if (IRQ_HANDLER == 0)
+  96:startup.S     **** HANDLER(HandlerIRQ,    HandleIRQ)
+  97              	#endif
+  98:startup.S     **** HANDLER(HandlerFIQ,    HandleFIQ)
+  99              	
+ 100              	# If vectors are in RAM, starting at 0x40000000
+ 101              	#else
+ 102              	                LDR PC,[PC,#resetHandlerAddress - . - 8]    /* handle reset                      */
+ 103              	                LDR PC,[PC,#undefHandlerAddress - . - 8]    /* handlerUndef                      */
+ 104              	                LDR PC,[PC,#swiHandlerAddress - . - 8]      /* SWI interrupt handler             */
+ 105              	                LDR PC,[PC,#pabortHandlerAddress - . - 8]   /* handlerPAbort                     */
+ 106              	                LDR PC,[PC,#dabortHandlerAddress - . - 8]   /* handlerDAbort                     */
+ 107              	                NOP                                         /* Reserved Vector                   */
+ 108              	#if (IRQ_HANDLER == 0)
+ 109              	                LDR PC,[PC,#irqHandlerAddress - . - 8]      /* jump to common irq handler        */
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 3
+
+
+ 110              	#else
+ 111              	                LDR PC,[PC,#-0xFF0]                         /* jump to address supplied from VIC */
+ 112              	#endif
+ 113              	                LDR PC,[PC,#fiqHandlerAddress - . - 8]      /* handlerFIQ                        */
+ 114              	
+ 115              	resetHandlerAddress:
+ 116              	  .word handleReset
+ 117              	
+ 118              	undefHandlerAddress:
+ 119              	  .word 0
+ 120              	
+ 121              	swiHandlerAddress:
+ 122              	  .word 0
+ 123              	
+ 124              	pabortHandlerAddress:
+ 125              	  .word 0
+ 126              	
+ 127              	dabortHandlerAddress:
+ 128              	  .word 0
+ 129              	
+ 130              	irqHandlerAddress:
+ 131              	  .word 0
+ 132              	
+ 133              	fiqHandlerAddress:
+ 134              	  .word 0
+ 135              	
+ 136              	#endif
+ 137              	
+ 138              	# Reset Handler
+ 139              	handleReset:
+ 140              	
+ 141              	#if (USE_PLL == 1)
+ 142:startup.S     ****                 LDR     R0, =PLL_BASE
+ 143:startup.S     ****                 MOV     R1, #0xAA
+ 144:startup.S     ****                 MOV     R2, #0x55
+ 145              	
+ 146              	# Disable PLL before programming (in case it was enabled before)
+ 147:startup.S     ****                 MOV     R3, #0
+ 148:startup.S     ****                 STR     R3, [R0, #PLLCON_OFS]
+ 149:startup.S     ****                 STR     R1, [R0, #PLLFEED_OFS]
+ 150:startup.S     ****                 STR     R2, [R0, #PLLFEED_OFS]
+ 151              	
+ 152              	# Wait for 		
+ 153              	# Configure and Enable PLL
+ 154:startup.S     ****                 MOV     R3, #VAL_PLLCFG
+ 155:startup.S     ****                 STR     R3, [R0, #PLLCFG_OFS] 
+ 156:startup.S     ****                 MOV     R3, #PLLCON_PLLE
+ 157:startup.S     ****                 STR     R3, [R0, #PLLCON_OFS]
+ 158:startup.S     ****                 STR     R1, [R0, #PLLFEED_OFS]
+ 159:startup.S     ****                 STR     R2, [R0, #PLLFEED_OFS]
+ 160              	
+ 161              	# Wait until PLL Locked
+ 162:startup.S     **** PLL_Loop:       LDR     R3, [R0, #PLLSTAT_OFS]
+ 163:startup.S     ****                 ANDS    R3, R3, #PLLSTAT_PLOCK
+ 164:startup.S     ****                 BEQ     PLL_Loop
+ 165              	
+ 166              	# Switch to PLL Clock
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 4
+
+
+ 167:startup.S     ****                 MOV     R3, #(PLLCON_PLLE | PLLCON_PLLC)
+ 168:startup.S     ****                 STR     R3, [R0, #PLLCON_OFS]
+ 169:startup.S     ****                 STR     R1, [R0, #PLLFEED_OFS]
+ 170:startup.S     ****                 STR     R2, [R0, #PLLFEED_OFS]
+ 171              	#endif
+ 172              	
+ 173              	
+ 174              	# Setup Stack for each mode
+ 175:startup.S     ****                 LDR     R0, =stackTop
+ 176              	
+ 177              	#  Enter Undefined Instruction Mode and set its Stack Pointer
+ 178:startup.S     ****                 MSR     CPSR_c, #Mode_UND|I_Bit|F_Bit
+ 179:startup.S     ****                 MOV     SP, R0
+ 180:startup.S     ****                 SUB     R0, R0, #stackSize_UND
+ 181              	
+ 182              	#  Enter Abort Mode and set its Stack Pointer
+ 183:startup.S     ****                 MSR     CPSR_c, #Mode_ABT|I_Bit|F_Bit
+ 184:startup.S     ****                 MOV     SP, R0
+ 185:startup.S     ****                 SUB     R0, R0, #stackSize_ABT
+ 186              	
+ 187              	#  Enter FIQ Mode and set its Stack Pointer
+ 188:startup.S     ****                 MSR     CPSR_c, #Mode_FIQ|I_Bit|F_Bit
+ 189:startup.S     ****                 MOV     SP, R0
+ 190:startup.S     ****                 SUB     R0, R0, #stackSize_FIQ
+ 191              	
+ 192              	#  Enter IRQ Mode and set its Stack Pointer
+ 193:startup.S     ****                 MSR     CPSR_c, #Mode_IRQ|I_Bit|F_Bit
+ 194:startup.S     ****                 MOV     SP, R0
+ 195:startup.S     ****                 SUB     R0, R0, #stackSize_IRQ
+ 196              	
+ 197              	#  Enter Supervisor Mode and set its Stack Pointer
+ 198:startup.S     ****                 MSR     CPSR_c, #Mode_SVC|I_Bit|F_Bit
+ 199:startup.S     ****                 MOV     SP, R0
+ 200:startup.S     ****                 SUB     R0, R0, #stackSize_SVC
+ 201              	
+ 202              	#  Enter System Mode and set its Stack Pointer
+ 203:startup.S     ****                 MSR     CPSR_c, #Mode_SYS|I_Bit|F_Bit
+ 204:startup.S     ****                 MOV     SP, R0
+ 205              	
+ 206              	#  Setup a default Stack Limit (when compiled with "-mapcs-stack-check")
+ 207:startup.S     ****                 SUB     SL, SP, #stackSize_SYS
+ 208              	
+ 209              	#if (MAM_MAP == 2)
+ 210              	# Copy exception vectors into SRAM
+ 211              	                MOV     R8, #SRAM_SADDR
+ 212              	                LDR     R9, =Vectors
+ 213              	#               Move exception vectors (7 vectors + 1 reserved)
+ 214              	                LDMIA   R9!, {R0-R7}
+ 215              	                STMIA   R8!, {R0-R7}
+ 216              	#               Move addresses belonging to exception vectors (7 addresses)
+ 217              	                LDMIA   R9!, {R0-R6}
+ 218              	                STMIA   R8!, {R0-R6}
+ 219              	#endif
+ 220              	
+ 221              	#  Call low-level initialization
+ 222:startup.S     ****                 BL      lowLevelInit
+ 223              	
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 5
+
+
+ 224              	# Relocate .data section (Copy from ROM to RAM)
+ 225:startup.S     ****                 LDR     R1, =_etext
+ 226:startup.S     ****                 LDR     R2, =_data
+ 227:startup.S     ****                 LDR     R3, =_edata
+ 228:startup.S     **** LoopRel:        CMP     R2, R3
+ 229:startup.S     ****                 LDRLO   R0, [R1], #4
+ 230:startup.S     ****                 STRLO   R0, [R2], #4
+ 231:startup.S     ****                 BLO     LoopRel
+ 232              	
+ 233              	# Clear .bss section (Zero init)
+ 234:startup.S     ****                 MOV     R0, #0
+ 235:startup.S     ****                 LDR     R1, =__bss_start__
+ 236:startup.S     ****                 LDR     R2, =__bss_end__
+ 237:startup.S     **** LoopZI:         CMP     R1, R2
+ 238:startup.S     ****                 STRLO   R0, [R1], #4
+ 239:startup.S     ****                 BLO     LoopZI
+ 240              	
+ 241              	# Initialize exception vectors
+ 242:startup.S     ****                 BL      exceptionHandlerInit
+ 243              	
+ 244              	# Enter the C code
+ 245              	Jump_To_Main:
+ 246:startup.S     ****                 ADR     LR, __Return_from_Main           
+ 247:startup.S     ****                 MOV     R0, #0
+ 248:startup.S     ****                 MOV     R1, #0
+ 249:startup.S     ****                 LDR     R2, =main
+ 250:startup.S     ****                 BX      R2
+ 251              	
+ 252              	__Return_from_Main:
+ 253:startup.S     ****                 B       __Return_from_Main	 
+ 254              	
+ 255              	        .size   _startup, . - _startup
+ 256              	        .endfunc
+ 257              	
+ 258              	
+ 259              	#
+ 260              	# Reserve memory for exception handlers
+ 261              	#
+ 262 01a0 24000040 	        .struct SRAM_SADDR + 0x20
+ 262      28000040 
+ 262      2C000040 
+ 262      30000040 
+ 262      34000040 
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 6
+
+
+DEFINED SYMBOLS
+                            .stab:00000014 $d
+           startup.S:9      *ABS*:00000010 Mode_USR
+           startup.S:10     *ABS*:00000011 Mode_FIQ
+           startup.S:11     *ABS*:00000012 Mode_IRQ
+           startup.S:12     *ABS*:00000013 Mode_SVC
+           startup.S:13     *ABS*:00000017 Mode_ABT
+           startup.S:14     *ABS*:0000001b Mode_UND
+           startup.S:15     *ABS*:0000001f Mode_SYS
+           startup.S:17     *ABS*:00000080 I_Bit
+           startup.S:18     *ABS*:00000040 F_Bit
+           startup.S:20     *ABS*:40000000 sram_bottom
+           startup.S:21     *ABS*:40008000 sram_top
+           startup.S:22     *ABS*:40008000 stackTop
+           startup.S:38     *ABS*:e01fc080 PLL_BASE
+           startup.S:39     *ABS*:00000000 PLLCON_OFS
+           startup.S:40     *ABS*:00000004 PLLCFG_OFS
+           startup.S:41     *ABS*:00000008 PLLSTAT_OFS
+           startup.S:42     *ABS*:0000000c PLLFEED_OFS
+           startup.S:43     *ABS*:00000001 PLLCON_PLLE
+           startup.S:44     *ABS*:00000002 PLLCON_PLLC
+           startup.S:45     *ABS*:00000400 PLLSTAT_PLOCK
+           startup.S:59     .text:00000000 $a
+           startup.S:68     .text:00000000 _startup
+                            .stab:00000020 $d
+           startup.S:73     .text:00000000 Vectors
+           startup.S:74     .text:00000000 _vectors
+           startup.S:77     .text:00000000 $a
+           startup.S:139    .text:000000b0 handleReset
+                            .stab:00000050 $d
+           startup.S:78     .text:00000004 $a
+           startup.S:91     .text:00000020 HandlerUndef
+                            .stab:0000005c $d
+           startup.S:79     .text:00000008 $a
+           startup.S:92     .text:00000038 HandlerSWI
+                            .stab:00000068 $d
+           startup.S:80     .text:0000000c $a
+           startup.S:93     .text:00000050 HandlerPabort
+                            .stab:00000074 $d
+           startup.S:81     .text:00000010 $a
+           startup.S:94     .text:00000068 HandlerDabort
+                            .stab:00000080 $d
+           startup.S:82     .text:00000014 $a
+                            .stab:0000008c $d
+           startup.S:84     .text:00000018 $a
+           startup.S:96     .text:00000080 HandlerIRQ
+                            .stab:00000098 $d
+           startup.S:88     .text:0000001c $a
+           startup.S:98     .text:00000098 HandlerFIQ
+                            .stab:000000a4 $d
+           startup.S:91     .text:00000020 $a
+                            *ABS*:40000024 HandleUndef
+                            .stab:000000b0 $d
+           startup.S:92     .text:00000038 $a
+                            *ABS*:40000028 HandleSWI
+                            .stab:000000bc $d
+           startup.S:93     .text:00000050 $a
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 7
+
+
+                            *ABS*:4000002c HandlePabort
+                            .stab:000000c8 $d
+           startup.S:94     .text:00000068 $a
+                            *ABS*:40000030 HandleDabort
+                            .stab:000000d4 $d
+           startup.S:96     .text:00000080 $a
+                            *ABS*:40000034 HandleIRQ
+                            .stab:000000e0 $d
+           startup.S:98     .text:00000098 $a
+                            *ABS*:40000038 HandleFIQ
+                            .stab:000000ec $d
+           startup.S:142    .text:000000b0 $a
+                            .stab:000000f8 $d
+           startup.S:143    .text:000000b4 $a
+                            .stab:00000104 $d
+           startup.S:144    .text:000000b8 $a
+                            .stab:00000110 $d
+           startup.S:147    .text:000000bc $a
+                            .stab:0000011c $d
+           startup.S:148    .text:000000c0 $a
+                            .stab:00000128 $d
+           startup.S:149    .text:000000c4 $a
+                            .stab:00000134 $d
+           startup.S:150    .text:000000c8 $a
+                            .stab:00000140 $d
+           startup.S:154    .text:000000cc $a
+                            .stab:0000014c $d
+           startup.S:155    .text:000000d0 $a
+                            .stab:00000158 $d
+           startup.S:156    .text:000000d4 $a
+                            .stab:00000164 $d
+           startup.S:157    .text:000000d8 $a
+                            .stab:00000170 $d
+           startup.S:158    .text:000000dc $a
+                            .stab:0000017c $d
+           startup.S:159    .text:000000e0 $a
+           startup.S:162    .text:000000e4 PLL_Loop
+                            .stab:00000188 $d
+           startup.S:162    .text:000000e4 $a
+                            .stab:00000194 $d
+           startup.S:163    .text:000000e8 $a
+                            .stab:000001a0 $d
+           startup.S:164    .text:000000ec $a
+                            .stab:000001ac $d
+           startup.S:167    .text:000000f0 $a
+                            .stab:000001b8 $d
+           startup.S:168    .text:000000f4 $a
+                            .stab:000001c4 $d
+           startup.S:169    .text:000000f8 $a
+                            .stab:000001d0 $d
+           startup.S:170    .text:000000fc $a
+                            .stab:000001dc $d
+           startup.S:175    .text:00000100 $a
+                            .stab:000001e8 $d
+           startup.S:178    .text:00000104 $a
+                            .stab:000001f4 $d
+           startup.S:179    .text:00000108 $a
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 8
+
+
+                            .stab:00000200 $d
+           startup.S:180    .text:0000010c $a
+                            .stab:0000020c $d
+           startup.S:183    .text:00000110 $a
+                            .stab:00000218 $d
+           startup.S:184    .text:00000114 $a
+                            .stab:00000224 $d
+           startup.S:185    .text:00000118 $a
+                            .stab:00000230 $d
+           startup.S:188    .text:0000011c $a
+                            .stab:0000023c $d
+           startup.S:189    .text:00000120 $a
+                            .stab:00000248 $d
+           startup.S:190    .text:00000124 $a
+                            .stab:00000254 $d
+           startup.S:193    .text:00000128 $a
+                            .stab:00000260 $d
+           startup.S:194    .text:0000012c $a
+                            .stab:0000026c $d
+           startup.S:195    .text:00000130 $a
+                            .stab:00000278 $d
+           startup.S:198    .text:00000134 $a
+                            .stab:00000284 $d
+           startup.S:199    .text:00000138 $a
+                            .stab:00000290 $d
+           startup.S:200    .text:0000013c $a
+                            .stab:0000029c $d
+           startup.S:203    .text:00000140 $a
+                            .stab:000002a8 $d
+           startup.S:204    .text:00000144 $a
+                            .stab:000002b4 $d
+           startup.S:207    .text:00000148 $a
+                            .stab:000002c0 $d
+           startup.S:222    .text:0000014c $a
+                            .stab:000002cc $d
+           startup.S:225    .text:00000150 $a
+                            .stab:000002d8 $d
+           startup.S:226    .text:00000154 $a
+                            .stab:000002e4 $d
+           startup.S:227    .text:00000158 $a
+           startup.S:228    .text:0000015c LoopRel
+                            .stab:000002f0 $d
+           startup.S:228    .text:0000015c $a
+                            .stab:000002fc $d
+           startup.S:229    .text:00000160 $a
+                            .stab:00000308 $d
+           startup.S:230    .text:00000164 $a
+                            .stab:00000314 $d
+           startup.S:231    .text:00000168 $a
+                            .stab:00000320 $d
+           startup.S:234    .text:0000016c $a
+                            .stab:0000032c $d
+           startup.S:235    .text:00000170 $a
+                            .stab:00000338 $d
+           startup.S:236    .text:00000174 $a
+           startup.S:237    .text:00000178 LoopZI
+                            .stab:00000344 $d
+ARM GAS  /cygdrive/d/DOCUME~1/rshilkr/LOCALS~1/Temp/cc6Je0fy.s 			page 9
+
+
+           startup.S:237    .text:00000178 $a
+                            .stab:00000350 $d
+           startup.S:238    .text:0000017c $a
+                            .stab:0000035c $d
+           startup.S:239    .text:00000180 $a
+                            .stab:00000368 $d
+           startup.S:242    .text:00000184 $a
+           startup.S:245    .text:00000188 Jump_To_Main
+                            .stab:00000374 $d
+           startup.S:246    .text:00000188 $a
+           startup.S:252    .text:0000019c __Return_from_Main
+                            .stab:00000380 $d
+           startup.S:247    .text:0000018c $a
+                            .stab:0000038c $d
+           startup.S:248    .text:00000190 $a
+                            .stab:00000398 $d
+           startup.S:249    .text:00000194 $a
+                            .stab:000003a4 $d
+           startup.S:250    .text:00000198 $a
+                            .stab:000003b0 $d
+           startup.S:253    .text:0000019c $a
+                            .stab:000003bc $d
+                            *ABS*:40000020 HandleReset
+                            *ABS*:400074a8 UserStack
+                            *ABS*:40007700 SYSStack
+                            *ABS*:40007740 SVCStack
+                            *ABS*:40007780 UndefStack
+                            *ABS*:400077c0 AbortStack
+                            *ABS*:40007fc0 IRQStack
+                            *ABS*:40008000 FIQStack
+           startup.S:262    .text:000001a0 $d
+
+UNDEFINED SYMBOLS
+lowLevelInit
+_etext
+_data
+_edata
+__bss_start__
+__bss_end__
+exceptionHandlerInit
+main

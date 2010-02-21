@@ -1,0 +1,2 @@
+irqUart.o: irqUart.c ../pre_emptive_os/api/general.h ../startup/lpc2xxx.h \
+  irqUart.h ../uart.h ../startup/../pre_emptive_os/api/general.h
