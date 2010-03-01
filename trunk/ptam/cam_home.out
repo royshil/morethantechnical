@@ -1,0 +1,30 @@
+%YAML:1.0
+calibration_time: "02/13/10 17:59:46"
+image_count: 10
+image_width: 352
+image_height: 288
+board_width: 8
+board_height: 6
+square_size: 1.
+flags: 0
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 436.7594910993449800, 0., 174.6226671454056700, 0.,
+       441.6940846904855700, 182.8303725989353000, 0., 0., 1. ]
+distortion_coefficients: !!opencv-matrix
+   rows: 1
+   cols: 4
+   dt: d
+   data: [ 0.5688310964309552, -3.9025592908493274, 0.0273327710946999,
+       0.0163283791809562 ]
+avg_reprojection_error: 1.9778239399194717
+per_view_reprojection_errors: !!opencv-matrix
+   rows: 1
+   cols: 10
+   dt: d
+   data: [ 0.6749869982401530, 3.6354147593180337, 3.8167449633280435,
+       0.4490809440612793, 0.5138381322224935, 2.2304771641890206,
+       1.8547484079996746, 1.6112310091654460, 3.9062671661376953,
+       1.0854498545328777 ]
