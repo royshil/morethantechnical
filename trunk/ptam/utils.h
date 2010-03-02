@@ -8,8 +8,13 @@
 
 #define VIDEO_MODE
 
+/** general utility functions **/
 void read_frame_and_points(const char* pntsFile, const char* frameFile, vector<Point2d>& pts, Mat& frame);
 void draw_points(Mat& image, vector<Point2d> points);
+int intersect3D_SegmentPlane( Vec3d S_P0, Vec3d S_P1, Vec3d P_V0, Vec3d P_N, Vec3d& I );
+void draw_frame_points_w_status(const string& win_name, const Mat& i, vector<Point2d>& p, vector<uchar>& status);
+int show_2_frame_correlation(int i,char** c);
+/******************************/
 
 int capture_data(int, char**);
 
@@ -28,8 +33,6 @@ extern void resize(int width, int height);
 extern void key(unsigned char key, int x, int y);
 extern void idle(void);
 void myGLinit();
-int intersect3D_SegmentPlane( Vec3d S_P0, Vec3d S_P1, Vec3d P_V0, Vec3d P_N, Vec3d& I );
-void draw_frame_points_w_status(const string& win_name, const Mat& i, vector<Point2d>& p, vector<uchar>& status);
 
 void loadFrame(int counter);
 
@@ -63,3 +66,5 @@ extern vector<Point3f> points1ProjF;
 extern Mat points1projMF;
 
 extern Vec3d u,v;
+
+extern bool running;

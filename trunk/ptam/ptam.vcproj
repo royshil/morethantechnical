@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\downloads\freeglut-2.6.0\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\Documents and Settings\rshilkr\My Documents\Downloads\freeglut-2.6.0\freeglut-2.6.0\include&quot;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
@@ -60,7 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="freeglut.lib cv200.lib highgui200.lib cxcore200.lib ml200.lib cvaux200.lib"
-				AdditionalLibraryDirectories="&quot;C:\downloads\freeglut-2.6.0\lib&quot;"
+				AdditionalLibraryDirectories="&quot;D:\Documents and Settings\rshilkr\My Documents\Downloads\freeglut-2.6.0\freeglut-2.6.0&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>

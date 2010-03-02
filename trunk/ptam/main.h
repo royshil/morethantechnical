@@ -26,3 +26,5 @@ double cam[3] = {0,0,0};
 double rot[9] = {-1,0,0,0,1,0,0,0,-1};
 
 double curCam[3] = {0,0,0};
+
+bool running = true;

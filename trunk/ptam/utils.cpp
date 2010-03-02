@@ -197,13 +197,16 @@ int show_2_frame_correlation(int i,char** c) {
 	vector<Point2d> p[2];
 	Mat f[2];
 
-	for(int i=0;i<2;i++) {
-		std::stringstream st;
-		st << "frame" << (i+1) << ".png";
-		std::stringstream st1;
-		st1 << "frame" << (i+1) << ".points";
-		read_frame_and_points(st1.str().c_str(),st.str().c_str(),p[i],f[i]);
-	}
+	//for(int i=0;i<2;i++) {
+		//std::stringstream st;
+		//st << "../ptam_orig/5/frame" << (i+2) << ".png";
+		//std::stringstream st1;
+		//st1 << "../ptam_orig/5/frame" << (i+2) << ".points";
+		//p[i].clear();
+		//read_frame_and_points(st1.str().c_str(),st.str().c_str(),p[i],f[i]);
+	//}
+	read_frame_and_points("../ptam_orig/5/frame1.points","../ptam_orig/5/frame1.png",p[0],f[0]);
+	read_frame_and_points("../ptam_orig/5/frame3.points","../ptam_orig/5/frame3.png",p[1],f[1]);
 	namedWindow("tmp",1);
 	Mat im(f[0].rows,f[0].cols+f[1].cols,f[0].type());
 	uchar* pt = im.ptr<uchar>();

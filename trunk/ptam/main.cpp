@@ -22,7 +22,7 @@ void start_opengl(LPVOID p) {
 /**
  * main program
  */
-int main(int, char**)
+int main(int i, char** c)
 {
     VideoCapture cap("record3.wmv"); // open the default camera
     if(!cap.isOpened())  // check if we succeeded
@@ -61,8 +61,8 @@ int main(int, char**)
 		if(frame.rows == 0) break; //video done
 		frame.copyTo(image);
 		cvtColor(frame,gray,CV_BGR2GRAY);
-		blur(gray,gray,Size(7,7));
-		equalizeHist(gray,gray);
+		//blur(gray,gray,Size(7,7));
+		//equalizeHist(gray,gray);
 		
 		counter++; //frame counter
 
@@ -87,8 +87,9 @@ int main(int, char**)
 						k++;
 						points1[i] = points2[i];
 					} 
-					else {
-						global_status[i] = 0;
+					else if(captured_frames < 2) {
+						global_status[i] = 0;	//remove point only if still initializing
+
 					//	points1[i].x = -1.0f;
 					//	points1[i].y = -1.0f;
 					//	bad++;
@@ -212,6 +213,7 @@ int main(int, char**)
 					//now track only the good & triangulated points
 					int numPts = points[1].size();
 					points1 = vector<Point2f>(numPts);
+					points2 = vector<Point2f>(numPts);
 					Mat(points[1]).convertTo(Mat(points1),CV_32FC2);
 					global_status = vector<uchar>(numPts,1);
 					snapshot_global_status = global_status;
@@ -221,6 +223,7 @@ int main(int, char**)
 					findExtrinsics(points[0],rv,tv);
 					findExtrinsics(points[1],rv,tv);
 
+					//start the OpenGL scene (in it's own thread)
 					DWORD tID;
 					threadHandle = CreateThread(0,0,(PTHREAD_START_ROUTINE)start_opengl,0,0,&tID);
 					printf("Created opengl thread %d\n",tID);
@@ -232,7 +235,9 @@ int main(int, char**)
 		}
     }
 
-	WaitForSingleObject(threadHandle,1000);
+	running = false;
+	if(threadHandle != NULL)
+		WaitForSingleObject(threadHandle,1000);
 
     return 0;
 }

@@ -136,6 +136,10 @@ void display(void)
 
 	glutSwapBuffers();
 
+	if(!running) {
+		glutLeaveMainLoop();
+	}
+
 	Sleep(25);
 }
 
