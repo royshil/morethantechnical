@@ -389,13 +389,18 @@ void keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vecto
 	Mat(trackedPoints).convertTo(m1,CV_32FC2);
 	Mat m2 = m - m1;
 	Mat m3 = m2 * m2.t();
-	vector<Point2d> tmpV(m3.rows);
-	Mat d(tmpV);
-	cv::sqrt(m3.diag(),d);
-	
-	Point2f* totalDelta = (Point2f*)m3.ptr<Point2f>();
+	Mat d = m3.diag();
+	vector<Mat > d_s(2);
+	split(d,d_s);
+	Mat d_x_plus_y = d_s[0] + d_s[1];
+	vector<float> tmpV(d_x_plus_y.rows);
+	d = Mat(tmpV);
+	cv::sqrt(d_x_plus_y,d);
+	Scalar totalDelta = cv::sum(d);
 
-	if(totalDelta->x + totalDelta->y < 1.0) return;	//overall change is not big enough
+	printf("keepGood2D3DMatch: total delta %.3f\n",totalDelta[0]);
+	
+	if(fabs(totalDelta[0]) < 1.0) return;	//overall change is not big enough
 
 	for(int i=0;i<totalPoints;i++) {
 		double dx = imagePoints[i].x - trackedPoints[i].x;
