@@ -388,8 +388,18 @@ void keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vecto
 	Mat m(imagePoints), m1(trackedF);
 	Mat(trackedPoints).convertTo(m1,CV_32FC2);
 	Mat m2 = m - m1;
+	Point2f* _dp = (Point2f*)m2.ptr<Point2f>();
+	for(int i=0;i<m2.rows;i++) {
+		printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
+	}
 	Mat m3 = m2 * m2.t();
 	Mat d = m3.diag();
+	_dp = (Point2f*)d.ptr<Point2f>();
+	printf("\nDiag:\n");
+	for(int i=0;i<d.rows;i++) {
+		printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
+	}
+
 	vector<Mat > d_s(2);
 	split(d,d_s);
 	Mat d_x_plus_y = d_s[0] + d_s[1];
