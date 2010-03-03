@@ -374,62 +374,72 @@ void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, 
 	}
 }
 
-void keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv) {
+/**
+ * check which of the tracked points align with thier reprojected 3D feature
+ * mark in the status which points are good and which aren't
+ * return the SSD between tracked and reprojected
+ */
+double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv, vector<uchar>& status) {
 	int totalPoints = points1Proj.size();
-	vector<Point2f> imagePoints(totalPoints);
-	vector<Point2d> tmpTrackedPoints;
-	vector<Point3d> new3DPoints;
+	//vector<Point2f> imagePoints(totalPoints);
+	//vector<Point2d> tmpTrackedPoints;
+	//vector<Point3d> new3DPoints;
 
 	//reproject 3D points to image plane
 	projectPoints(points1projMF,Mat(rv),Mat(tv),camera_matrix,distortion_coefficients,imagePoints);
 
 	//compute SSD to see if the result is bad enough to drop points 
-	vector<Point2f> trackedF(trackedPoints.size());
-	Mat m(imagePoints), m1(trackedF);
-	Mat(trackedPoints).convertTo(m1,CV_32FC2);
-	Mat m2 = m - m1;
-	Point2f* _dp = (Point2f*)m2.ptr<Point2f>();
-	for(int i=0;i<m2.rows;i++) {
-		printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
-	}
-	Mat m3 = m2 * m2.t();
-	Mat d = m3.diag();
-	_dp = (Point2f*)d.ptr<Point2f>();
-	printf("\nDiag:\n");
-	for(int i=0;i<d.rows;i++) {
-		printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
-	}
+	//vector<Point2f> trackedF(trackedPoints.size());
+	//Mat m(imagePoints), m1(trackedF);
+	//Mat(trackedPoints).convertTo(m1,CV_32FC2);
+	//Mat m2 = m - m1;
+	//Point2f* _dp = (Point2f*)m2.ptr<Point2f>();
+	//for(int i=0;i<m2.rows;i++) {
+	//	printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
+	//}
+	//Mat m3 = m2 * m2.t();
+	//Mat d = m3.diag();
+	//_dp = (Point2f*)d.ptr<Point2f>();
+	//printf("\nDiag:\n");
+	//for(int i=0;i<d.rows;i++) {
+	//	printf("%.3f %.3f\n",_dp[i].x,_dp[i].y);
+	//}
 
-	vector<Mat > d_s(2);
-	split(d,d_s);
-	Mat d_x_plus_y = d_s[0] + d_s[1];
-	vector<float> tmpV(d_x_plus_y.rows);
-	d = Mat(tmpV);
-	cv::sqrt(d_x_plus_y,d);
-	Scalar totalDelta = cv::sum(d);
+	//vector<Mat > d_s(2);
+	//split(d,d_s);
+	//Mat d_x_plus_y = d_s[0] + d_s[1];
+	//vector<float> tmpV(d_x_plus_y.rows);
+	//d = Mat(tmpV);
+	//cv::sqrt(d_x_plus_y,d);
+	//Scalar totalDelta = cv::sum(d);
 
-	printf("keepGood2D3DMatch: total delta %.3f\n",totalDelta[0]);
-	
-	if(fabs(totalDelta[0]) < 1.0) return;	//overall change is not big enough
+	//printf("keepGood2D3DMatch: total delta %.3f\n",totalDelta[0]);
+	//
+	//if(fabs(totalDelta[0]) < 1.0) return;	//overall change is not big enough
+
+	double totalSum = 0;
 
 	for(int i=0;i<totalPoints;i++) {
 		double dx = imagePoints[i].x - trackedPoints[i].x;
 		double dy = imagePoints[i].y - trackedPoints[i].y;
-		if(sqrt(dx*dx + dy*dy) <= 7.0) {
-			tmpTrackedPoints.push_back(trackedPoints[i]);
-			new3DPoints.push_back(points1Proj[i]);
+		double sqdiff = sqrt(dx*dx + dy*dy);
+		totalSum += sqdiff;
+		if(sqdiff > 10.0) {
+			status[i] = 0;
+			//tmpTrackedPoints.push_back(trackedPoints[i]);
+			//new3DPoints.push_back(points1Proj[i]);
 		}
 	}
 
-	trackedPoints = tmpTrackedPoints;
-	points1Proj = new3DPoints;
+	//trackedPoints = tmpTrackedPoints;
+	//points1Proj = new3DPoints;
 
-	points1ProjF = vector<Point3f>(new3DPoints.size());
-	points1projMF = Mat(points1ProjF);
+	//points1ProjF = vector<Point3f>(new3DPoints.size());
+	//points1projMF = Mat(points1ProjF);
 
-	Mat _tmp(points1Proj);
-	_tmp.convertTo(points1projMF,CV_32FC3);
+	//Mat _tmp(points1Proj);
+	//_tmp.convertTo(points1projMF,CV_32FC3);
 
-	//estimate new rot and trans vectors, according to better points matched
-	findExtrinsics(trackedPoints,rv,tv);
+	////estimate new rot and trans vectors, according to better points matched
+	//findExtrinsics(trackedPoints,rv,tv);
 }

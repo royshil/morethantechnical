@@ -45,7 +45,7 @@ void findExtrinsics(vector<Point2f>& points1,
 					vector<Point2f>& points2,
 					vector<double>& rv, vector<double>& tv);
 void stereoInit();
-void keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv);
+double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv, vector<uchar>& status);
 void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, vector<Point2d> tracked);
 /************/
 
