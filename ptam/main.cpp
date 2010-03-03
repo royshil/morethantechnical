@@ -148,7 +148,13 @@ int main(int i, char** c)
 			if(counter % 5 == 0) {
 				//once every 5 frames, estimate which image points are not aligned well with
 				//3D points, and remove them
-				keepGood2D3DMatch(points[2],rv,tv);
+
+				//TODO: complete this!
+				//points[3] = vector<Point2d>(points1.size());
+				//Mat(points1).convertTo(points[3],CV_64FC2);
+				//keepGood2D3DMatch(points[3],rv,tv,snapshot_global_status);
+				//points1 = vector<Point2f>(points[2].size());
+				//Mat(points[2]).convertTo(Mat(points1),CV_32FC2);
 			}
 
 			if(counter % 20 == 0) {
