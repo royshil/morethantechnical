@@ -1,0 +1,1 @@
+void histMatch(const Mat& src, const Mat& src_mask, const Mat& dst, const Mat& dst_mask);
