@@ -15,7 +15,11 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glDisable(GL_DEPTH_TEST);
-	glDrawPixels(352,288,GL_RGB,GL_UNSIGNED_BYTE,backPxls.data);
+	
+	if(WaitForSingleObject(ghMutex, INFINITE) == WAIT_OBJECT_0) {
+		glDrawPixels(352,288,GL_RGB,GL_UNSIGNED_BYTE,backPxls.data);
+		ReleaseMutex(ghMutex);
+	}
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
@@ -34,16 +38,18 @@ void display(void)
 	//		0,	1,	0);
 	////glRotated(60,1,0,0);
 	//glGetDoublev(GL_MODELVIEW_MATRIX,rot);
-	double xc = cam[0] - curCam[0];
-	double yc = cam[1] - curCam[1];
-	double zc = cam[2] - curCam[2];
-	if(fabs(xc) > 0.001 || fabs(yc) > 0.001 || fabs(zc) > 0.001) {
-		curCam[0] += xc * t * 0.02;
-		curCam[1] += yc * t * 0.02;
-		curCam[2] += zc * t * 0.02;
-		//printf("move %.3f %.3f %.3f by %.5f %.5f %.5f\n",curCam[0],curCam[1],curCam[2],xc,yc,zc);
-	}
-	glTranslated(-curCam[0],curCam[1],-curCam[2]);
+
+	//double xc = cam[0] - curCam[0];
+	//double yc = cam[1] - curCam[1];
+	//double zc = cam[2] - curCam[2];
+	//if(fabs(xc) > 0.001 || fabs(yc) > 0.001 || fabs(zc) > 0.001) {
+	//	curCam[0] += xc * t * 0.08;
+	//	curCam[1] += yc * t * 0.08;
+	//	curCam[2] += zc * t * 0.08;
+	//	//printf("move %.3f %.3f %.3f by %.5f %.5f %.5f\n",curCam[0],curCam[1],curCam[2],xc,yc,zc);
+	//}
+	curCam[0] = cam[0]; curCam[1] = cam[1]; curCam[2] = cam[2];
+	glTranslated(-curCam[0]+0.5,-curCam[1]+0.7,-curCam[2]);
 
 	//double _d[16];
 	//glGetDoublev(GL_MODELVIEW_MATRIX,_d);
@@ -57,7 +63,7 @@ void display(void)
 	glRotated(180,1,0,0);
 
 
-	//draw features
+	/*draw features*/
 	glPushMatrix();
 	////glScaled(((double*)(camera_matrix.ptr()))[2],((double*)(camera_matrix.ptr()))[5],1.0);
 	//gluLookAt(0,0,-2,0,0,1,0,1,0);
@@ -77,7 +83,7 @@ void display(void)
 	}
 	//glEnd();
 	glPopMatrix();
-
+	/**/
 
 	/*draw plane grid..
 	glPushMatrix();
@@ -132,7 +138,7 @@ void display(void)
 	glPopMatrix();
 
 	glPopMatrix();
-	*/
+	/**/
 
 	glutSwapBuffers();
 

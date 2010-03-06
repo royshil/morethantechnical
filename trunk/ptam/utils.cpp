@@ -69,7 +69,7 @@ void loadFrame(int counter) {
 	cam[0] = v[0];
 	cam[1] = v[1];
 	cam[2] = v[2];
-	printf("switch cam: %.3f %.3f %.3f\n",cam[0],cam[1],cam[2]);
+	//printf("switch cam: %.3f %.3f %.3f\n",cam[0],cam[1],cam[2]);
 
 	//Vec3d ea;
 	//float _d[9];
@@ -84,9 +84,14 @@ void loadFrame(int counter) {
 	//ea = RQDecomp3x3(_rf,Mat(),Mat(),Mat(),Mat(),Mat());
 	//decomposeProjectionMatrix(pm,Mat(),Mat(),Mat(4,1,CV_64FC1),Mat(),Mat(),Mat(),ea);
 
-	frames[counter].copyTo(backPxls);
-	cvtColor(backPxls,backPxls,CV_BGR2RGB);
-	cvFlip(&cvMat(288,352,CV_8UC3,backPxls.data),0,-1);
+	//update background pixels, but only when no one else needs them...
+	if(WaitForSingleObject(ghMutex, INFINITE) == WAIT_OBJECT_0) {
+		frames[counter].copyTo(backPxls);
+		cvtColor(backPxls,backPxls,CV_BGR2RGB);
+		cvFlip(&cvMat(288,352,CV_8UC3,backPxls.data),0,-1);
+
+		ReleaseMutex(ghMutex);
+	}
 }
 
 void key(unsigned char key, int x, int y)
