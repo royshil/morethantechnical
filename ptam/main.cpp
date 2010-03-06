@@ -46,6 +46,7 @@ int main(int i, char** c)
 	vector<int> whoIsBad;
 	vector<Point2f> tmp_pts;
 	vector<uchar> global_status(200,1), snapshot_global_status(200);
+	bool frameByFrame = false;
 
 	HANDLE threadHandle;
 
@@ -53,6 +54,9 @@ int main(int i, char** c)
 	 * the number of good points
 	 */
 	int nz = 0;
+
+	//reprojection error
+	double reproj_err = 0;
 
 
     for(;;)
@@ -115,9 +119,13 @@ int main(int i, char** c)
 
 				//points1.resize(k);
 				//printf("%d good points, %d bad points\n",,bad);
-				nz = countNonZero(Mat(global_status));
+				if(captured_frames < 2 )
+					nz = countNonZero(Mat(global_status));
+				else 
+					nz = countNonZero(Mat(snapshot_global_status));
 
-				stringstream st; st << nz << " good";
+				stringstream st; 
+				st << "Count: " << counter << ", " << nz << " good points";
 				putText(image,st.str(),Point(10,15),FONT_HERSHEY_PLAIN,1,Scalar(0,255,0));
 			//} //else {
 			//	//insert 
@@ -134,33 +142,68 @@ int main(int i, char** c)
 			//keep only corresponding features
 			points[2].clear();
 			int p1sz = points1.size();
-			for(int ii=0;ii<p1sz;ii++) {
-				if(snapshot_global_status[ii] == 1) {
-					points[2].push_back(Point2d(points1[ii].x,points1[ii].y));
+			if(nz == points1projMF.rows) {
+				//no "bad" points
+				if(points[2].size() != p1sz) {
+					points[2] = vector<Point2d>(p1sz);
+					snapshot_global_status.resize(p1sz,1);
 				}
+				Mat(points1).convertTo(Mat(points[2]),CV_64FC2);
+			} else {
+				//there are some bad points, need to "discard a few"
+				vector<Point3d> new3DPoints;
+
+				for(int ii=0;ii<p1sz;ii++) {
+					if(snapshot_global_status[ii] == 1) {
+						points[2].push_back(Point2d(points1[ii].x,points1[ii].y));
+						new3DPoints.push_back(points1Proj[ii]);
+					} else {
+						//"invisible" points (bad points) will be kept for future relocalizing
+						//but right now they are removed to allow good pose estimation
+						points1Proj_invisible.push_back(points1Proj[ii]);
+					}
+				}
+				snapshot_global_status.resize(nz);
+				snapshot_global_status.assign(nz,1);
+
+				points1.resize(points[2].size());
+				Mat(points[2]).convertTo(Mat(points1),CV_32FC2);
+
+				points1Proj = new3DPoints;
+
+				points1ProjF.resize(points1Proj.size());
+				points1projMF = Mat(points1ProjF);
+				Mat(points1Proj).convertTo(points1projMF,CV_32FC3);
 			}
 
 			//estimate camera position
 			findExtrinsics(points[2],rv,tv);
 
-			drawReprojectedOnImage(image,rv,tv,points[2]);
+			//if(counter % 5 == 0) 
+			{
+				//once every 5 frames:
 
-			if(counter % 5 == 0) {
-				//once every 5 frames, estimate which image points are not aligned well with
-				//3D points, and remove them
-
-				//TODO: complete this!
-				//points[3] = vector<Point2d>(points1.size());
-				//Mat(points1).convertTo(points[3],CV_64FC2);
-				//keepGood2D3DMatch(points[3],rv,tv,snapshot_global_status);
-				//points1 = vector<Point2f>(points[2].size());
-				//Mat(points[2]).convertTo(Mat(points1),CV_32FC2);
+				//try to reproject some of the "invisible" features back into the tracking
+				if(reprojectInivibles(points1,rv,tv)) {
+					//some points came back to tracking..
+					snapshot_global_status.resize(points1.size(),1);
+				} else {
+					//no points came back, so
+					//estimate which image points are not aligned well with
+					//3D points, and remove them
+					reproj_err = keepGood2D3DMatch(points[2],rv,tv,snapshot_global_status);
+				}
 			}
+
+			drawReprojectedOnImage(image,rv,tv,points[2],snapshot_global_status);
+
+			stringstream st; st << "Reprojection error: " << reproj_err;
+			putText(image,st.str(),Point(10,image.rows - 15),FONT_HERSHEY_PLAIN,1,Scalar(0,255,0));
 
 			if(counter % 20 == 0) {
 				//every 20 frames, try to triangulate more features using this view
 				//and the view from 20 frames ago
-
+				//TODO: do this.
 			}
 
 			cams[2] = tv;
@@ -173,7 +216,11 @@ int main(int i, char** c)
 
 		imshow("aaa",image);
 
-		char c = waitKey(30);
+		char c = -1;
+		if(frameByFrame) 
+			c = waitKey(0);
+		else
+			c = waitKey(30);
 		if(c == 27) {
 			break;
 		} else if(c == ' ') {
@@ -229,6 +276,13 @@ int main(int i, char** c)
 					findExtrinsics(points[0],rv,tv);
 					findExtrinsics(points[1],rv,tv);
 
+
+					//Create a mutex to goveren the frame data sharing
+					ghMutex = CreateMutex( 
+									NULL,              // default security attributes
+									FALSE,             // initially not owned
+									NULL);  
+
 					//start the OpenGL scene (in it's own thread)
 					DWORD tID;
 					threadHandle = CreateThread(0,0,(PTHREAD_START_ROUTINE)start_opengl,0,0,&tID);
@@ -238,12 +292,17 @@ int main(int i, char** c)
 		} else if(c=='r') {
 			needToInit = true;
 			printf("re-init\n");
+		} else if(c == 'p') {
+			frameByFrame = !frameByFrame;
+			printf("pause\n");
 		}
     }
 
 	running = false;
 	if(threadHandle != NULL)
 		WaitForSingleObject(threadHandle,1000);
+
+	CloseHandle(threadHandle);
 
     return 0;
 }

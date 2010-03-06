@@ -137,8 +137,8 @@ void stereoInit() {
 	FileNode fn = fs["camera_matrix"];
 	camera_matrix = Mat((CvMat*)fn.readObj(),true);
 	double* _d = camera_matrix.ptr<double>();
-	_d[2] = 352.0/2.0;
-	_d[5] = 288.0/2.0;
+	//_d[2] = 352.0/2.0;
+	//_d[5] = 288.0/2.0;
 	fn = fs["distortion_coefficients"];
 	distortion_coefficients = Mat((CvMat*)fn.readObj(),true);
 	//distortion_coefficients = Mat(1,4,CV_64FC1,Scalar(0));
@@ -307,7 +307,7 @@ void findExtrinsics(vector<Point2d>& points, vector<double>& rv, vector<double>&
 
 	solvePnP(points1projMF,tmpOut,camera_matrix,distortion_coefficients,rvec,tvec,true);
 
-	printf("frame extrinsic:\nrvec: %.3f %.3f %.3f\ntvec: %.3f %.3f %.3f\n",rv[0],rv[1],rv[2],tv[0],tv[1],tv[2]);
+	//printf("frame extrinsic:\nrvec: %.3f %.3f %.3f\ntvec: %.3f %.3f %.3f\n",rv[0],rv[1],rv[2],tv[0],tv[1],tv[2]);
 
 	Mat rotM(3,3,CV_64FC1); ///,_r);
 	Rodrigues(rvec,rotM);
@@ -364,12 +364,14 @@ void findExtrinsics(vector<Point2f>& points1,
 	printf("translation: %.3f %.3f %.3f\n",_t[0],_t[1],_t[2]);
 }
 
-void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, vector<Point2d> tracked) {
+void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, vector<Point2d>& tracked, vector<uchar>& status) {
 	vector<Point2f> imagePoints(points1Proj.size());
 	projectPoints(points1projMF,Mat(rv),Mat(tv),camera_matrix,distortion_coefficients,imagePoints);
 
 	for(unsigned int i=0;i<imagePoints.size();i++) {
-		circle(image,imagePoints[i],2,Scalar(0,255,255),CV_FILLED);
+		circle(image,imagePoints[i],2,
+			((status[i] == 1) ? Scalar(0,255,255) : Scalar(0,0,255)),
+			CV_FILLED);
 		line(image,imagePoints[i],tracked[i],Scalar(255,0,0));
 	}
 }
@@ -381,7 +383,7 @@ void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, 
  */
 double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv, vector<uchar>& status) {
 	int totalPoints = points1Proj.size();
-	//vector<Point2f> imagePoints(totalPoints);
+	vector<Point2f> imagePoints(totalPoints);
 	//vector<Point2d> tmpTrackedPoints;
 	//vector<Point3d> new3DPoints;
 
@@ -424,7 +426,10 @@ double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vec
 		double dy = imagePoints[i].y - trackedPoints[i].y;
 		double sqdiff = sqrt(dx*dx + dy*dy);
 		totalSum += sqdiff;
-		if(sqdiff > 10.0) {
+		/*if(sqdiff > 3.0 && sqdiff < 10.0) {
+			trackedPoints[i].x = (double)(imagePoints[i].x);
+			trackedPoints[i].y = (double)(imagePoints[i].y);
+		} else*/ if(sqdiff > 10.0) {
 			status[i] = 0;
 			//tmpTrackedPoints.push_back(trackedPoints[i]);
 			//new3DPoints.push_back(points1Proj[i]);
@@ -442,4 +447,47 @@ double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vec
 
 	////estimate new rot and trans vectors, according to better points matched
 	//findExtrinsics(trackedPoints,rv,tv);
+
+	return totalSum;
+}
+
+bool reprojectInivibles(vector<Point2f>& trackedPoints, vector<double> rv, vector<double> tv) {
+	int totalPoints = points1Proj_invisible.size();
+	if(totalPoints > 0) { // are there any "invisible" points?
+		vector<Point2f> imagePoints(totalPoints);
+		Mat invisMF(totalPoints,1,CV_32FC2);
+		Mat(points1Proj_invisible).convertTo(invisMF,CV_32FC2);
+		projectPoints(invisMF,Mat(rv),Mat(tv),camera_matrix,distortion_coefficients,imagePoints);
+		
+		Rect r(Point(0,0),frames[0].size());
+		vector<uchar> _status(totalPoints);
+		bool anyPointsToRemove = false;
+		for(int i=0;i<totalPoints;i++) {
+			if(imagePoints[i].inside(r)) {
+				//only use points that are inside the frame...
+				trackedPoints.push_back(imagePoints[i]);			//2d for tracking
+				points1Proj.push_back(points1Proj_invisible[i]);	//3d for pose estim
+
+				//no longer invisible...
+				_status[i] = 1;
+
+				anyPointsToRemove = true;
+			} else {
+				_status[i] = 0;
+			}
+		}
+	
+		if(anyPointsToRemove) {
+			//int _nz = countNonZero(Mat(_status));
+			vector<Point3d> newInvisible;
+			for(int i=0;i<totalPoints;i++) {
+				if(_status[i] == 0) {
+					newInvisible.push_back(points1Proj_invisible[i]);
+				}
+			}
+			points1Proj_invisible = newInvisible;
+			return true;
+		}
+	}
+	return false;
 }

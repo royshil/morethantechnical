@@ -46,7 +46,8 @@ void findExtrinsics(vector<Point2f>& points1,
 					vector<double>& rv, vector<double>& tv);
 void stereoInit();
 double keepGood2D3DMatch(vector<Point2d>& trackedPoints, vector<double>& rv, vector<double>& tv, vector<uchar>& status);
-void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, vector<Point2d> tracked);
+void drawReprojectedOnImage(Mat& image, vector<double>& rv, vector<double>& tv, vector<Point2d>& tracked, vector<uchar>& status);
+bool reprojectInivibles(vector<Point2f>& trackedPoints, vector<double> rv, vector<double> tv);
 /************/
 
 extern Mat backPxls;
@@ -64,7 +65,11 @@ extern double curCam[3];
 extern vector<Point3d> points1Proj; 
 extern vector<Point3f> points1ProjF; 
 extern Mat points1projMF;
+extern vector<Point3d> points1Proj_invisible;
+
 
 extern Vec3d u,v;
 
 extern bool running;
+
+extern HANDLE ghMutex; 
