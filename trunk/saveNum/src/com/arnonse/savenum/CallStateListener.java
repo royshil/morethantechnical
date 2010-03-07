@@ -89,7 +89,8 @@ public class CallStateListener extends PhoneStateListener {
 		ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
 		
 		int timeout = Integer.parseInt(prefs.getString("suspendTime", "0")) * 1000;
-		if ((timeout == 0) || (clipboard.getText().toString().equals("")))
+		if ((timeout == 0) || isMemoryEmpty(clipboard))
+				
 			clearNotification();
 		else {
 			
@@ -113,6 +114,19 @@ public class CallStateListener extends PhoneStateListener {
 			}, timeout);
 		}
 	}
+
+	private boolean isMemoryEmpty(ClipboardManager clipboard) {
+		
+		if (prefs.getBoolean("useClipboard", true) && clipboard.getText().toString().equals(""))
+			return true;
+
+		if (!prefs.getBoolean("useClipboard", true) && prefs.getString("savedNum", "").equals(""))
+			return true;
+
+		return false;
+	}
+	
+	
 
 	public void clearNotification() {
 		String ns = Context.NOTIFICATION_SERVICE;
