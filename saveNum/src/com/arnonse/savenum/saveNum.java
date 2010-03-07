@@ -95,6 +95,7 @@ public class saveNum extends Activity {
 				{
 					SetText("");
 					phnNum.setText("");
+					
 					btnAdd.setText(getString(R.string.btnSetText));
 				} 
 				else if (btnAdd.getText().equals(
@@ -215,7 +216,7 @@ public class saveNum extends Activity {
 		if (prefs.getBoolean("useClipboard", true))
 		{
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-			clipboard.setText(phnNum.getText());
+			clipboard.setText(Text);
 		}
 		else
 		{
