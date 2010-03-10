@@ -37,9 +37,27 @@ public class PathMaker {
 	 */
 	public static void main(String[] args) {
 		final List<Point> points = new ArrayList<Point>();
-		final JFrame jf = new JFrame() {
-			private static final long serialVersionUID = 1L;
+		final JFrame jf = new JFrame();
+				
+		jf.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent ke) {
+				super.keyPressed(ke);
+				
+				if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					System.exit(0);
+				}
+			}
+		});
+		
 
+		final String[] workFile = new String[1];
+		workFile[0] = "C:/downloads/lfw-a/lfw/Alexandre_Daigle/Alexandre_Daigle_0001.jpg";
+		
+		final ImageIcon img = new ImageIcon(workFile[0]);
+		JLabel l = new JLabel(img) {
+			private static final long serialVersionUID = 1L;
+			
 			@Override
 			public void paint(Graphics g) {
 				super.paint(g);
@@ -63,8 +81,7 @@ public class PathMaker {
 				}
 			}
 		};
-		
-		jf.addMouseListener(new MouseAdapter() {
+		l.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent me) {
 				super.mouseClicked(me);
@@ -76,24 +93,6 @@ public class PathMaker {
 				jf.repaint();
 			}
 		});
-		
-		jf.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent ke) {
-				super.keyPressed(ke);
-				
-				if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					System.exit(0);
-				}
-			}
-		});
-		
-
-		final String[] workFile = new String[1];
-		workFile[0] = "D:/lfw/Alexandre_Daigle/Alexandre_Daigle_0001.jpg";
-		
-		final ImageIcon img = new ImageIcon(workFile[0]);
-		JLabel l = new JLabel(img);
 		
 		jf.setLayout(new BorderLayout());
 		jf.add(l,BorderLayout.CENTER);
