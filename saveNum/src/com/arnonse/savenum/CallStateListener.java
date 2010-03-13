@@ -47,7 +47,10 @@ public class CallStateListener extends PhoneStateListener {
 	}
 
 	public void activateNotification() {
-
+		
+		if (!prefs.getBoolean("showIcon", true)) 
+			return;
+		
 		cancelTimer();
 
 		final int APP_ID = 0;
