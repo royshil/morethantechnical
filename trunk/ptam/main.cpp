@@ -14,7 +14,7 @@
 void start_opengl(LPVOID p) {
 	frames[0].copyTo(backPxls);
 	cvtColor(backPxls,backPxls,CV_BGR2RGB);
-	cvFlip(&cvMat(288,352,CV_8UC3,backPxls.data),0,0);
+	cvFlip(&cvMat(frames[0].rows,frames[0].cols,CV_8UC3,backPxls.data),0,0);
 
 	start_opengl_with_stereo(0,0);
 }
@@ -24,7 +24,8 @@ void start_opengl(LPVOID p) {
  */
 int main(int i, char** c)
 {
-    VideoCapture cap("record3.wmv"); // open the default camera
+    //VideoCapture cap("record3.wmv"); // open the default camera
+	VideoCapture cap("record3.wmv");
     if(!cap.isOpened())  // check if we succeeded
         return -1;
 

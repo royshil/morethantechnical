@@ -86,9 +86,10 @@ void loadFrame(int counter) {
 
 	//update background pixels, but only when no one else needs them...
 	if(WaitForSingleObject(ghMutex, INFINITE) == WAIT_OBJECT_0) {
+		//Mat &f = frames[counter];
 		frames[counter].copyTo(backPxls);
 		cvtColor(backPxls,backPxls,CV_BGR2RGB);
-		cvFlip(&cvMat(288,352,CV_8UC3,backPxls.data),0,-1);
+		cvFlip(&cvMat(backPxls.rows,backPxls.cols,CV_8UC3,backPxls.data),0,0);
 
 		ReleaseMutex(ghMutex);
 	}
