@@ -48,19 +48,27 @@ void display(void)
 	//	curCam[2] += zc * t * 0.08;
 	//	//printf("move %.3f %.3f %.3f by %.5f %.5f %.5f\n",curCam[0],curCam[1],curCam[2],xc,yc,zc);
 	//}
-	curCam[0] = cam[0]; curCam[1] = cam[1]; curCam[2] = cam[2];
-	glTranslated(-curCam[0]+0.5,-curCam[1]+0.7,-curCam[2]);
 
-	//double _d[16];
-	//glGetDoublev(GL_MODELVIEW_MATRIX,_d);
+	//curCam[0] = cam[0]; curCam[1] = cam[1]; curCam[2] = cam[2];
+	//glTranslated(-curCam[0]+0.5,-curCam[1]+0.7,-curCam[2]);
 
-	double _d[16] = {	rot[0],rot[1],rot[2],0,
-						rot[3],rot[4],rot[5],0,
-						rot[6],rot[7],rot[8],0,
-						0,	   0,	  0		,1};
-	glMultMatrixd(_d);
+	////double _d[16];
+	////glGetDoublev(GL_MODELVIEW_MATRIX,_d);
 
-	glRotated(180,1,0,0);
+	//double _d[16] = {	rot[0],rot[1],rot[2],0,
+	//					rot[3],rot[4],rot[5],0,
+	//					rot[6],rot[7],rot[8],0,
+	//					0,	   0,	  0		,1};
+	//glMultMatrixd(_d);
+
+	//glRotated(180,1,0,0);
+
+	double m[16] = {	rot[0],-rot[3],-rot[6],0,
+		rot[1],-rot[4],-rot[7],0,
+		rot[2],-rot[5],-rot[8],0,
+		cam[0],-cam[1],-cam[2],1};
+
+	glLoadMatrixd(m);
 
 
 	/*draw features*/
