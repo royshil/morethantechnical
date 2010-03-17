@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,6 +37,8 @@ public class PathMaker {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		final boolean drawPath[] = {true};
+		
 		final List<Point> points = new ArrayList<Point>();
 		final JFrame jf = new JFrame();
 				
@@ -52,7 +55,7 @@ public class PathMaker {
 		
 
 		final String[] workFile = new String[1];
-		workFile[0] = "C:/downloads/lfw-a/lfw/Alexandre_Daigle/Alexandre_Daigle_0001.jpg";
+		workFile[0] = "";
 		
 		final ImageIcon img = new ImageIcon(workFile[0]);
 		JLabel l = new JLabel(img) {
@@ -61,13 +64,12 @@ public class PathMaker {
 			@Override
 			public void paint(Graphics g) {
 				super.paint(g);
-				
 				Graphics2D g2d = (Graphics2D)g;
 				
 				for (int i = 0; i < points.size(); i++) {
 					Point p = points.get(i);
 					
-					if(i>0) {
+					if(drawPath[0] && i>0) {
 						Point pm1 = points.get(i-1);
 						g2d.setColor(Color.blue);
 						g2d.drawLine(pm1.x, pm1.y, p.x, p.y);
@@ -119,8 +121,8 @@ public class PathMaker {
 			}
 		});
 		
-		JPanel jp = new JPanel(new BorderLayout());		
-		jp.add(jb,BorderLayout.PAGE_END);
+		JPanel jp = new JPanel(new GridBagLayout());		
+		jp.add(jb);
 		
 		JButton jb2 = new JButton("Clear");
 		jb2.addActionListener(new ActionListener() {
@@ -130,7 +132,19 @@ public class PathMaker {
 				jf.repaint();
 			}
 		});
-		jp.add(jb2,BorderLayout.PAGE_START);
+		jp.add(jb2);
+		
+		final JButton jb3 = new JButton("No Path");
+		jb3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("clear");
+				drawPath[0] = !drawPath[0];
+				jb3.setText(drawPath[0] ? "No Path" : "Path");
+				jf.repaint();
+			}
+		});
+		jp.add(jb3);
+		
 		jf.add(jp,BorderLayout.PAGE_END);
 		
 		JButton jb1 = new JButton("Load");
@@ -148,7 +162,7 @@ public class PathMaker {
 					
 					points.clear();
 					File txtFile = new File(workFile[0].substring(0, workFile[0].lastIndexOf(".")) + ".txt");
-					if(txtFile.exists()) {
+					if(txtFile.exists() && txtFile.canRead()) {
 						BufferedReader br = new BufferedReader(new FileReader(txtFile));
 						String line = null;
 						while((line = br.readLine())!=null) {
@@ -164,6 +178,7 @@ public class PathMaker {
 						}
 					}
 					
+					jf.pack();
 					jf.repaint();
 				} catch (IOException e) {
 					e.printStackTrace();
