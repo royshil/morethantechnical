@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -40,19 +41,17 @@ public class PathMaker {
 		final boolean drawPath[] = {true};
 		
 		final List<Point> points = new ArrayList<Point>();
-		final JFrame jf = new JFrame();
-				
-		jf.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent ke) {
-				super.keyPressed(ke);
-				
-				if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					System.exit(0);
-				}
-			}
-		});
 		
+		final class PointPair {
+			PointPair(Point _a,Point _b) {a=_a;b=_b;}
+			Point a;
+			Point b;
+		}
+		final List<PointPair> pairs = new ArrayList<PointPair>();
+
+		final JFrame jf = new JFrame();
+
+		final JCheckBox jb3 = new JCheckBox("Path");		
 
 		final String[] workFile = new String[1];
 		workFile[0] = "";
@@ -69,11 +68,11 @@ public class PathMaker {
 				for (int i = 0; i < points.size(); i++) {
 					Point p = points.get(i);
 					
-					if(drawPath[0] && i>0) {
-						Point pm1 = points.get(i-1);
-						g2d.setColor(Color.blue);
-						g2d.drawLine(pm1.x, pm1.y, p.x, p.y);
-					}
+//					if(drawPath[0] && i>0) {
+//						Point pm1 = points.get(i-1);
+//						g2d.setColor(Color.blue);
+//						g2d.drawLine(pm1.x, pm1.y, p.x, p.y);
+//					}
 					
 					g2d.setColor(Color.green);
 					g2d.fillRect(p.x-2, p.y-2, 5, 5);
@@ -81,8 +80,17 @@ public class PathMaker {
 					g2d.setColor(Color.red);
 					g2d.drawString(String.valueOf(i), p.x-2,p.y-2);
 				}
+				
+				//draw any connecting lines
+				for (int j = 0; j < pairs.size(); j++) {
+					g2d.setColor(Color.blue);
+					Point p = pairs.get(j).a;
+					Point p1 = pairs.get(j).b;
+					g2d.drawLine(p1.x, p1.y, p.x, p.y);					
+				}
 			}
 		};
+		
 		l.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent me) {
@@ -91,8 +99,26 @@ public class PathMaker {
 				Point p = new Point(me.getX(),me.getY());
 				points.add(p);
 				
+				if(jb3.isSelected() && points.size() > 1) {
+					pairs.add(new PointPair(p,points.get(points.size()-2)));
+				}
+				
 				System.out.println("clicked " + p);
 				jf.repaint();
+			}
+		});
+		
+		l.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent ke) {
+				super.keyPressed(ke);
+				System.out.println("key pressed: " + ke.getKeyCode());
+				
+				if(ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					System.exit(0);
+				} else if(ke.getKeyCode() == KeyEvent.VK_CONTROL) {
+					jb3.setSelected(false);
+				}
 			}
 		});
 		
@@ -129,20 +155,21 @@ public class PathMaker {
 			public void actionPerformed(ActionEvent arg0) {
 				System.out.println("clear");
 				points.clear();
+				pairs.clear();
 				jf.repaint();
 			}
 		});
 		jp.add(jb2);
 		
-		final JButton jb3 = new JButton("No Path");
-		jb3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("clear");
-				drawPath[0] = !drawPath[0];
-				jb3.setText(drawPath[0] ? "No Path" : "Path");
-				jf.repaint();
-			}
-		});
+//		final JButton jb3 = new JButton("No Path");
+//		jb3.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				System.out.println("clear");
+//				drawPath[0] = !drawPath[0];
+//				jb3.setText(drawPath[0] ? "No Path" : "Path");
+//				jf.repaint();
+//			}
+//		});
 		jp.add(jb3);
 		
 		jf.add(jp,BorderLayout.PAGE_END);
