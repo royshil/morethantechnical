@@ -51,3 +51,4 @@ typedef struct VirtualSurgeonParams {
 
 void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv);
 void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im);
+void PrintParams(VIRTUAL_SURGEON_PARAMS& p);

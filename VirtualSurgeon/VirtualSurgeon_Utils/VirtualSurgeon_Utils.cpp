@@ -18,6 +18,39 @@ using namespace TCLAP;
 
 int curl_get(std::string& s, std::string& _s = std::string(""));
 
+// Define the command line object.
+CmdLine cmd("Command description message", ' ', "0.9");
+bool cmd_initialized = false;
+UnlabeledValueArg<string> filename_arg("filename","file to work on",true,"","string",cmd);
+UnlabeledValueArg<string> groundtruth_arg("groundtruth","ground truth file",false,"","string",cmd);
+ValueArg<double> gb_freq_arg("f","gabor-freq","Gabor func frequency",false,0.15,"float",cmd);
+ValueArg<double> gb_sig_arg("s","gabor-sigma","Gabor func sigma",false,1.0,"float",cmd);
+ValueArg<double> gb_phase_arg("p","gabor-phase","Gabor func phase",false,_PI/2.0,"float",cmd);
+ValueArg<double> gb_gamma_arg("g","gabor-gamma","Gabor func gamma",false,1.0,"float",cmd);
+ValueArg<int> gb_nstds_arg("n","gabor-nstds","Gabor func number of std devs",false,3,"int",cmd);
+ValueArg<int> gb_size_arg("z","gabor-size","Gabor filter bank size",false,2,"int",cmd);
+ValueArg<int> km_numc_arg("c","kmeans-num-centers","K-Means number of clusters",false,10,"int",cmd);
+ValueArg<int> km_numt_arg("m","kmeans-num-tries","K-Means number of tries",false,2,"int",cmd);
+ValueArg<int> com_winsize_arg("w","combine-win-size","Hist combine window size",false,5,"int",cmd);
+ValueArg<double> com_thresh_arg("t","combine-threshold","Hist combine threshold",false,0.15,"float",cmd);
+ValueArg<int> com_add_type_arg("y","combine-add-type","Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +)",false,2,"int [0-3]",cmd);
+ValueArg<int> com_calc_type_arg("l","combine-type","Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.)",false,0,"int [0-3]",cmd);
+ValueArg<double> im_scale_by_arg("b","image-scale-by","Scale down image by factor",false,2.0,"float",cmd);
+ValueArg<int> gc_iter_arg("r","grabcut-iterations","Number of grabcut iterations",false,1,"int",cmd);
+ValueArg<int> relable_type_arg("e","relable-type","Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut)",false,1,"int",cmd);
+SwitchArg position_in_km_arg("q","position-in-km","Include position in K-Means?",cmd,false);
+SwitchArg initialization_step_arg("a","initialization_step","Do initialization step?",cmd,false);
+ValueArg<int> num_iters_arg("x","num-iters","Number of cut-backp iterations",false,3,"int",cmd);
+ValueArg<int> btm_wait_time_arg("d","wait-time","Time in msec to wait on debug pauses",false,1,"int",cmd);
+SwitchArg do_alphamatt_arg("u","do-alpha-matting","Do alpha matting?",cmd,false);
+ValueArg<int> alpha_matt_dilate_arg("i","alpha-matt-dilate-size","Size in pixels to dilate mask for alpha matting",false,10,"int",cmd);
+SwitchArg use_hist_match_hs_arg(string(),"use-hist-match-hs","Use histogram matching over HS space for recoloring?",cmd,false);
+SwitchArg use_hist_match_rgb_arg(string(),"use-hist-match-rgb","Use histogram matching over RGB space for recoloring?",cmd,false);
+SwitchArg use_overlay_arg(string(),"use-overlay","Use overlay for recoloring?",cmd,false);
+SwitchArg use_warp_rigid_arg(string(),"use-warp-rigid","Use rigid warp for neck warping?",cmd,false);
+SwitchArg use_warp_affine_arg(string(),"use-warp-affine","Use affine warp for neck warping?",cmd,false);
+SwitchArg use_double_warp_arg(string(),"use-double-warp","Use 2-way warping?",cmd,false);
+
 void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv) {
 	params.gb_sig = 1.0;
 	params.gb_freq = 0.15;
@@ -49,38 +82,7 @@ void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv) {
 
 	try {  
 
-	// Define the command line object.
-	CmdLine cmd("Command description message", ' ', "0.9");
-
-	UnlabeledValueArg<string> filename_arg("filename","file to work on",true,"","string",cmd);
-	UnlabeledValueArg<string> groundtruth_arg("groundtruth","ground truth file",false,"","string",cmd);
-	ValueArg<double> gb_freq_arg("f","gabor-freq","Gabor func frequency",false,0.15,"float",cmd);
-	ValueArg<double> gb_sig_arg("s","gabor-sigma","Gabor func sigma",false,1.0,"float",cmd);
-	ValueArg<double> gb_phase_arg("p","gabor-phase","Gabor func phase",false,_PI/2.0,"float",cmd);
-	ValueArg<double> gb_gamma_arg("g","gabor-gamma","Gabor func gamma",false,1.0,"float",cmd);
-	ValueArg<int> gb_nstds_arg("n","gabor-nstds","Gabor func number of std devs",false,3,"int",cmd);
-	ValueArg<int> gb_size_arg("z","gabor-size","Gabor filter bank size",false,2,"int",cmd);
-	ValueArg<int> km_numc_arg("c","kmeans-num-centers","K-Means number of clusters",false,10,"int",cmd);
-	ValueArg<int> km_numt_arg("m","kmeans-num-tries","K-Means number of tries",false,2,"int",cmd);
-	ValueArg<int> com_winsize_arg("w","combine-win-size","Hist combine window size",false,5,"int",cmd);
-	ValueArg<double> com_thresh_arg("t","combine-threshold","Hist combine threshold",false,0.15,"float",cmd);
-	ValueArg<int> com_add_type_arg("y","combine-add-type","Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +)",false,2,"int [0-3]",cmd);
-	ValueArg<int> com_calc_type_arg("l","combine-type","Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.)",false,0,"int [0-3]",cmd);
-	ValueArg<double> im_scale_by_arg("b","image-scale-by","Scale down image by factor",false,2.0,"float",cmd);
-	ValueArg<int> gc_iter_arg("r","grabcut-iterations","Number of grabcut iterations",false,1,"int",cmd);
-	ValueArg<int> relable_type_arg("e","relable-type","Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut)",false,1,"int",cmd);
-	SwitchArg position_in_km_arg("q","position-in-km","Include position in K-Means?",cmd,false);
-	SwitchArg initialization_step_arg("a","initialization_step","Do initialization step?",cmd,false);
-	ValueArg<int> num_iters_arg("x","num-iters","Number of cut-backp iterations",false,3,"int",cmd);
-	ValueArg<int> btm_wait_time_arg("d","wait-time","Time in msec to wait on debug pauses",false,1,"int",cmd);
-	SwitchArg do_alphamatt_arg("u","do-alpha-matting","Do alpha matting?",cmd,false);
-	ValueArg<int> alpha_matt_dilate_arg("i","alpha-matt-dilate-size","Size in pixels to dilate mask for alpha matting",false,10,"int",cmd);
-	SwitchArg use_hist_match_hs_arg(string(),"use-hist-match-hs","Use histogram matching over HS space for recoloring?",cmd,false);
-	SwitchArg use_hist_match_rgb_arg(string(),"use-hist-match-rgb","Use histogram matching over RGB space for recoloring?",cmd,false);
-	SwitchArg use_overlay_arg(string(),"use-overlay","Use overlay for recoloring?",cmd,false);
-	SwitchArg use_warp_rigid_arg(string(),"use-warp-rigid","Use rigid warp for neck warping?",cmd,false);
-	SwitchArg use_warp_affine_arg(string(),"use-warp-affine","Use affine warp for neck warping?",cmd,false);
-	SwitchArg use_double_warp_arg(string(),"use-double-warp","Use 2-way warping?",cmd,false);
+	cmd.reset();
 
 	// Parse the args.
 	cmd.parse( argc, argv );
@@ -121,6 +123,46 @@ void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv) {
 	{ cerr << "error: " << e.error() << " for arg " << e.argId() << endl; scanf("press any key...\n"); }
 }
 
+void PrintParams(VIRTUAL_SURGEON_PARAMS& p) {
+	cout<<"file to work on: "<<p.filename<<endl;
+	cout<<"ground truth file: "<<p.groundtruth<<endl;
+	cout<<"Gabor func frequency: "<<p.gb_freq<<endl;
+	cout<<"Gabor func sigma: "<<p.gb_sig<<endl;
+	cout<<"Gabor func phase: "<<p.gb_phase<<endl;
+	cout<<"Gabor func gamma: "<<p.gb_gamma<<endl;
+	cout<<"Gabor func number of std devs: "<<p.gb_nstds<<endl;
+	cout<<"Gabor filter bank size: "<<p.gb_size;
+	cout<<"K-Means number of clusters: "<<p.km_numc<<endl;
+	cout<<"K-Means number of tries: "<<p.km_numt<<endl;
+	cout<<"Hist combine window size: "<<p.com_winsize<<endl;
+	cout<<"Hist combine threshold: "<<p.com_thresh<<endl;
+	cout<<"Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +): "<<p.com_add_type<<endl;
+	cout<<"Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.): "<<p.com_calc_type<<endl;
+	cout<<"Scale down image by factor: "<<p.im_scale_by<<endl;
+	cout<<"Number of grabcut iterations: "<<p.gc_iter<<endl;
+	cout<<"Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut): "<<p.relable_type<<endl;
+	cout<<"Include position in K-Means?: "<<p.doPositionInKM<<endl;
+	cout<<"Do initialization step?: "<<p.doInitStep<<endl;
+	cout<<"Number of cut-backp iterations: "<<p.num_cut_backp_iters<<endl;
+	cout<<"Time in msec to wait on debug pauses: "<<p.wait_time<<endl;
+	cout<<"Do alpha matting?: "<<p.do_alpha_matt<<endl;
+	cout<<"Size in pixels to dilate mask for alpha matting: "<<p.alpha_matt_dilate_size<<endl;
+	cout<<"Use histogram matching over HS space for recoloring?: "<<p.use_hist_match_hs<<endl;
+	cout<<"Use histogram matching over RGB space for recoloring?: "<<p.use_hist_match_rgb<<endl;
+	cout<<"Use overlay for recoloring?: "<<p.use_overlay<<endl;
+	cout<<"Use rigid warp for neck warping?: "<<p.use_warp_rigid<<endl;
+	cout<<"Use affine warp for neck warping?: "<<p.use_warp_affine<<endl;
+	cout<<"Use 2-way warping?: "<<p.use_double_warp<<endl;
+
+	cout<<"Face:"<<endl<<"------"<<endl;
+	cout<<"Left eye: "<<p.li.x<<","<<p.li.y<<endl;
+	cout<<"Right eye: "<<p.ri.x<<","<<p.ri.y<<endl;
+	cout<<"Pitch: "<<p.pitch<<endl;
+	cout<<"Roll: "<<p.roll<<endl;
+	cout<<"Yaw: "<<p.yaw<<endl;
+
+}
+
 /**
 This function goes to Face.com APIs (using CURL) to get the facial features of the face in the image.
 It will take out the image URL from params.filename and fill in the ri,li,yaw,roll,pitch params, an also
@@ -158,6 +200,7 @@ void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im) {
 		curl_get(u,img_fn_txtext);
 	}
 
+	//TODO: handle bad file format, or no detection
 	{
 		ifstream ifs(img_fn_txtext.c_str());
 		string line;
