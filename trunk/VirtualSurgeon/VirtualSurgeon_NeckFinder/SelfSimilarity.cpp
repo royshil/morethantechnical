@@ -2,7 +2,7 @@
 #include "highgui.h"
 #include "cvaux.h"
 
-using namespace std;
+using namespace cv;
 
 #include "../VirtualSurgeon_Utils/VirtualSurgeon_Utils.h"
 
@@ -10,48 +10,269 @@ using namespace std;
 #include <vector>
 #include <limits>
 #include <iostream>
+#include <fstream>
 using namespace std;
 
+#include "MySelfSimilarity.h"
+
+int ExtractNeck(int argc, char** argv);
+
 int main(int argc, char** argv) {
+	//VIRTUAL_SURGEON_PARAMS p;
+	//ParseParams(p,argc,argv);
+
+	int _find = (int)(strstr(argv[1],"txt") - argv[1]);
+	if(_find > 0 && _find <= strlen(argv[1])) {
+		//this is a text file, probably with many pictures to run on
+		ifstream f(argv[1]);
+		string line;
+		while(!f.eof()) {
+			getline(f,line);
+			char buf[512] = {0};
+			strncpy(buf,line.c_str(),line.length());
+			argv[1] = buf;
+
+			ExtractNeck(argc,argv);
+		}
+	} else {
+		ExtractNeck(argc,argv);
+	}
+}
+
+int ExtractNeck(int argc, char** argv) {
 	VIRTUAL_SURGEON_PARAMS p;
 	ParseParams(p,argc,argv);
 
 	Mat _im;
 	FaceDotComDetection(p,_im);
 
+	PrintParams(p);
+
 	Mat __im;
 	resize(_im,__im,Size((int)floor((double)_im.cols/p.im_scale_by),
 							(int)floor((double)_im.rows/p.im_scale_by)));
 
+	Mat neck = imread("C:/Users/Roy/Documents/VirtualSurgeon/neck_template1.png");
+	Mat neckGray; cvtColor(neck,neckGray,CV_BGR2GRAY);
+	Size neck_points_size = neckGray.size();
+
 	namedWindow("tmp");
 	imshow("tmp",__im);
-	waitKey();
+	waitKey(p.wait_time);
 
-	Mat im; __im.copyTo(im);
+	//bilateral filter for edge-preserving smoothing
+	{
+		Mat _tmp;
+		bilateralFilter(__im,_tmp,30,80.0,5.0,BORDER_REPLICATE);
+		_tmp.copyTo(__im);
+	}
+	//imshow("tmp",__im);
+	//waitKey();
+	
 
-	SelfSimDescriptor imdescs;
-	vector<float> im_descriptors;
+	Rect r; //interesting part of picture
+	{
+		int distBetweenEyes = abs(p.li.x/p.im_scale_by-p.ri.x/p.im_scale_by);
+		int totalWidth = distBetweenEyes*10;
+		r.x = MAX(0,MIN(
+			/* x start: */(p.li.x/p.im_scale_by+p.ri.x/p.im_scale_by)/2 - totalWidth/3 - ((abs(p.yaw)>25.0) ? (p.yaw/60.0)*distBetweenEyes : 0),
+			__im.cols)); 
+		r.y = MAX(0,MIN(
+			/* y start: */p.li.y/p.im_scale_by + distBetweenEyes/* - (p.pitch/40.0)*distBetweenEyes*2*/,
+			__im.rows));
+		r.width = MIN(totalWidth - ((abs(p.yaw)>25.0) ? abs(p.yaw/40.0)*distBetweenEyes*2 : 0),__im.cols-r.x); 
+		r.height = MIN(totalWidth/3,__im.rows-r.y);
+	}
+
+	vector<Point> neck_points;
+	//neck_points.push_back(Point(7,133));
+	//neck_points.push_back(Point(27,89));
+	//neck_points.push_back(Point(72,54));
+	//neck_points.push_back(Point(127,34));
+	//neck_points.push_back(Point(184,81));
+	//neck_points.push_back(Point(227,81));
+	//neck_points.push_back(Point(274,29));
+	//neck_points.push_back(Point(329,50));
+	//neck_points.push_back(Point(377,84));
+	//neck_points.push_back(Point(400,131));
+
+	neck_points.push_back(Point(22,166));
+	neck_points.push_back(Point(71,136));
+	neck_points.push_back(Point(167,108));
+	neck_points.push_back(Point(174,44));
+	neck_points.push_back(Point(196,159));
+	neck_points.push_back(Point(248,159));
+	//neck_points.push_back(Point(329,120));
+	neck_points.push_back(Point(268,44));
+	neck_points.push_back(Point(277,108));
+	neck_points.push_back(Point(377,138));
+	neck_points.push_back(Point(422,166));
+
+	{
+		Mat _tmp; __im.copyTo(_tmp);
+		rectangle(_tmp,r,Scalar(255),2);
+		Mat _tmp_r = _tmp(r);
+		for(int i=0;i<neck_points.size();i++) {
+			Point pt((float)neck_points[i].x * ((float)_tmp.cols/(float)neck_points_size.width),
+					 (float)neck_points[i].y * ((float)_tmp.rows/(float)neck_points_size.height));
+
+			circle(_tmp_r,pt, 
+						2, Scalar(0,255),CV_FILLED);
+			char s[10]; sprintf(s,"%d",i);
+			putText(_tmp,string(s),pt,FONT_HERSHEY_PLAIN,1.0,Scalar(0,255),2);
+		}
+		imshow("tmp",_tmp);
+		waitKey(p.wait_time);
+	}
+
+	Mat im; __im(r).copyTo(im);
+
+	//Mat bias(r.size(),CV_64FC1);
+	//{
+	//	Mat small_temp; resize(neckGray,small_temp,r.size(),0,0,INTER_NEAREST);
+	//	//imshow("tmp",small_temp);
+	//	//waitKey();
+	//	GaussianBlur(small_temp,small_temp,Size(21,21),5.0);
+	//	//imshow("tmp",small_temp);
+	//	//waitKey();
+	//	small_temp.convertTo(bias,CV_64FC1,1/255.0);
+	//	//imshow("tmp",bias);
+	//	//waitKey();
+	//	//bias = -bias + 1.0;
+	//	//bias = bias * 4;
+	//	imshow("tmp",bias);
+	//	waitKey();
+	//}
+
 	cout << "compute self-sim descs for imgae...";
-	imdescs.compute(im,im_descriptors,Size(5,5));
+
+	myselfsim::SelfSimDescriptor imdescs;
+	imdescs.largeSize = 41;
+	imdescs.smallSize = 5;
+	vector<float> im_descriptors;
+	vector<Point> im_desc_loc;
+
+	Mat im_gray; cvtColor(im,im_gray,CV_BGR2GRAY);
+	imshow("tmp",im_gray);
+	waitKey(p.wait_time);
+
+	imdescs.compute(im_gray,im_descriptors,Size(5,5),im_desc_loc,true);
+
 	cout << "DONE " <<im_descriptors.size() << endl;
 
-	Mat neck = imread("H:/Face Replace Thesis/BeTheModel/neck_template.png");
-	SelfSimDescriptor templateDescs;
+	myselfsim::SelfSimDescriptor templateDescs;
+	templateDescs.largeSize = 51;
+	templateDescs.smallSize = 5;
 	vector<float> neck_descriptors;
-	vector<Point> neck_points;
-	neck_points.push_back(Point(7,133));
-	neck_points.push_back(Point(27,89));
-	neck_points.push_back(Point(72,54));
-	neck_points.push_back(Point(127,34));
-	neck_points.push_back(Point(184,81));
-	neck_points.push_back(Point(227,81));
-	neck_points.push_back(Point(274,29));
-	neck_points.push_back(Point(329,50));
-	neck_points.push_back(Point(377,84));
-	neck_points.push_back(Point(400,131));
+	
 
-	Mat neckGray; cvtColor(neck,neckGray,CV_BGR2GRAY);
-	templateDescs.compute(neckGray,neck_descriptors,Size(),neck_points);
+	templateDescs.compute(neckGray,neck_descriptors,Size(-1,-1),neck_points);
+
+	//ofstream f("neck_descs.txt");
+	//for(int i=0;i<neck_descriptors.size();i++) {
+	//	f << neck_descriptors[i] << "," << endl;
+	//}	
+	//f.close();
+
+	int featureSize = templateDescs.getDescriptorSize();
+	int numTemplateDescs = neck_descriptors.size() / featureSize;
+	int numImageDescs = im_descriptors.size() / featureSize;
+
+	vector<std::pair<int,double> > indexAndSSD(numTemplateDescs);
+	for(int i=0;i<numTemplateDescs;i++) indexAndSSD[i] = std::pair<int,double>(-1,DBL_MAX);
+
+	vector<double> template_angles(numTemplateDescs,0.0);
+	for(int i=1;i<numTemplateDescs;i++) {
+		Point a = neck_points[i-1],b  = neck_points[i];
+		double ang = b.ddot(a) / (sqrt(a.ddot(a))*sqrt(b.ddot(b)));
+		template_angles[i] = ang;
+	}
+
+	for(int ti = 0; ti < numTemplateDescs; ti++) {
+		float *tfeat = &(neck_descriptors[ti * featureSize]);
+
+		vector<double> ssds(numImageDescs);
+
+		for(int ii = 0; ii < numImageDescs; ii++) {
+			float* ifeat = &(im_descriptors[ii * featureSize]);
+
+			Mat D = Mat(1,80,CV_32FC1,tfeat) - Mat(1,80,CV_32FC1,ifeat);
+			//Mat SSD = D * D.t();			//L2...
+			//double ssd = SSD.at<float>(0,0);
+
+			double ssd = sum(abs(D))[0];	//L1...
+			if(ssd < 0 || ssd > 100) ssd = 100;
+
+			double geometric_bias = 1.0;
+			//if(ti > 0 && (im_desc_loc[ii].x > 0 || im_desc_loc[ii].y > 0)) {
+			//	//angle to the prev 
+			//	Point a = neck_points[ti-1];
+			//	double img_ang = im_desc_loc[ii].ddot(a) / (sqrt(a.ddot(a))*sqrt(im_desc_loc[ii].ddot(im_desc_loc[ii])));
+
+			//	//L2 dist
+			//	geometric_bias = 1.0- abs(template_angles[ti] - img_ang);
+			//}
+				//if(ti > 1) {
+				//	geometric_bias += (template_angles[ti-1] - img_ang);
+				//}
+				//geometric_bias = geometric_bias * geometric_bias;
+
+				Point2f template_pt((float)neck_points[ti].x / neck_points_size.width,
+									(float)neck_points[ti].y / neck_points_size.height);
+				Point2f img_pt((float)im_desc_loc[ii].x / im.cols,
+								(float)im_desc_loc[ii].y / im.rows);
+				Point2f d_pt(template_pt.x-img_pt.x,template_pt.y-img_pt.y);
+
+				geometric_bias = MAX(geometric_bias*sqrt(d_pt.ddot(d_pt)),0.15);
+			//}
+
+			//sigmoid on the L1
+			ssds[ii] = 1.0/((1.0 + exp(-(ssd * geometric_bias))));
+
+			//ssds[ii] = MIN(ssd * (0.002/geometric_bias),200.0);
+		}
+
+		double minv,maxv; Point minl;
+		Mat ssdsM(ssds);
+		minMaxLoc(ssdsM,&minv,&maxv,&minl,0);
+		//Scalar meanSSD = mean(Mat(ssds));
+		//double twomean =  meanSSD[0]*2.0;
+
+		ssdsM = (ssdsM - minv) / (maxv - minv);
+
+		for(int ii=0;ii<numImageDescs;ii++) {
+			double ssdsii = ssds[ii];
+			int v = 255 * (1 - ssdsii); // / twomean);
+			circle(im,im_desc_loc[ii],5,Scalar(v,v,v),CV_FILLED);
+		}
+
+		indexAndSSD[ti].first = minl.y;
+		indexAndSSD[ti].second = minv;
+
+		circle(im,im_desc_loc[indexAndSSD[ti].first],3,Scalar(0,0,255),CV_FILLED);
+
+		imshow("tmp",im);
+		waitKey(p.wait_time);
+
+		//"clear" out feature, so it wont repeat
+		Mat(1,80,CV_32FC1,&(im_descriptors[indexAndSSD[ti].first * featureSize])).setTo(Scalar(FLT_MAX));
+	}
+
+	__im.copyTo(im);
+	for(int ti = 0; ti < numTemplateDescs; ti++) {
+		Point p1(im_desc_loc[indexAndSSD[ti].first].x + r.x,im_desc_loc[indexAndSSD[ti].first].y + r.y);
+		if(ti > 0) {
+			Point p2(im_desc_loc[indexAndSSD[ti-1].first].x + r.x, im_desc_loc[indexAndSSD[ti-1].first].y + r.y);
+			line(im,p1,p2,Scalar(0,255),2);
+		}
+		circle(im,p1,3,Scalar(255),CV_FILLED);
+	}
+
+	cout <<" file: "<<p.filename<<endl;
+	imshow("tmp",im);
+	waitKey();
+
+	return 0;
 
 	//Mat im(__im.size(),CV_64FC3);
 	//cvtColor(__im,im,CV_BGR2Lab);
