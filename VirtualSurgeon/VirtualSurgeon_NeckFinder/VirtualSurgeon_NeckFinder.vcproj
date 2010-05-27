@@ -136,7 +136,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cv210.lib cxcore210.lib highgui210.lib"
+				AdditionalDependencies="cv210.lib cxcore210.lib highgui210.lib cvaux210.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;d:\opencv-latest\lib&quot;"
 				GenerateDebugInformation="true"
@@ -173,6 +173,10 @@
 			ReferencedProjectIdentifier="{15FBF626-C021-4C89-87E9-EDFA63F58418}"
 			RelativePathToProject="..\VirtualSurgeon_Utils\VirtualSurgeon_Utils.vcproj"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{65D6236C-ABF5-4E32-8D37-75B033545C55}"
+			RelativePathToProject="..\tnc\tnc.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -181,11 +185,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\LeastSqaures.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MatchTemplate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MySelfSimilarity.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\SelfSimilarity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SURFDetector.cpp"
 				>
 			</File>
 			<File
