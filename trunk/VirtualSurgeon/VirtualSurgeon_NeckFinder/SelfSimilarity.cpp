@@ -13,6 +13,8 @@ using namespace cv;
 #include <fstream>
 using namespace std;
 
+#include "../tnc/tnc.h"
+
 #include "MySelfSimilarity.h"
 
 int ExtractNeck(int argc, char** argv);
@@ -28,6 +30,7 @@ int main(int argc, char** argv) {
 		string line;
 		while(!f.eof()) {
 			getline(f,line);
+			if(line.length() == 0) continue;
 			char buf[512] = {0};
 			strncpy(buf,line.c_str(),line.length());
 			argv[1] = buf;
@@ -37,6 +40,109 @@ int main(int argc, char** argv) {
 	} else {
 		ExtractNeck(argc,argv);
 	}
+
+	return 0;
+}
+
+typedef struct points_path_for_tnc {
+	Mat X;
+	Mat Xorig;
+	Mat Xopt;
+	Mat im;
+	Mat w_opt;
+	Mat w_smooth;
+} POINTS_PATH_FOR_TNC;
+
+static tnc_function my_f;
+
+#define EPSILON 0.00001
+
+static double calc_Energy(Mat& X, POINTS_PATH_FOR_TNC& p) {
+	double sum = 0;
+	{
+		//translation term
+		//xi_xj = (x[i] - xopt[i]);
+		Mat diff = X - p.Xopt;			//difference
+		Mat diffsq = diff.mul(diff);	//squared
+		diffsq = diffsq.reshape(1);
+		Mat _diffsq;
+		diffsq(Range(0,10),Range(0,1)).copyTo(_diffsq);
+		add(_diffsq,diffsq(Range(0,10),Range(1,2)),_diffsq);
+		_diffsq = _diffsq.mul(p.w_opt);	//weighted
+		Scalar s = cv::sum(_diffsq);
+		sum += (s[0] + s[1]);			//summed
+
+		//smoothness term
+		{
+			diff = X - p.Xorig;
+			Mat diff_m1 = diff(Range(1,diff.rows),Range(0,1)) - diff(Range(0,diff.rows-1),Range(0,1));
+			//diff_m1_sq = diff_m1.mul(diff_m1);
+			vector<Point2d> _tmpp(diff.rows);
+			Mat diff_tot(_tmpp);
+			//add(diff_tot(Range(1,diff_tot.rows),Range(0,1)),diff_m1,diff_tot(Range(1,diff_tot.rows),Range(0,1)));
+			diff_m1.copyTo(diff_tot(Range(1,diff_tot.rows),Range(0,1)));
+			add(diff_tot(Range(0,diff_tot.rows-1),Range(0,1)),diff_m1,diff_tot(Range(0,diff_tot.rows-1),Range(0,1)));
+			diffsq = diff_tot.mul(diff_tot);
+			diffsq = diffsq.reshape(1);
+			diffsq(Range(0,10),Range(0,1)).copyTo(_diffsq);
+			add(_diffsq,diffsq(Range(0,10),Range(1,2)),_diffsq);
+			_diffsq = _diffsq.mul(p.w_smooth);	//weighted
+			Scalar s = cv::sum(diffsq);
+			sum += (s[0] + s[1]);
+		}
+	}
+	return sum;
+}
+
+static int my_f(double x[], double *f, double g[], void *state) {
+	POINTS_PATH_FOR_TNC* points_ptr = (POINTS_PATH_FOR_TNC*)state;
+
+	Mat XM(points_ptr->Xopt.size(),points_ptr->Xopt.type(),x);
+	*f = calc_Energy(XM, *points_ptr);
+
+	{
+		Mat im;
+		vector<Point> _newX(points_ptr->Xopt.rows),_xopt(points_ptr->Xopt.rows);
+		XM.convertTo(Mat(_newX),CV_32SC2);
+		points_ptr->Xopt.convertTo(Mat(_xopt),CV_32SC2);
+		points_ptr->im.copyTo(im);
+		for(int ti = 0; ti < points_ptr->Xopt.rows; ti++) {
+			Point p1(_newX[ti].x,_newX[ti].y);
+			if(ti > 0) {
+				Point p2(_newX[ti-1].x, _newX[ti-1].y);
+				line(im,p1,p2,Scalar(0,255),2);
+			}
+			circle(im,p1,3,Scalar(255),CV_FILLED);
+			line(im,p1,_xopt[ti],Scalar(0,0,255),2);
+		}
+		imshow("tmp",im);
+		waitKey(30);
+	}
+
+	//calc gradients
+	{
+		//POINTS_PATH_FOR_TNC _pointss;
+		//_pointss.Xopt = points_ptr->Xopt;
+		vector<Point2d> _v(XM.rows);
+		Mat vM(_v);
+		//_pointss.X = vM;
+
+		for(int i=0;i<XM.rows;i++) {
+			//points_ptr->X.copyTo(vM);
+			XM.copyTo(vM);
+
+			_v[i].x += EPSILON;
+			double E_epsilon = calc_Energy(vM,*points_ptr);
+			g[i*2] = (E_epsilon - *f) / EPSILON;
+
+			_v[i].x -= EPSILON;
+			_v[i].y += EPSILON;
+			E_epsilon = calc_Energy(vM,*points_ptr);
+			g[i*2+1] = (E_epsilon - *f) / EPSILON;
+		}
+	}
+
+	return 0;
 }
 
 int ExtractNeck(int argc, char** argv) {
@@ -75,13 +181,13 @@ int ExtractNeck(int argc, char** argv) {
 		int distBetweenEyes = abs(p.li.x/p.im_scale_by-p.ri.x/p.im_scale_by);
 		int totalWidth = distBetweenEyes*10;
 		r.x = MAX(0,MIN(
-			/* x start: */(p.li.x/p.im_scale_by+p.ri.x/p.im_scale_by)/2 - totalWidth/3 - ((abs(p.yaw)>25.0) ? (p.yaw/60.0)*distBetweenEyes : 0),
+			/* x start: */(p.li.x/p.im_scale_by+p.ri.x/p.im_scale_by)/2 - totalWidth/2 - ((abs(p.yaw)>25.0) ? (p.yaw/70.0)*distBetweenEyes : 0),
 			__im.cols)); 
 		r.y = MAX(0,MIN(
-			/* y start: */p.li.y/p.im_scale_by + distBetweenEyes/* - (p.pitch/40.0)*distBetweenEyes*2*/,
+			/* y start: */p.li.y/p.im_scale_by + distBetweenEyes*1.25 - (p.pitch/30.0)*distBetweenEyes,
 			__im.rows));
-		r.width = MIN(totalWidth - ((abs(p.yaw)>25.0) ? abs(p.yaw/40.0)*distBetweenEyes*2 : 0),__im.cols-r.x); 
-		r.height = MIN(totalWidth/3,__im.rows-r.y);
+		r.width = MIN(totalWidth - ((abs(p.yaw)>25.0) ? abs(p.yaw/70.0)*distBetweenEyes : 0),__im.cols-r.x); 
+		r.height = MIN(totalWidth/3.5,__im.rows-r.y);
 	}
 
 	vector<Point> neck_points;
@@ -113,13 +219,13 @@ int ExtractNeck(int argc, char** argv) {
 		rectangle(_tmp,r,Scalar(255),2);
 		Mat _tmp_r = _tmp(r);
 		for(int i=0;i<neck_points.size();i++) {
-			Point pt((float)neck_points[i].x * ((float)_tmp.cols/(float)neck_points_size.width),
-					 (float)neck_points[i].y * ((float)_tmp.rows/(float)neck_points_size.height));
+			Point pt((float)neck_points[i].x * ((float)_tmp_r.cols/(float)neck_points_size.width),
+					 (float)neck_points[i].y * ((float)_tmp_r.rows/(float)neck_points_size.height));
 
 			circle(_tmp_r,pt, 
 						2, Scalar(0,255),CV_FILLED);
 			char s[10]; sprintf(s,"%d",i);
-			putText(_tmp,string(s),pt,FONT_HERSHEY_PLAIN,1.0,Scalar(0,255),2);
+			putText(_tmp_r,string(s),pt,FONT_HERSHEY_PLAIN,1.0,Scalar(0,255),2);
 		}
 		imshow("tmp",_tmp);
 		waitKey(p.wait_time);
@@ -259,6 +365,7 @@ int ExtractNeck(int argc, char** argv) {
 	}
 
 	__im.copyTo(im);
+	vector<Point> destinations(numTemplateDescs);
 	for(int ti = 0; ti < numTemplateDescs; ti++) {
 		Point p1(im_desc_loc[indexAndSSD[ti].first].x + r.x,im_desc_loc[indexAndSSD[ti].first].y + r.y);
 		if(ti > 0) {
@@ -266,11 +373,59 @@ int ExtractNeck(int argc, char** argv) {
 			line(im,p1,p2,Scalar(0,255),2);
 		}
 		circle(im,p1,3,Scalar(255),CV_FILLED);
+		destinations[ti] = p1;
+	}
+	imshow("tmp",im);
+	waitKey();
+
+	//////////////// Enery minimization ////////////////
+	{
+		//tnc stuff: minimize the energy for the destinations and original locations
+		Mat Grad(numTemplateDescs*2,1,CV_64FC1);
+		double f;
+		POINTS_PATH_FOR_TNC ps;
+
+		//where the points should go
+		Mat(destinations).convertTo(ps.Xopt,CV_64F);
+
+		//where the points come from
+		Mat(neck_points).convertTo(ps.X,CV_64F);
+		ps.X = ps.X.mul(Mat(numTemplateDescs,1,CV_64FC2,
+										Scalar(	((double)r.width/(double)neck_points_size.width),
+												((double)r.height/(double)neck_points_size.height))))
+					+ Scalar(r.x,r.y);
+
+		ps.X.copyTo(ps.Xorig);
+
+		double w_opt[] = {2.0,1.5,1.0,1.0,1.0,1.0,1.0,1.0,1.5,2.0};
+		ps.w_opt = Mat(numTemplateDescs,1,CV_64FC1,w_opt);
+		double w_smooth[] = {1.0,1.0,2.0,2.0,2.0,2.0,2.0,2.0,1.0,1.0};
+		ps.w_smooth = Mat(numTemplateDescs,1,CV_64FC1,w_smooth);
+
+		ps.im = __im;
+
+		//minimize energy
+		simple_tnc(numTemplateDescs*2,(double*)ps.X.data,&f,(double*)Grad.data,my_f,(void*)&ps);
+
+		//draw result
+		{
+			vector<Point> _newX(numTemplateDescs);
+			ps.X.convertTo(Mat(_newX),CV_32SC2);
+			__im.copyTo(im);
+			for(int ti = 0; ti < numTemplateDescs; ti++) {
+				Point p1(_newX[ti].x,_newX[ti].y);
+				if(ti > 0) {
+					Point p2(_newX[ti-1].x, _newX[ti-1].y);
+					line(im,p1,p2,Scalar(0,255),2);
+				}
+				circle(im,p1,3,Scalar(255),CV_FILLED);
+			}
+			imshow("tmp",im);
+			waitKey();
+		}
 	}
 
 	cout <<" file: "<<p.filename<<endl;
-	imshow("tmp",im);
-	waitKey();
 
 	return 0;
 
