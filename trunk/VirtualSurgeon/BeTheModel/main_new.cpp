@@ -9,6 +9,8 @@ using namespace cv;
 
 #include "../VirtualSurgeon_HeadExtractor/head_extractor.h"
 
+#include "../VirtualSurgeon_NeckFinder/VirtualSurgeon_NeckFinder.h"
+
 int main( int argc, char** argv )
 {
 	VIRTUAL_SURGEON_PARAMS params;
@@ -17,14 +19,10 @@ int main( int argc, char** argv )
 
 	Mat im;
 
-	if(params.filename.substr(0,6).compare("http://")) {
-		FaceDotComDetection(params,im);
-	} else {
-		im = imread(params.filename);
-
-		params.li = Point(253*0.4122,338*0.2624);
-		params.ri = Point(253*0.5129,338*0.2603);
-	}
+	FaceDotComDetection(params,im);
+	PrintParams(params);
 
 	ExtractHead(im,params);
+
+	FindNeck(params,im);
 }

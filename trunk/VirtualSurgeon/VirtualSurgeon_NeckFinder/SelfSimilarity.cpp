@@ -19,7 +19,7 @@ using namespace std;
 
 int ExtractNeck(int argc, char** argv);
 
-int main(int argc, char** argv) {
+int self_similarity_main(int argc, char** argv) {
 	//VIRTUAL_SURGEON_PARAMS p;
 	//ParseParams(p,argc,argv);
 
@@ -405,7 +405,7 @@ int ExtractNeck(int argc, char** argv) {
 		ps.im = __im;
 
 		//minimize energy
-		simple_tnc(numTemplateDescs*2,(double*)ps.X.data,&f,(double*)Grad.data,my_f,(void*)&ps);
+		//simple_tnc(numTemplateDescs*2,(double*)ps.X.data,&f,(double*)Grad.data,my_f,(void*)&ps);
 
 		//draw result
 		{

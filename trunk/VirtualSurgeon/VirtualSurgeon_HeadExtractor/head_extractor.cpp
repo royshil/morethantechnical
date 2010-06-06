@@ -17,9 +17,9 @@ using namespace std;
 #define _PI 3.14159265
 #define TWO_PI 6.2831853
 
-#define BTM_WAIT_TIME btm_wait_time
-
-int btm_wait_time = 1;
+//#define BTM_WAIT_TIME btm_wait_time
+//
+//int btm_wait_time = 1;
 
 
 #define RELABLE_HIST_MAX 0
@@ -65,76 +65,6 @@ void checkArgI(const char* arg, const char* c, int l, int* val) {
 		strncpy_s(__s,10,arg+l+1,10);
 		*val = atoi(__s);
 	}
-}
-
-void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size = 30) {
-	Mat tmpMask(mask.rows,mask.cols,CV_8UC1,Scalar(GC_BGD));
-
-	//create "buffer" zones for probably BG and prob. FG.
-	{
-		Mat __tmp(mask.rows,mask.cols,CV_8UC1,Scalar(0));
-		dilate(mask,__tmp,Mat::ones(dilate_size,dilate_size,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT);	//probably background
-		tmpMask.setTo(Scalar(GC_PR_BGD),__tmp);
-
-		dilate(mask,__tmp,Mat::ones(dilate_size/2,dilate_size/2,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT); //probably foregroung
-		tmpMask.setTo(Scalar(GC_PR_FGD),__tmp);
-
-		erode(mask,__tmp,Mat::ones(dilate_size/3,dilate_size/3,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT); // foreground
-		tmpMask.setTo(Scalar(GC_FGD),__tmp);
-	}
-
-	//Mat(mask).copyTo(tmpMask);
-	Mat bgdModel, fgdModel;
-#ifdef BTM_DEBUG
-
-	Mat _tmp;
-	tmpMask.convertTo(_tmp,CV_32FC1);
-	_tmp = tmpMask / 4.0f * 255.0f;
-	imshow("tmp",_tmp);
-	waitKey(BTM_WAIT_TIME);
-
-	cout << "Do grabcut... init... ";
-#endif
-
-	Rect mr = find_bounding_rect_of_mask(&((IplImage)mask));
-	//initialize
-	grabCut(
-		orig,
-		tmpMask,
-		mr,
-		bgdModel,
-		fgdModel,
-		1, GC_INIT_WITH_MASK);
-#ifdef BTM_DEBUG
-	cout << "run... ";
-#endif
-	for(int i=0;i<iters;i++) {
-		//run one iteration
-		grabCut(
-			orig,
-			tmpMask,
-			mr,
-			bgdModel,
-			fgdModel,
-			1);
-#ifdef BTM_DEBUG
-		cout << ".";
-#endif
-	}
-
-	//cvShowImage("result",image);
-	//cvCopy(__GCtmp,mask);
-	//Mat(mask).setTo(Scalar(255),tmpMask);
-	//cvSet(mask,cvScalar(255),&((IplImage)tmpMask));
-	Mat __tm = tmpMask & GC_FGD;
-	__tm.setTo(Scalar(255),__tm);
-	__tm.copyTo(Mat(mask));
-#ifdef BTM_DEBUG
-	cout << "Done" << endl;
-	//cvShowImage("tmp",mask);
-	imshow("tmp",mask);
-	waitKey(BTM_WAIT_TIME);
-#endif
 }
 
 /*
@@ -624,7 +554,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		Mat _im; cv::merge(ims,_im);
 		imshow("tmp1",_im);
 	}
-	waitKey(BTM_WAIT_TIME);
+	waitKey(params.wait_time);
 #endif
 
 	//make gabors
@@ -647,7 +577,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		circle(_col,Point(params.li.x/params.im_scale_by,params.li.y/params.im_scale_by),2,Scalar(255,0,0),CV_FILLED);
 		circle(_col,Point(params.ri.x/params.im_scale_by,params.ri.y/params.im_scale_by),2,Scalar(255,0,0),CV_FILLED);
 		imshow("tmp",_col);
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 	}
 #endif
 	Mat tmp;
@@ -711,7 +641,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 	__tmp1.convertTo(tmp,CV_8UC1);
 
 	imshow("tmp",tmp);
-	int c = waitKey(BTM_WAIT_TIME);
+	int c = waitKey(params.wait_time);
 	if(c=='q') return 0;
 #endif
 	__tmp.convertTo(tmp,CV_8UC1);
@@ -783,7 +713,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 
 #ifdef BTM_DEBUG
 		imshow("tmp",backProj);
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 #endif
 		resize(backProj,hairMask,hairMask.size());
 
@@ -792,7 +722,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		face_grab_cut(im,hairMask,params.gc_iter,18);
 #ifdef BTM_DEBUG
 		imshow("tmp",hairMask);
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 #endif
 	}
 
@@ -802,7 +732,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 	imshow("tmp",maskFace);
 	imshow("gabor",hairMask);
 	imshow("tmp1",backMask);
-	waitKey(BTM_WAIT_TIME);
+	waitKey(params.wait_time);
 #endif
 
 	//iterative process
@@ -872,7 +802,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		imshow("tmp",backP[0]);
 		imshow("tmp1",backP[1]);
 		imshow("gabor",backP[2]);
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 #endif
 
 		if(params.relable_type == RELABLE_HIST_MAX) {
@@ -925,7 +855,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 				}
 				cv::merge(chns,_tmpUC);
 				imshow("tmp", _tmpUC);
-				int c = waitKey(BTM_WAIT_TIME);
+				int c = waitKey(params.wait_time);
 				if(c=='q') break;
 			}
 #endif
@@ -960,7 +890,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 				vector<Mat> v; for(int _ii=0;_ii<3;_ii++) v.push_back(maskA[_ii]);
 				cv::merge(v,_tmp);
 				imshow("tmp",_tmp);
-				waitKey(0);
+				waitKey(params.wait_time);
 			}
 #endif
 			//gc->setSmoothCost((GCoptimization::EnergyType*)0);
@@ -970,7 +900,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		imshow("tmp",_it_faceMask);
 		imshow("gabor",_it_hairMask);
 		imshow("tmp1",_it_backMask);
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 #endif
 	}
 
@@ -994,7 +924,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		cout << "seg score: " << segscore << "(" << xor_count << "/" << groundTruth_count << ")" << endl;
 
 	#ifdef BTM_DEBUG
-		waitKey(BTM_WAIT_TIME);
+		waitKey(params.wait_time);
 	#endif
 	}
 
@@ -1051,7 +981,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		cv::merge(v,imMasked);
 	}
 	imshow("tmp1",imMasked);
-	waitKey();
+	waitKey(params.wait_time);
 //#endif
 
 	return 0;

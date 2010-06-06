@@ -43,7 +43,7 @@
 				AdditionalOptions="/D_SCL_SECURE_NO_DEPRECATE"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE; BTM_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -162,6 +162,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BeTheModel\ImageEditingUtils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\BeTheModel\util.cpp"
 				>
 			</File>
@@ -175,6 +179,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\BeTheModel\ImageEditingUtils.h"
+				>
+			</File>
 			<File
 				RelativePath="..\BeTheModel\util.h"
 				>
