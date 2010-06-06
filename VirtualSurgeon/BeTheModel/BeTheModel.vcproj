@@ -138,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cv200.lib cvaux200.lib cxcore200.lib highgui200.lib ml200.lib freeglut.lib"
+				AdditionalDependencies="cv210.lib cvaux210.lib cxcore210.lib highgui210.lib ml210.lib freeglut.lib"
 				AdditionalLibraryDirectories="&quot;../freeglut-2.6.0/lib&quot;;&quot;D:\opencv-latest\lib&quot;"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -336,6 +336,10 @@
 			ReferencedProjectIdentifier="{15FBF626-C021-4C89-87E9-EDFA63F58418}"
 			RelativePathToProject="..\VirtualSurgeon_Utils\VirtualSurgeon_Utils.vcproj"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{2011A9E2-A921-42E0-BF2A-CD2F57A16E55}"
+			RelativePathToProject="..\VirtualSurgeon_NeckFinder\VirtualSurgeon_NeckFinder.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -349,14 +353,6 @@
 			</File>
 			<File
 				RelativePath=".\face_warp.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ImageEditingUtils.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ImageEditingUtils.h"
 				>
 			</File>
 			<File

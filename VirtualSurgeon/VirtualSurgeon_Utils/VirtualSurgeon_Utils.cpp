@@ -16,6 +16,8 @@ using namespace std;
 #include "../tclap-1.2.0/include/tclap/CmdLine.h"
 using namespace TCLAP;
 
+#include "../BeTheModel/util.h"
+
 int curl_get(std::string& s, std::string& _s = std::string(""));
 
 // Define the command line object.
@@ -23,27 +25,29 @@ CmdLine cmd("Command description message", ' ', "0.9");
 bool cmd_initialized = false;
 UnlabeledValueArg<string> filename_arg("filename","file to work on",true,"","string",cmd);
 UnlabeledValueArg<string> groundtruth_arg("groundtruth","ground truth file",false,"","string",cmd);
-ValueArg<double> gb_freq_arg("f","gabor-freq","Gabor func frequency",false,0.15,"float",cmd);
-ValueArg<double> gb_sig_arg("s","gabor-sigma","Gabor func sigma",false,1.0,"float",cmd);
-ValueArg<double> gb_phase_arg("p","gabor-phase","Gabor func phase",false,_PI/2.0,"float",cmd);
-ValueArg<double> gb_gamma_arg("g","gabor-gamma","Gabor func gamma",false,1.0,"float",cmd);
-ValueArg<int> gb_nstds_arg("n","gabor-nstds","Gabor func number of std devs",false,3,"int",cmd);
-ValueArg<int> gb_size_arg("z","gabor-size","Gabor filter bank size",false,2,"int",cmd);
-ValueArg<int> km_numc_arg("c","kmeans-num-centers","K-Means number of clusters",false,10,"int",cmd);
-ValueArg<int> km_numt_arg("m","kmeans-num-tries","K-Means number of tries",false,2,"int",cmd);
-ValueArg<int> com_winsize_arg("w","combine-win-size","Hist combine window size",false,5,"int",cmd);
-ValueArg<double> com_thresh_arg("t","combine-threshold","Hist combine threshold",false,0.15,"float",cmd);
-ValueArg<int> com_add_type_arg("y","combine-add-type","Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +)",false,2,"int [0-3]",cmd);
-ValueArg<int> com_calc_type_arg("l","combine-type","Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.)",false,0,"int [0-3]",cmd);
-ValueArg<double> im_scale_by_arg("b","image-scale-by","Scale down image by factor",false,2.0,"float",cmd);
-ValueArg<int> gc_iter_arg("r","grabcut-iterations","Number of grabcut iterations",false,1,"int",cmd);
-ValueArg<int> relable_type_arg("e","relable-type","Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut)",false,1,"int",cmd);
-SwitchArg position_in_km_arg("q","position-in-km","Include position in K-Means?",cmd,false);
-SwitchArg initialization_step_arg("a","initialization_step","Do initialization step?",cmd,false);
-ValueArg<int> num_iters_arg("x","num-iters","Number of cut-backp iterations",false,3,"int",cmd);
-ValueArg<int> btm_wait_time_arg("d","wait-time","Time in msec to wait on debug pauses",false,1,"int",cmd);
-SwitchArg do_alphamatt_arg("u","do-alpha-matting","Do alpha matting?",cmd,false);
+
+ValueArg<double> gb_freq_arg(		"f","gabor-freq","Gabor func frequency",false,0.15,"float",cmd);
+ValueArg<double> gb_sig_arg(		"s","gabor-sigma","Gabor func sigma",false,1.0,"float",cmd);
+ValueArg<double> gb_phase_arg(		"p","gabor-phase","Gabor func phase",false,_PI/2.0,"float",cmd);
+ValueArg<double> gb_gamma_arg(		"g","gabor-gamma","Gabor func gamma",false,1.0,"float",cmd);
+ValueArg<int> gb_nstds_arg(			"n","gabor-nstds","Gabor func number of std devs",false,3,"int",cmd);
+ValueArg<int> gb_size_arg(			"z","gabor-size","Gabor filter bank size",false,2,"int",cmd);
+ValueArg<int> km_numc_arg(			"c","kmeans-num-centers","K-Means number of clusters",false,10,"int",cmd);
+ValueArg<int> km_numt_arg(			"m","kmeans-num-tries","K-Means number of tries",false,2,"int",cmd);
+ValueArg<int> com_winsize_arg(		"w","combine-win-size","Hist combine window size",false,5,"int",cmd);
+ValueArg<double> com_thresh_arg(	"t","combine-threshold","Hist combine threshold",false,0.15,"float",cmd);
+ValueArg<int> com_add_type_arg(		"y","combine-add-type","Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +)",false,2,"int [0-3]",cmd);
+ValueArg<int> com_calc_type_arg(	"l","combine-type","Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.)",false,0,"int [0-3]",cmd);
+ValueArg<double> im_scale_by_arg(	"b","image-scale-by","Scale down image by factor",false,2.0,"float",cmd);
+ValueArg<int> gc_iter_arg(			"r","grabcut-iterations","Number of grabcut iterations",false,1,"int",cmd);
+ValueArg<int> relable_type_arg(		"e","relable-type","Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut)",false,1,"int",cmd);
+SwitchArg position_in_km_arg(		"q","position-in-km","Include position in K-Means?",cmd,false);
+SwitchArg initialization_step_arg(	"a","initialization_step","Do initialization step?",cmd,false);
+ValueArg<int> num_iters_arg(		"x","num-iters","Number of cut-backp iterations",false,3,"int",cmd);
+ValueArg<int> btm_wait_time_arg(	"d","wait-time","Time in msec to wait on debug pauses",false,1,"int",cmd);
+SwitchArg do_alphamatt_arg(			"u","do-alpha-matting","Do alpha matting?",cmd,false);
 ValueArg<int> alpha_matt_dilate_arg("i","alpha-matt-dilate-size","Size in pixels to dilate mask for alpha matting",false,10,"int",cmd);
+
 SwitchArg use_hist_match_hs_arg(string(),"use-hist-match-hs","Use histogram matching over HS space for recoloring?",cmd,false);
 SwitchArg use_hist_match_rgb_arg(string(),"use-hist-match-rgb","Use histogram matching over RGB space for recoloring?",cmd,false);
 SwitchArg use_overlay_arg(string(),"use-overlay","Use overlay for recoloring?",cmd,false);
@@ -173,10 +177,13 @@ void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im) {
 
 	int indexofslash = params.filename.find_last_of("/");
 	int indexofqmark = params.filename.find_last_of("?");
-	string img_filename = params.filename.substr(
-		indexofslash+1,
-		(indexofqmark>0)?indexofqmark-indexofslash-1:params.filename.length()-1
-		);
+	string img_filename = params.filename;
+	if(indexofslash >= 0) {
+		img_filename = params.filename.substr(
+			indexofslash+1,
+			(indexofqmark>0)?indexofqmark-indexofslash-1:params.filename.length()-1
+			);
+	}
 
 	//check if already downloaded before..
 	if(stat(img_filename.c_str(),&f__stat)!=0) {
@@ -234,4 +241,76 @@ void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im) {
 		ss.seekg(line.find("\"pitch\":") + strlen("\"pitch\":"));
 		ss >> params.pitch;
 	}
+}
+
+int btm_wait_time = 0;
+
+void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size) {
+	Mat tmpMask(mask.rows,mask.cols,CV_8UC1,Scalar(GC_BGD));
+
+	//create "buffer" zones for probably BG and prob. FG.
+	{
+		Mat __tmp(mask.rows,mask.cols,CV_8UC1,Scalar(0));
+		dilate(mask,__tmp,Mat::ones(dilate_size,dilate_size,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT);	//probably background
+		tmpMask.setTo(Scalar(GC_PR_BGD),__tmp);
+
+		dilate(mask,__tmp,Mat::ones(dilate_size/2,dilate_size/2,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT); //probably foregroung
+		tmpMask.setTo(Scalar(GC_PR_FGD),__tmp);
+
+		erode(mask,__tmp,Mat::ones(dilate_size/3,dilate_size/3,CV_8UC1),Point(-1,-1),1,BORDER_REFLECT); // foreground
+		tmpMask.setTo(Scalar(GC_FGD),__tmp);
+	}
+
+	//Mat(mask).copyTo(tmpMask);
+	Mat bgdModel, fgdModel;
+#ifdef BTM_DEBUG
+
+	Mat _tmp;
+	tmpMask.convertTo(_tmp,CV_32FC1);
+	_tmp = tmpMask / 4.0f * 255.0f;
+	imshow("tmp",_tmp);
+	waitKey(BTM_WAIT_TIME);
+
+	cout << "Do grabcut... init... ";
+#endif
+
+	Rect mr = find_bounding_rect_of_mask(&((IplImage)mask));
+	//initialize
+	grabCut(
+		orig,
+		tmpMask,
+		mr,
+		bgdModel,
+		fgdModel,
+		1, GC_INIT_WITH_MASK);
+#ifdef BTM_DEBUG
+	cout << "run... ";
+#endif
+	for(int i=0;i<iters;i++) {
+		//run one iteration
+		grabCut(
+			orig,
+			tmpMask,
+			mr,
+			bgdModel,
+			fgdModel,
+			1);
+#ifdef BTM_DEBUG
+		cout << ".";
+#endif
+	}
+
+	//cvShowImage("result",image);
+	//cvCopy(__GCtmp,mask);
+	//Mat(mask).setTo(Scalar(255),tmpMask);
+	//cvSet(mask,cvScalar(255),&((IplImage)tmpMask));
+	Mat __tm = tmpMask & GC_FGD;
+	__tm.setTo(Scalar(255),__tm);
+	__tm.copyTo(Mat(mask));
+#ifdef BTM_DEBUG
+	cout << "Done" << endl;
+	//cvShowImage("tmp",mask);
+	imshow("tmp",mask);
+	waitKey(BTM_WAIT_TIME);
+#endif
 }
