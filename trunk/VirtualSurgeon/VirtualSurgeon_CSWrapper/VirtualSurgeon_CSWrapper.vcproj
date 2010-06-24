@@ -2,10 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="VirtualSurgeon_Warp"
-	ProjectGUID="{1C5AB591-0B8F-446A-B1EA-ABD4E2756ABB}"
-	RootNamespace="VirtualSurgeon_Warp"
-	Keyword="Win32Proj"
+	Name="VirtualSurgeon_CSWrapper"
+	ProjectGUID="{D7CCDCFB-A0B3-4E97-A901-B93B7BEC1497}"
+	RootNamespace="VirtualSurgeon_CSWrapper"
+	Keyword="ManagedCProj"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -20,8 +20,9 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,14 +42,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\mls_deform\Common;&quot;D:\opencv-latest\include\opencv&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				AdditionalIncludeDirectories="&quot;D:\opencv-latest\include\opencv&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -61,9 +60,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cv210d.lib cxcore210d.lib highgui210d.lib"
+				AdditionalDependencies="$(NoInherit) cv210d.lib highgui210d.lib cxcore210d.lib"
+				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;D:\opencv-latest\lib&quot;"
 				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -91,8 +93,9 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
+			ManagedExtensions="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -112,13 +115,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\mls_deform\Common;&quot;D:\opencv-latest\include\opencv&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="&quot;D:\opencv-latest\include\opencv&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -132,10 +132,18 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(NoInherit) cv210.lib highgui210.lib cxcore210.lib ml210.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;D:\opencv-latest\lib&quot;"
+				GenerateDebugInformation="true"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -147,14 +155,48 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
+		<AssemblyReference
+			RelativePath="System.dll"
+			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.Data.dll"
+			AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="System.XML.dll"
+			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{2E4D0CAF-9634-493F-B733-CFB7AE962391}"
+			RelativePathToProject="..\VirtualSurgeon_HeadExtractor\VirtualSurgeon_HeadExtractor.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{2011A9E2-A921-42E0-BF2A-CD2F57A16E55}"
+			RelativePathToProject="..\VirtualSurgeon_NeckFinder\VirtualSurgeon_NeckFinder.vcproj"
+		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{15FBF626-C021-4C89-87E9-EDFA63F58418}"
 			RelativePathToProject="..\VirtualSurgeon_Utils\VirtualSurgeon_Utils.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{1C5AB591-0B8F-446A-B1EA-ABD4E2756ABB}"
+			RelativePathToProject="..\VirtualSurgeon_Warp\VirtualSurgeon_Warp\VirtualSurgeon_Warp.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{6B11D864-4861-4FA4-81C3-C74461D6BCE6}"
+			RelativePathToProject="..\VirtualSurgeon_Recoloring\VirtualSurgeon_Recoloring.vcproj"
 		/>
 	</References>
 	<Files>
@@ -164,15 +206,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\BeTheModel\face_warp.cpp"
+				RelativePath=".\AssemblyInfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\mls_warp.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\stdafx.cpp"
+				RelativePath=".\Stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -192,7 +230,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\VirtualSurgeon_Warp.cpp"
+				RelativePath=".\VirtualSurgeon_CSWrapper.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VirtualSurgeon_ParamsWrapper.cpp"
 				>
 			</File>
 		</Filter>
@@ -202,15 +244,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\stdafx.h"
+				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\targetver.h"
+				RelativePath=".\Stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\vs_warp.h"
+				RelativePath=".\VirtualSurgeon_CSWrapper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\VirtualSurgeon_ParamsWrapper.h"
 				>
 			</File>
 		</Filter>
@@ -219,6 +265,14 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\app.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\app.rc"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

@@ -6,7 +6,23 @@ using namespace cv;
 
 #define _PI 3.14159265
 
-typedef struct VirtualSurgeonParams {
+namespace VirtualSurgeon {
+
+	class VirtualSurgeonFaceData {
+	public:
+		string filename;
+
+		//face data
+		Point li,ri;
+		double yaw;
+		double roll;
+		double pitch;
+
+		void FaceDotComDetection(Mat& im);
+	};
+
+typedef class VirtualSurgeonParams : public VirtualSurgeonFaceData {
+public:
 	//algorithm data
 	double gb_sig;
 	double gb_freq;
@@ -17,7 +33,6 @@ typedef struct VirtualSurgeonParams {
 	int km_numc;
 	int com_winsize;
 	double com_thresh;
-	string filename;
 	string groundtruth;
 	int com_add_type;
 	int com_calc_type;
@@ -31,6 +46,13 @@ typedef struct VirtualSurgeonParams {
 	int num_cut_backp_iters;
 	bool do_alpha_matt;
 	int alpha_matt_dilate_size;
+	double hair_ellipse_size_mult;
+
+	double snake_snap_weight_edge;
+	double snake_snap_weight_direction;
+	double snake_snap_weight_consistency;
+	int snake_snap_edge_len_thresh;
+	int snale_snap_total_width_coeff;
 
 	bool use_hist_match_hs;
 	bool use_hist_match_rgb;
@@ -39,18 +61,15 @@ typedef struct VirtualSurgeonParams {
 	bool use_warp_affine;
 	bool use_double_warp;
 
+	bool no_gui;
 	int wait_time;
 
-	//face data
-	Point li,ri;
-	double yaw;
-	double roll;
-	double pitch;
+	void InitializeDefault();
+	void ParseParams(int argc, char** argv);
+	void PrintParams();
+	void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size = 30);
+
 } VIRTUAL_SURGEON_PARAMS;
 
 
-void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv);
-void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im);
-void PrintParams(VIRTUAL_SURGEON_PARAMS& p);
-
-void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size = 30);
+}//ns

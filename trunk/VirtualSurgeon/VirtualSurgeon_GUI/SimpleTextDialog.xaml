@@ -1,0 +1,11 @@
+﻿<Window x:Class="VirtualSurgeon_GUI.SimpleTextDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="SimpleTextDialog" MaxWidth="500" VerticalAlignment="Stretch" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+  
+   <StackPanel Margin="0">
+       <TextBlock Text="Enter URL" HorizontalAlignment="Center" />
+       <TextBox x:Name="ResponseTextBox" MinWidth="200" />
+       <Button Content="OK" HorizontalAlignment="Center" MinWidth="50" Click="Button_Click" />
+   </StackPanel>
+</Window>

@@ -17,6 +17,10 @@ using namespace std;
 
 #include "VirtualSurgeon_NeckFinder.h"
 
+#include "VirtualSurgeon_ICP.h"
+
+namespace VirtualSurgeon {
+
 Mat Hysteresis(Mat& strength, double low, double high, int rows, int cols, int radius);
 
 typedef struct data_for_tnc {
@@ -29,6 +33,12 @@ typedef struct data_for_tnc {
 	Mat im_dy;
 	Mat im_dx_dy;
 	Mat im;
+
+	bool do_gui;
+
+	double w_edge;
+	double w_direction;
+	double w_consistency;
 
 	Mat im_dx_orig;
 	Mat im_dy_orig;
@@ -164,7 +174,7 @@ static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
 	
 	//Mat diff = Xe - d.Xedges;
 	//sum += TwoD_SqSum(diff);			
-	sum += 6000.0*cv::norm(Xe,d.Xedges);
+	sum += d.w_edge*cv::norm(Xe,d.Xedges);
 
 	//E_tension_direction
 	Mat Xv = X(Range(0,X.rows-1),Range(0,1)) - X(Range(1,X.rows),Range(0,1));
@@ -179,7 +189,7 @@ static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
 	
 	//sum += 25.0*cv::norm(Xv,d.Xvector,NORM_L1);
 	Mat x_m_orig = Xv - d.Xvector;
-	sum += 7.0*norm(x_m_orig(Range(0,x_m_orig.rows-1),Range(0,1)),x_m_orig(Range(1,x_m_orig.rows),Range(0,1)));
+	sum += d.w_direction*norm(x_m_orig(Range(0,x_m_orig.rows-1),Range(0,1)),x_m_orig(Range(1,x_m_orig.rows),Range(0,1)));
 
 	//E_tension_length
 	//sum += cv::norm(Xl,d.Xlength);
@@ -189,7 +199,7 @@ static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
 	//E model consistency
 	//sum += 0.1 * cv::norm(X,d.Xorig);
 	Mat x_m_orig1 = d.Xorig - X;
-	sum += 5.0*norm(x_m_orig1(Range(0,x_m_orig1.rows-1),Range(0,1)),x_m_orig1(Range(1,x_m_orig1.rows),Range(0,1)),NORM_L1);
+	sum += d.w_consistency*norm(x_m_orig1(Range(0,x_m_orig1.rows-1),Range(0,1)),x_m_orig1(Range(1,x_m_orig1.rows),Range(0,1)),NORM_L1);
 
 	//Laplacian coordinates?
 	//Mat lapX = laplacian_mtx(d.Xorig.rows);
@@ -243,17 +253,19 @@ static int my_f(double x[], double *f, double g[], void *state) {
 		_tmp.copyTo(v[0]);
 		cv::merge(v,im);
 
-		for(int ti = 0; ti < d_ptr->Xorig.rows; ti++) {
-			Point p1(MAX(MIN(_newX[ti].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_newX[ti].y,d_ptr->im_dx.cols-1),0));
-			if(ti > 0) {
-				Point p2(MAX(MIN(_newX[ti-1].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_newX[ti-1].y,d_ptr->im_dx.cols-1),0));
-				line(im,p1,p2,Scalar(0,255),2);
+		if(d_ptr->do_gui) {
+			for(int ti = 0; ti < d_ptr->Xorig.rows; ti++) {
+				Point p1(MAX(MIN(_newX[ti].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_newX[ti].y,d_ptr->im_dx.cols-1),0));
+				if(ti > 0) {
+					Point p2(MAX(MIN(_newX[ti-1].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_newX[ti-1].y,d_ptr->im_dx.cols-1),0));
+					line(im,p1,p2,Scalar(0,255),2);
+				}
+				circle(im,p1,3,Scalar(255),CV_FILLED);
+				line(im,p1,_xo[ti],Scalar(0,0,255),2);
 			}
-			circle(im,p1,3,Scalar(255),CV_FILLED);
-			line(im,p1,_xo[ti],Scalar(0,0,255),2);
+			imshow("tmp",im);
+			waitKey(30);
 		}
-		imshow("tmp",im);
-		waitKey(30);
 	}
 
 	//calc gradients
@@ -279,7 +291,7 @@ static int my_f(double x[], double *f, double g[], void *state) {
 	return 0;
 }
 
-void smear(Mat& im_dx, int levels) {
+void NeckFinder::smear(Mat& im_dx, int levels) {
 	Mat sumDx = Mat::zeros(im_dx.size(),CV_32FC1);
 	vector<int> sizes(levels); 
 	sizes[0]=3; sizes[1]=5; sizes[2]=7; sizes[3]=11;
@@ -305,9 +317,8 @@ void smear(Mat& im_dx, int levels) {
 	//im_dx = im_dx / (max+minv)/2.0;
 }
 
-int SnakeSnap(int argc, char** argv);
 
-int snake_snap_main(int argc, char** argv) {
+int NeckFinder::snake_snap_main(int argc, char** argv) {
 	//VIRTUAL_SURGEON_PARAMS p;
 	//ParseParams(p,argc,argv);
 
@@ -332,28 +343,28 @@ int snake_snap_main(int argc, char** argv) {
 	return 0;
 }
 
-int SnakeSnap(int argc, char** argv) {
-	VIRTUAL_SURGEON_PARAMS p;
-	ParseParams(p,argc,argv);
+int NeckFinder::SnakeSnap(int argc, char** argv) {
+	//VIRTUAL_SURGEON_PARAMS p;
+	p.ParseParams(argc,argv);
 
 	Mat _im;
-	FaceDotComDetection(p,_im);
+	p.FaceDotComDetection(_im);
 
-	PrintParams(p);
+	p.PrintParams();
 
 	namedWindow("tmp");
 
-	return FindNeck(p,_im);
+	return FindNeck(_im);
 }
 
-int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
+int NeckFinder::FindNeck(Mat& _im) {
 	Mat im_clean; _im.copyTo(im_clean);
 	Mat _maskFace=Mat::zeros(_im.size(),CV_8UC1);
 
 	Rect r; //interesting part of picture
 	{
 		int distBetweenEyes = abs(p.li.x -p.ri.x );
-		int totalWidth = distBetweenEyes*10;
+		int totalWidth = distBetweenEyes*p.snale_snap_total_width_coeff;
 		r.x = MAX(0,MIN((int)(
 			/* x start: */((double)(p.li.x +p.ri.x))/2.0 - ((double)totalWidth)/2.0 - ((abs(p.yaw)>25.0) ? (p.yaw/70.0)*(double)distBetweenEyes : 0)),
 			_im.cols)); 
@@ -396,16 +407,19 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 		//imshow("tmp",_maskFace);
 		//waitKey(p.wait_time);
 
-		face_grab_cut(_im,_maskFace,1);//,200.0*li_ri);
+		p.face_grab_cut(_im,_maskFace,1);//,200.0*li_ri);
 
 		Mat ___im; _im.copyTo(___im,_maskFace);
 		//imshow("tmp",___im);
 		//waitKey(p.wait_time);
 
 		___im.setTo(Scalar(128,128,128));
+
 		_im.copyTo(___im,~_maskFace);
-		imshow("tmp",___im);
-		waitKey(p.wait_time);
+		if(!p.no_gui) {
+			imshow("tmp",___im);
+			waitKey(p.wait_time);
+		}
 
 		___im.copyTo(_im);
 	}
@@ -490,11 +504,12 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 	//int points[22] = {16, 175, 69, 135, 136, 119, 177, 82, 188, 123, 224, 136, 261, 116, 270, 78, 302, 114, 368, 135, 428, 169,};
 	//int points[54] = {15, 172, 40, 151, 62, 141, 84, 133, 106, 125, 129, 118, 149, 114, 167, 107, 175, 83, 179, 105, 185, 120, 199, 129, 215, 134, 234, 130, 248, 124, 264, 114, 266, 94, 270, 72, 276, 106, 291, 112, 315, 119, 329, 122, 350, 128, 368, 133, 387, 141, 408, 152, 426, 166,};
 	//int points[26] = {20, 170, 66, 139, 111, 124, 159, 112, 177, 80, 183, 115, 217, 135, 258, 119, 270, 78, 279, 110, 327, 121, 378, 138, 421, 161,};
-	int points[32] = {16, 176, 52, 145, 89, 131, 134, 118, 168, 109, 176, 80, 184, 119, 205, 135, 238, 133, 260, 118, 270, 80, 278, 108, 316, 118, 361, 132, 397, 145, 429, 172,};
+	//int points[32] = {16, 176, 52, 145, 89, 131, 134, 118, 168, 109, 176, 80, 184, 119, 205, 135, 238, 133, 260, 118, 270, 80, 278, 108, 316, 118, 361, 132, 397, 145, 429, 172,};
 	//int points[18] = {164, 110, 178, 82, 180, 106, 189, 123, 212, 136, 245, 128, 265, 110, 270, 79, 278, 107,};
 	//int points[24] = {77, 135, 122, 121, 170, 108, 176, 77, 188, 123, 210, 133, 230, 133, 257, 120, 269, 78, 279, 107, 321, 119, 365, 132,};
 	//int points[16] = {176, 84, 182, 108, 191, 125, 214, 136, 231, 132, 261, 118, 265, 98, 268, 80,};
-	Mat Xorig(16,1,CV_32SC2,points);
+	int points[24] = {16, 176, 134, 118, 168, 109, 176, 80, 184, 119, 205, 135, 238, 133, 260, 118, 270, 80, 278, 108, 316, 118,429, 172,};
+	Mat Xorig(12,1,CV_32SC2,points);
 	
 	Mat Xedges(Xorig.rows,1,CV_32FC2);
 	for(int i=0;i<Xorig.rows;i++) {
@@ -536,14 +551,16 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 
 			Mat contours_im = Mat::zeros(im_dx.size(),CV_8UC1);
 			for(int i=0;i<contours.size();i++) {
-				if(contours[i].size() > 200) {
+				if(contours[i].size() > p.snake_snap_edge_len_thresh) {
 					//double strength = MIN(1.0,(double)(contours[i].size())/200.0);
 					double strength = 1.0;
 					drawContours(contours_im,contours,i,Scalar(255.0 * strength));
 				}
 			}
-			imshow("tmp",contours_im);
-			waitKey(p.wait_time);
+			if(!p.no_gui) {
+				imshow("tmp",contours_im);
+				waitKey(p.wait_time);
+			}
 
 			contours_im.convertTo(im_dx_orig,CV_32F,1.0/255.0);
 
@@ -612,7 +629,7 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 	//imshow("tmp",im_dy);
 	//waitKey(p.wait_time);
 
-	{
+	if(!p.no_gui) {
 		Mat _tmp; im_clean.copyTo(_tmp);
 		//vector<Mat> v(3); split(_tmp,v);
 		//v[2](r) += maskFace;
@@ -665,7 +682,9 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 		}
 		vector<Point> vP(Xorig_64f.rows);
 		Mat X32s(vP); Xorig_64f.convertTo(X32s,CV_32S);
-		ICP(X32s,Mat(vDest));
+
+		ICP icp(p);
+		icp.doICP(X32s,Mat(vDest));
 
 		X32s.convertTo(Xorig_64f,CV_64F);
 	}
@@ -697,6 +716,12 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 		d.im_dx_orig = im_dx_orig;
 		d.im_dy_orig = im_dy_orig;
 
+		d.do_gui = !p.no_gui;
+
+		d.w_edge = p.snake_snap_weight_edge;
+		d.w_direction = p.snake_snap_weight_direction;
+		d.w_consistency = p.snake_snap_weight_consistency;
+
 		cout << "init energy: " << calc_Energy(Xorig_64f,d) << endl;
 
 		Mat Grad(Xorig_64f.rows*2,1,CV_64FC1);
@@ -706,13 +731,16 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 		
 		simple_tnc(Xorig_64f.rows*2,(double*)X.data,&f,(double*)Grad.data,my_f,(void*)&d,im.cols-1,im.rows-1);
 
-		{
+		if(!p.no_gui) {
 			Mat _tmp; im_clean.copyTo(_tmp);
 
 			for(int i=0;i<X.rows;i++) {
 				Point2d p = X.at<Point2d>(i,0);
 				
-				circle(_tmp,Point(p.x+r.x,p.y+r.y),3,Scalar(255),CV_FILLED);
+				Point p2i(p.x+r.x,p.y+r.y);
+				circle(_tmp,p2i,3,Scalar(255),CV_FILLED);
+
+				this->neck.push_back(p2i);
 
 				if(i>0) {
 					Point2d p1 = X.at<Point2d>(i-1,0);
@@ -721,8 +749,15 @@ int FindNeck(VIRTUAL_SURGEON_PARAMS& p, Mat& _im) {
 			}
 			imshow("tmp",_tmp);
 			waitKey(p.wait_time);
+		} else {
+			for(int i=0;i<X.rows;i++) {
+				Point2d p = X.at<Point2d>(i,0);
+				this->neck.push_back(Point(p.x+r.x,p.y+r.y));
+			}
 		}
 	}
 
 	return 0;	
 }
+
+}//ns

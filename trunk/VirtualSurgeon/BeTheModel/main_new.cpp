@@ -11,6 +11,8 @@ using namespace cv;
 
 #include "../VirtualSurgeon_NeckFinder/VirtualSurgeon_NeckFinder.h"
 
+using namespace VirtualSurgeon;
+
 int main( int argc, char** argv )
 {
 	VIRTUAL_SURGEON_PARAMS params;
@@ -22,7 +24,11 @@ int main( int argc, char** argv )
 	FaceDotComDetection(params,im);
 	PrintParams(params);
 
-	ExtractHead(im,params);
+	HeadExtractor he(params);
+	Mat im_extracted; im.copyTo(im_extracted);
+	he.ExtractHead(im_extracted);
 
-	FindNeck(params,im);
+	NeckFinder nf(params);
+	Mat im_neck; im.copyTo(im_neck);
+	nf.FindNeck(im_neck);
 }

@@ -17,15 +17,12 @@ using namespace std;
 #define _PI 3.14159265
 #define TWO_PI 6.2831853
 
-//#define BTM_WAIT_TIME btm_wait_time
-//
-//int btm_wait_time = 1;
-
-
 #define RELABLE_HIST_MAX 0
 #define RELABLE_GRAPHCUT 1
 
-void takeBiggestCC(Mat& mask, Mat& bias = Mat()) {
+namespace VirtualSurgeon {
+
+void HeadExtractor::takeBiggestCC(Mat& mask, Mat& bias) {
 	if(bias.rows == 0 || bias.cols == 0) bias = Mat::ones(mask.size(),CV_64FC1);
 
 	vector<vector<Point> > contours;
@@ -51,21 +48,21 @@ void takeBiggestCC(Mat& mask, Mat& bias = Mat()) {
 	drawContours(mask,contours,maxLoc.y,Scalar(255),CV_FILLED);
 }
 
-void checkArgF(const char* arg, const char* c, int l, double* val) {
-	if(strncmp(arg,c,l)==0) {
-		char __s[10] = {0};
-		strncpy_s(__s,10,arg+l+1,10);
-		*val = atof(__s);
-	}
-}
-
-void checkArgI(const char* arg, const char* c, int l, int* val) {
-	if(strncmp(arg,c,l)==0) {
-		char __s[10] = {0};
-		strncpy_s(__s,10,arg+l+1,10);
-		*val = atoi(__s);
-	}
-}
+//void checkArgF(const char* arg, const char* c, int l, double* val) {
+//	if(strncmp(arg,c,l)==0) {
+//		char __s[10] = {0};
+//		strncpy_s(__s,10,arg+l+1,10);
+//		*val = atof(__s);
+//	}
+//}
+//
+//void checkArgI(const char* arg, const char* c, int l, int* val) {
+//	if(strncmp(arg,c,l)==0) {
+//		char __s[10] = {0};
+//		strncpy_s(__s,10,arg+l+1,10);
+//		*val = atoi(__s);
+//	}
+//}
 
 /*
 filter - the output filter
@@ -76,7 +73,7 @@ theta - represents the orientation of the normal to the parallel stripes of a Ga
 phase - is the phase offset, 
 gamma - is the spatial aspect ratio, and specifies the ellipticity of the support of the Gabor function.
 */
-Mat gabor_fn(double sigma, int n_stds, double theta, double freq, double phase, double gamma) {
+Mat HeadExtractor::gabor_fn(double sigma, int n_stds, double theta, double freq, double phase, double gamma) {
 	double sigma_x = sigma;
 	double sigma_y = sigma / gamma;
 
@@ -103,7 +100,7 @@ Mat gabor_fn(double sigma, int n_stds, double theta, double freq, double phase, 
 	//memset(gb_d,0,totSize*sizeof(double));
 
 	Mat filter(sz_y,sz_x,CV_32FC1);
-#ifdef BTM_DEBUG
+#ifdef _PI
 	cerr << "Mat("<<sz_y<<","<<sz_x<<",CV_32FC1)"<<endl;
 #endif
 
@@ -137,7 +134,7 @@ Mat gabor_fn(double sigma, int n_stds, double theta, double freq, double phase, 
 	return filter;
 }
 
-void make_gabor_bank(vector<Mat>& filter_bank, int bank_size, double sigma, int n_stds, double freq, double phase, double gamma) {
+void HeadExtractor::make_gabor_bank(vector<Mat>& filter_bank, int bank_size, double sigma, int n_stds, double freq, double phase, double gamma) {
 	cerr << "make gabor bank.. ";
 
 	//int bank_size = filter_bank.size();
@@ -159,7 +156,7 @@ void make_gabor_bank(vector<Mat>& filter_bank, int bank_size, double sigma, int 
 //im - the image to calc hist for
 //mask - the area in the image to calc over
 // range - the highest value for the bins
-void calcHistogramWithMask(vector<MatND>& hist, Mat &im, vector<Mat>& mask, float _max, int win_size = 10, int histCompareMethod = CV_COMP_CORREL, vector<Mat>& backProj = vector<Mat>(), vector<Mat>& hists = vector<Mat>()) {
+void HeadExtractor::calcHistogramWithMask(vector<MatND>& hist, Mat &im, vector<Mat>& mask, float _max, int win_size, int histCompareMethod, vector<Mat>& backProj, vector<Mat>& hists) {
     int bins = (int)_max;
     int histSize[1] = {bins};
     float range[2] = { 0, _max };
@@ -183,23 +180,23 @@ void calcHistogramWithMask(vector<MatND>& hist, Mat &im, vector<Mat>& mask, floa
 		double maxVal=0;
 		minMaxLoc(hist[i], 0, &maxVal, 0, 0);
 
-#ifdef BTM_DEBUG
-		{
-		int scale = 10;
-		Mat histImg = Mat::zeros(200, bins*scale, CV_8UC1);
+#ifdef _PI
+		if(!params.no_gui) {
+			int scale = 10;
+			Mat histImg = Mat::zeros(200, bins*scale, CV_8UC1);
 
-		for( int s = 0; s < bins; s++ )
-		{
-			float binVal = hist[i].at<float>(s);
-			if(binVal <= 0) continue;
-			//int intensity = cvRound(binVal*255/maxValue);
-			rectangle( histImg, Point(s*scale, 199),
-						 Point( (s+1)*scale - 1, 200 - (int)floor((double)binVal*200.0/maxVal)),
-						 Scalar::all(255),
-						 CV_FILLED );
-		}
+			for( int s = 0; s < bins; s++ )
+			{
+				float binVal = hist[i].at<float>(s);
+				if(binVal <= 0) continue;
+				//int intensity = cvRound(binVal*255/maxValue);
+				rectangle( histImg, Point(s*scale, 199),
+							 Point( (s+1)*scale - 1, 200 - (int)floor((double)binVal*200.0/maxVal)),
+							 Scalar::all(255),
+							 CV_FILLED );
+			}
 
-		imshow("tmp",histImg);
+			imshow("tmp",histImg);
 		}
 #endif
 
@@ -246,17 +243,19 @@ void calcHistogramWithMask(vector<MatND>& hist, Mat &im, vector<Mat>& mask, floa
 
 	for(int i=0;i<backProj.size();i++) {
 		backProj[i] = backProj[i](Rect(win_size/2,win_size/2,im.cols,im.rows));
-#ifdef BTM_DEBUG
-		double maxV,minV;
-		minMaxLoc(backProj[i],&minV,&maxV);
-		imshow("tmp1",(backProj[i] - minV) / (maxV - minV));
+#ifdef _PI
+		if(!params.no_gui) {
+			double maxV,minV;
+			minMaxLoc(backProj[i],&minV,&maxV);
+			imshow("tmp1",(backProj[i] - minV) / (maxV - minV));
 
-		waitKey(BTM_WAIT_TIME);
+			waitKey(BTM_WAIT_TIME);
+		}
 #endif
 	}
 }
 
-void getSobels(Mat& gray, Mat& grayInt, Mat& grayInt1) {
+void HeadExtractor::getSobels(Mat& gray, Mat& grayInt, Mat& grayInt1) {
 	Mat _tmp,_tmp1,gray32f;
 	
 	gray.convertTo(gray32f,CV_32FC1,1.0/255.0);
@@ -267,9 +266,12 @@ void getSobels(Mat& gray, Mat& grayInt, Mat& grayInt1) {
 	Sobel(gray32f,_tmp1,-1,2,0,3,-1.0);	//sobel for -dx
 	//Canny(gray,_tmp,50.0,150.0);
 	_tmp = abs(_tmp) + abs(_tmp1);
-#ifdef BTM_DEBUG
-	imshow("tmp1",_tmp1);
-	imshow("tmp",_tmp); waitKey(BTM_WAIT_TIME);
+#ifdef _PI
+	if(!params.no_gui) {
+		imshow("tmp1",_tmp1);
+		imshow("tmp",_tmp); 
+		waitKey(BTM_WAIT_TIME);
+	}
 #endif
 	double maxVal,minVal;
 	minMaxLoc(_tmp,&minVal,&maxVal);
@@ -285,8 +287,10 @@ void getSobels(Mat& gray, Mat& grayInt, Mat& grayInt1) {
 	Sobel(gray32f,_tmp1,-1,0,2,3,-1.0);	//sobel for -dy
 	//Canny(gray,_tmp,50.0,150.0);
 	_tmp = abs(_tmp) + abs(_tmp1);
-#ifdef BTM_DEBUG
-	imshow("tmp",_tmp); waitKey(BTM_WAIT_TIME);
+#ifdef _PI
+	if(!params.no_gui) {
+		imshow("tmp",_tmp); waitKey(BTM_WAIT_TIME);
+	}
 #endif
 	minMaxLoc(_tmp,&minVal,&maxVal);
 	cv::log((_tmp - minVal) / (maxVal - minVal),_tmp);
@@ -295,7 +299,7 @@ void getSobels(Mat& gray, Mat& grayInt, Mat& grayInt1) {
 
 }
 
-void create2DGaussian(Mat& im, double sigma_x, double sigma_y, Point mean) {
+void HeadExtractor::create2DGaussian(Mat& im, double sigma_x, double sigma_y, Point mean) {
 	double sig_x_sq = sigma_x*sigma_x;
 	double sig_y_sq = sigma_y*sigma_y;
 	for(int y=0;y<im.rows;y++) {
@@ -308,16 +312,16 @@ void create2DGaussian(Mat& im, double sigma_x, double sigma_y, Point mean) {
 	}
 }
 
-void matting(Mat& mask, Mat& im) {
-	Mat inner;
-	erode(mask,inner,Mat::ones(10,10,CV_8UC1));
-	Mat outer;
-	dilate(mask,outer,Mat::ones(10,10,CV_8UC1));
+//void matting(Mat& mask, Mat& im) {
+//	Mat inner;
+//	erode(mask,inner,Mat::ones(10,10,CV_8UC1));
+//	Mat outer;
+//	dilate(mask,outer,Mat::ones(10,10,CV_8UC1));
+//
+//	//vector
+//}
 
-	//vector
-}
-
-void NaiveRelabeling(Size s, vector<Mat>& backP, vector<Mat>& maskA) {
+void HeadExtractor::NaiveRelabeling(Size s, vector<Mat>& backP, vector<Mat>& maskA) {
 	//"naive" re-labeling using histograms backprojection maximum value
 	for(int _x=0;_x<s.width;_x++) {
 		for(int _y=0;_y<s.height;_y++) {
@@ -356,121 +360,15 @@ void NaiveRelabeling(Size s, vector<Mat>& backP, vector<Mat>& maskA) {
 	}
 }
 
-/*
-void ParseHeadExtractParams(HEAD_EXTRACTOR_PARAMS& params) {
-	params.gb_sig = 1.0;
-	params.gb_freq = 0.15;
-	params.gb_phase = _PI/2.0;
-	params.gb_gamma = 1.0;
-	params.gb_nstds = 3;
-	params.gb_size = 32;
-	params.km_numc = 10;
-	params.com_winsize = 5;
-	params.com_thresh = 0.25;
-	params.com_add_type = 0;
-	params.com_calc_type = 1;
-	params.im_scale_by = 2.0;
-	params.gc_iter = 1;
-	params.km_numt = 2;
-	params.doScore = false;
-	params.relable_type = 0;
-	params.doPositionInKM = false;
-	params.doInitStep = false;
-	params.num_cut_backp_iters = 1;
-	params.do_alpha_matt = false;
-	params.alpha_matt_dilate_size = 10;
-	params.use_hist_match_hs = false;
-	params.use_hist_match_rgb = false;
-	params.use_overlay = false;
-	params.use_warp_rigid = false;
-	params.use_warp_affine = false;
-	params.use_double_warp = false;
+int HeadExtractor::head_extract_main(int argc, char** argv) {
+	//VIRTUAL_SURGEON_PARAMS params;
 
-	try {  
-
-	// Define the command line object.
-	CmdLine cmd("Command description message", ' ', "0.9");
-
-	UnlabeledValueArg<string> filename_arg("filename","file to work on",true,"","string",cmd);
-	UnlabeledValueArg<string> groundtruth_arg("groundtruth","ground truth file",false,"","string",cmd);
-	ValueArg<double> gb_freq_arg("f","gabor-freq","Gabor func frequency",false,0.15,"float",cmd);
-	ValueArg<double> gb_sig_arg("s","gabor-sigma","Gabor func sigma",false,1.0,"float",cmd);
-	ValueArg<double> gb_phase_arg("p","gabor-phase","Gabor func phase",false,_PI/2.0,"float",cmd);
-	ValueArg<double> gb_gamma_arg("g","gabor-gamma","Gabor func gamma",false,1.0,"float",cmd);
-	ValueArg<int> gb_nstds_arg("n","gabor-nstds","Gabor func number of std devs",false,3,"int",cmd);
-	ValueArg<int> gb_size_arg("z","gabor-size","Gabor filter bank size",false,32,"int",cmd);
-	ValueArg<int> km_numc_arg("c","kmeans-num-centers","K-Means number of clusters",false,10,"int",cmd);
-	ValueArg<int> km_numt_arg("m","kmeans-num-tries","K-Means number of tries",false,2,"int",cmd);
-	ValueArg<int> com_winsize_arg("w","combine-win-size","Hist combine window size",false,5,"int",cmd);
-	ValueArg<double> com_thresh_arg("t","combine-threshold","Hist combine threshold",false,0.15,"float",cmd);
-	ValueArg<int> com_add_type_arg("y","combine-add-type","Hist combine scores add type (0=L2, 1=MAX, 2=MAX+, 3=just +)",false,2,"int [0-3]",cmd);
-	ValueArg<int> com_calc_type_arg("l","combine-type","Hist combine scores calc type (0=COREL, 1=CHISQR, 2=INTERSECT, 3=BAHAT.)",false,0,"int [0-3]",cmd);
-	ValueArg<double> im_scale_by_arg("b","image-scale-by","Scale down image by factor",false,2.0,"float",cmd);
-	ValueArg<int> gc_iter_arg("r","grabcut-iterations","Number of grabcut iterations",false,1,"int",cmd);
-	ValueArg<int> relable_type_arg("e","relable-type","Type of relabeling in iterative procecess (0 = hist max, 1 = graph cut)",false,0,"int",cmd);
-	SwitchArg position_in_km_arg("q","position-in-km","Include position in K-Means?",cmd,false);
-	SwitchArg initialization_step_arg("a","initialization_step","Do initialization step?",cmd,false);
-	//SwitchArg doScore("a","compute-score","Should compute score according to ground truth");
-	ValueArg<int> num_iters_arg("x","num-iters","Number of cut-backp iterations",false,1,"int",cmd);
-	ValueArg<int> btm_wait_time_arg("d","wait-time","Time in msec to wait on debug pauses",false,1,"int",cmd);
-	SwitchArg do_alphamatt_arg("u","do-alpha-matting","Do alpha matting?",cmd,false);
-	ValueArg<int> alpha_matt_dilate_arg("i","alpha-matt-dilate-size","Size in pixels to dilate mask for alpha matting",false,10,"int",cmd);
-	SwitchArg use_hist_match_hs_arg(string(),"use-hist-match-hs","Use histogram matching over HS space for recoloring?",cmd,false);
-	SwitchArg use_hist_match_rgb_arg(string(),"use-hist-match-rgb","Use histogram matching over RGB space for recoloring?",cmd,false);
-	SwitchArg use_overlay_arg(string(),"use-overlay","Use overlay for recoloring?",cmd,false);
-	SwitchArg use_warp_rigid_arg(string(),"use-warp-rigid","Use rigid warp for neck warping?",cmd,false);
-	SwitchArg use_warp_affine_arg(string(),"use-warp-affine","Use affine warp for neck warping?",cmd,false);
-	SwitchArg use_double_warp_arg(string(),"use-double-warp","Use 2-way warping?",cmd,false);
-
-	// Parse the args.
-	cmd.parse( argc, argv );
-
-	// Get the value parsed by each arg. 
-	params.filename = filename_arg.getValue();
-	params.groundtruth = groundtruth_arg.getValue();
-	params.gb_sig = gb_sig_arg.getValue();
-	params.gb_freq = gb_freq_arg.getValue();
-	params.gb_phase = gb_phase_arg.getValue();
-	params.gb_gamma = gb_gamma_arg.getValue();
-	params.gb_nstds = gb_nstds_arg.getValue();
-	params.gb_size = gb_size_arg.getValue();
-	params.km_numc = km_numc_arg.getValue();
-	params.km_numt = km_numt_arg.getValue();
-	params.com_thresh = com_thresh_arg.getValue();
-	params.com_winsize = com_winsize_arg.getValue();
-	params.com_add_type = com_add_type_arg.getValue();
-	params.com_calc_type = com_calc_type_arg.getValue();
-	params.im_scale_by = im_scale_by_arg.getValue();
-	params.gc_iter = gc_iter_arg.getValue();
-	params.doScore = groundtruth_arg.isSet();
-	params.relable_type = relable_type_arg.getValue();
-	params.doPositionInKM = position_in_km_arg.getValue();
-	params.doInitStep = initialization_step_arg.getValue();
-	params.num_cut_backp_iters = num_iters_arg.getValue();
-	btm_wait_time = btm_wait_time_arg.getValue();
-	params.do_alpha_matt = do_alphamatt_arg.getValue();
-	params.alpha_matt_dilate_size = alpha_matt_dilate_arg.getValue();
-	params.use_hist_match_hs = use_hist_match_hs_arg.getValue();
-	params.use_hist_match_rgb = use_hist_match_rgb_arg.getValue();
-	params.use_overlay = use_overlay_arg.getValue();
-	params.use_warp_affine = use_warp_affine_arg.getValue();
-	params.use_warp_rigid = use_warp_rigid_arg.getValue();
-	params.use_double_warp = use_double_warp_arg.getValue();
-
-	}catch (ArgException &e)  // catch any exceptions
-	{ cerr << "error: " << e.error() << " for arg " << e.argId() << endl; scanf("press any key...\n"); }
-}
-*/
-
-int head_extract_main(int argc, char** argv) {
-	VIRTUAL_SURGEON_PARAMS params;
-
-	ParseParams(params,argc,argv);
+	params.ParseParams(argc,argv);
 
 	Mat im;
 
 	if(params.filename.substr(0,6).compare("http://")) {
-		FaceDotComDetection(params,im);
+		params.FaceDotComDetection(im);
 	} else {
 		im = imread(params.filename);
 
@@ -478,15 +376,19 @@ int head_extract_main(int argc, char** argv) {
 		params.ri = Point(253*0.5129,338*0.2603);
 	}
 
-	return ExtractHead(im,params);
+	ExtractHead(im);
+
+	return 0;
 }
 
-int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
+Mat HeadExtractor::ExtractHead(Mat& im) {
 	btm_wait_time = params.wait_time;
 
-#ifdef BTM_DEBUG
-	namedWindow("tmp");
-	namedWindow("tmp1");
+#ifdef _PI
+	if(!params.no_gui) {
+		namedWindow("tmp");
+		namedWindow("tmp1");
+	}
 #endif
 
 	//Point li(102,111),ri(144,111);
@@ -525,42 +427,43 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		360.0,	//end angle
 		Scalar(255),CV_FILLED);
 
-	face_grab_cut(im,maskFace,1,170.0*li_ri);
+	params.face_grab_cut(im,maskFace,1,170.0*li_ri);
 
 	//------------ hair segmentation --------------
 	{
 	Mat hairMask = Mat::zeros(im.rows,im.cols,CV_8UC1);
 	Point hairEllipse(
 			(int)floor((double)midp.x - li_ri * 6.0 * params.yaw),
-			(int)floor((double)midp.y - li_ri * 17.0)
+			(int)floor((double)midp.y - li_ri * 17.0 * params.pitch)
 			);
 	ellipse(hairMask,
 		//Point((li.x+ri.x)/2.0,(li.y+ri.y)/2.0 + (int)(li_ri * (double)im.rows / 3.0)),
 		hairEllipse,
-		Size((int)floor((double)im.cols * li_ri * 1.38),(int)floor((double)im.cols * li_ri * 1.9)),
+		Size((int)floor((double)im.cols * li_ri * 1.38 * params.hair_ellipse_size_mult),(int)floor((double)im.cols * li_ri * 1.9 * params.hair_ellipse_size_mult)),
 		-params.roll,	//angle
 		0.0,	//start angle
 		360.0,	//end angle
 		Scalar(255),CV_FILLED);
 	hairMask = hairMask - maskFace;
 
-#ifdef BTM_DEBUG
-	imshow("tmp",hairMask);
-	{
-		vector<Mat> ims; split(im,ims);
-		ims[0] = ims[0] & hairMask;
-		ims[1] = ims[1] & hairMask;
-		ims[2] = ims[2] & hairMask;
-		Mat _im; cv::merge(ims,_im);
-		imshow("tmp1",_im);
+#ifdef _PI
+	if(!params.no_gui) {
+		imshow("tmp",hairMask);
+		{
+			vector<Mat> ims; split(im,ims);
+			ims[0] = ims[0] & hairMask;
+			ims[1] = ims[1] & hairMask;
+			ims[2] = ims[2] & hairMask;
+			Mat _im; cv::merge(ims,_im);
+			imshow("tmp1",_im);
+		}
+		waitKey(params.wait_time);
+	
+		namedWindow("gabor");
 	}
-	waitKey(params.wait_time);
 #endif
 
 	//make gabors
-#ifdef BTM_DEBUG
-	namedWindow("gabor");
-#endif
 	vector<Mat> filter_bank;
 	make_gabor_bank(filter_bank,params.gb_size,params.gb_sig,params.gb_nstds,params.gb_freq,params.gb_phase,params.gb_gamma);
 
@@ -570,8 +473,8 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 
 	Mat gray;
 	cvtColor(im_small,gray,CV_RGB2GRAY);
-#ifdef BTM_DEBUG
-	{
+#ifdef _PI
+	if(!params.no_gui) {
 		Mat _col;
 		cvtColor(gray,_col,CV_GRAY2RGB);
 		circle(_col,Point(params.li.x/params.im_scale_by,params.li.y/params.im_scale_by),2,Scalar(255,0,0),CV_FILLED);
@@ -607,7 +510,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		Mat filter8bit; //(filter_bank[i].rows,filter_bank[i].cols,CV_8UC1);
 		Mat _f = ((filter_bank[i] + 1.0)/2.0);
 		_f.convertTo(filter8bit,CV_8UC1,255.0);
-//#ifdef BTM_DEBUG
+//#ifdef _PI
 //		imshow("gabor",filter8bit);
 //#endif
 		//filter2D(gray,tmp,-1,filter_bank[i]);
@@ -616,7 +519,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		for(int ii=0;ii<featVecLength;ii++) {
 			((float*)(featureVec.data + ii*featureVec.step))[i+_off] = (float)((gray.data + ii)[0]) / 255.0f;
 		}
-//#ifdef BTM_DEBUG
+//#ifdef _PI
 //		imshow("tmp",tmp);
 //		waitKey(30);
 //#endif
@@ -636,13 +539,15 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 
 	{
 	Mat __tmp = featureLables.reshape(1,im_small.rows);
-#ifdef BTM_DEBUG
+#ifdef _PI
 	Mat __tmp1 = __tmp * 255.0 / (double)params.km_numc;
 	__tmp1.convertTo(tmp,CV_8UC1);
 
-	imshow("tmp",tmp);
-	int c = waitKey(params.wait_time);
-	if(c=='q') return 0;
+	if(!params.no_gui) {
+		imshow("tmp",tmp);
+		int c = waitKey(params.wait_time);
+		if(c=='q') return Mat();
+	}
 #endif
 	__tmp.convertTo(tmp,CV_8UC1);
 	}
@@ -705,34 +610,42 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		minMaxLoc(backProjD,&minV,&maxV);
 		backProjD = (backProjD - minV) / (maxV - minV);
 
-#ifdef BTM_DEBUG
-		imshow("gabor",backProjD);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("gabor",backProjD);
+		}
 #endif
 		
 		Mat backProj = (backProjD < params.com_thresh);
 
-#ifdef BTM_DEBUG
-		imshow("tmp",backProj);
-		waitKey(params.wait_time);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("tmp",backProj);
+			waitKey(params.wait_time);
+		}
 #endif
 		resize(backProj,hairMask,hairMask.size());
 
 		hairMask = hairMask & ~maskFace;
 
-		face_grab_cut(im,hairMask,params.gc_iter,18);
-#ifdef BTM_DEBUG
-		imshow("tmp",hairMask);
-		waitKey(params.wait_time);
+		params.face_grab_cut(im,hairMask,params.gc_iter,18);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("tmp",hairMask);
+			waitKey(params.wait_time);
+		}
 #endif
 	}
 
 	Mat backMask = Mat(hairMask.size(),CV_8UC1,255); // - hairMask - maskFace;
 
-#ifdef BTM_DEBUG
-	imshow("tmp",maskFace);
-	imshow("gabor",hairMask);
-	imshow("tmp1",backMask);
-	waitKey(params.wait_time);
+#ifdef _PI
+	if(!params.no_gui) {
+		imshow("tmp",maskFace);
+		imshow("gabor",hairMask);
+		imshow("tmp1",backMask);
+		waitKey(params.wait_time);
+	}
 #endif
 
 	//iterative process
@@ -798,11 +711,13 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		backP[0] = backP[0].mul(bias);
 		backP[1] = backP[1].mul(bias);
 		backP[2] = backP[2].mul(bias1);
-#ifdef BTM_DEBUG
-		imshow("tmp",backP[0]);
-		imshow("tmp1",backP[1]);
-		imshow("gabor",backP[2]);
-		waitKey(params.wait_time);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("tmp",backP[0]);
+			imshow("tmp1",backP[1]);
+			imshow("gabor",backP[2]);
+			waitKey(params.wait_time);
+		}
 #endif
 
 		if(params.relable_type == RELABLE_HIST_MAX) {
@@ -843,8 +758,8 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 			for ( int  i = 0; i < lables.rows; i++ )
 				((int*)(lables.data + lables.step * i))[0] = gc.whatLabel(i);
 
-#ifdef BTM_DEBUG
-			{
+#ifdef _PI
+			if(!params.no_gui) {
 				Mat _tmp = lables.reshape(1,im_small.rows);
 				Mat _tmpUC;
 				_tmp.convertTo(_tmpUC,CV_8UC1,255.0/(double)num_lables);
@@ -876,16 +791,17 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 			{
 			Mat _combinedHairAndFaceMask = maskA[0] | maskA[1];
 			takeBiggestCC(_combinedHairAndFaceMask,bias);
-			maskA[0] = maskA[0] & _combinedHairAndFaceMask;
+			maskA[0] = maskA[0] & _combinedHairAndFaceMask; //hair
 			//maskA[1] = maskA[1] & _combinedHairAndFaceMask;
-			takeBiggestCC(maskA[1],bias);
+			takeBiggestCC(maskA[1],bias);	//face
 			}
 
 			//back mask is derived from hair and face
+			//actually now it's always the whole image.
 			maskA[2] = Mat(maskA[2].rows,maskA[2].cols,CV_8UC1,Scalar(255)); // - maskA[0] - maskA[1];
 
-#ifdef BTM_DEBUG
-			{
+#ifdef _PI
+			if(!params.no_gui) {
 				Mat _tmp;
 				vector<Mat> v; for(int _ii=0;_ii<3;_ii++) v.push_back(maskA[_ii]);
 				cv::merge(v,_tmp);
@@ -896,11 +812,13 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 			//gc->setSmoothCost((GCoptimization::EnergyType*)0);
 			//delete gc;
 		}
-#ifdef BTM_DEBUG
-		imshow("tmp",_it_faceMask);
-		imshow("gabor",_it_hairMask);
-		imshow("tmp1",_it_backMask);
-		waitKey(params.wait_time);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("tmp",_it_faceMask);
+			imshow("gabor",_it_hairMask);
+			imshow("tmp1",_it_backMask);
+			waitKey(params.wait_time);
+		}
 #endif
 	}
 
@@ -915,16 +833,20 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		Mat gt_im = imread(params.groundtruth,0);
 		int groundTruth_count = countNonZero(gt_im);
 		gt_im = (gt_im ^ hairMask);
-#ifdef BTM_DEBUG
-		imshow("gabor",gt_im);
+#ifdef _PI
+		if(!params.no_gui) {
+			imshow("gabor",gt_im);
+		}
 #endif
 		//double segscore = sum(gt_im > 0).val[0];
 		int xor_count = countNonZero(gt_im);
 		double segscore = (double)xor_count / (double)groundTruth_count;
 		cout << "seg score: " << segscore << "(" << xor_count << "/" << groundTruth_count << ")" << endl;
 
-	#ifdef BTM_DEBUG
-		waitKey(params.wait_time);
+	#ifdef _PI
+		if(!params.no_gui) {
+			waitKey(params.wait_time);
+		}
 	#endif
 	}
 
@@ -932,7 +854,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 
 	takeBiggestCC(maskFace);
 
-	face_grab_cut(im,maskFace,2,10);
+	params.face_grab_cut(im,maskFace,2,10);
 
 	//alpha matting
 	if(params.do_alpha_matt) {
@@ -950,7 +872,7 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		}
 
 		Matting *matting = new BayesianMatting( &((IplImage)im), &((IplImage)tmpMask) );
-		matting->Solve();
+		matting->Solve(!params.no_gui);
 
 		Mat(matting->alphamap).copyTo(maskFace);
 
@@ -961,8 +883,10 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 
 	}
 
-//#ifdef BTM_DEBUG
-	imshow("tmp",maskFace);
+//#ifdef _PI
+	if(!params.no_gui) {
+		imshow("tmp",maskFace);
+	}
 	
 	Mat imMasked;
 	{
@@ -970,7 +894,9 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 			maskFace.convertTo(maskFace,CV_32FC1,1.0/255.0);
 
 		Mat unMask = Mat::ones(maskFace.size(),CV_32FC1) - maskFace; //Mat(maskFace.size(),CV_8UC1,Scalar(255)) - maskFace;
-		imshow("gabor",unMask);
+		if(!params.no_gui) {
+			imshow("gabor",unMask);
+		}
 
 		vector<Mat> v;
 		im.convertTo(im,CV_32FC3,1.0/255.0);
@@ -980,9 +906,13 @@ int ExtractHead(Mat& im, VIRTUAL_SURGEON_PARAMS& params) {
 		v[2] = v[2].mul(maskFace);
 		cv::merge(v,imMasked);
 	}
-	imshow("tmp1",imMasked);
-	waitKey(params.wait_time);
+	if(!params.no_gui) {
+		imshow("tmp1",imMasked);
+		waitKey(params.wait_time);
+	}
 //#endif
 
-	return 0;
+	return maskFace;
 }
+
+}//ns

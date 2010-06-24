@@ -146,13 +146,13 @@ static int my_f(double x[], double *f, double g[], void *state) {
 }
 
 int ExtractNeck(int argc, char** argv) {
-	VIRTUAL_SURGEON_PARAMS p;
-	ParseParams(p,argc,argv);
+	VirtualSurgeon::VIRTUAL_SURGEON_PARAMS p;
+	p.ParseParams(argc,argv);
 
 	Mat _im;
-	FaceDotComDetection(p,_im);
+	p.FaceDotComDetection(_im);
 
-	PrintParams(p);
+	p.PrintParams();
 
 	Mat __im;
 	resize(_im,__im,Size((int)floor((double)_im.cols/p.im_scale_by),

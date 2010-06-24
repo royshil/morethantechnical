@@ -1,10 +1,13 @@
 #include "stdafx.h"
+#include "vs_warp.h"
+
+namespace VirtualSurgeon {
 
 Mat weights;
 
 typedef unsigned int uint;
 
-void Affine_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh) {
+void VirtualSurgeon_Warp::Affine_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh) {
 	uint i, j;
 	double epsilon = 0.000001f;
 	double alpha = 1;
@@ -106,7 +109,7 @@ void Affine_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh) {
 	}
 }
 
-void Affine_doWarp(vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh) {
+void VirtualSurgeon_Warp::Affine_doWarp(vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh) {
 	uint i, j;
 
 	uint mSz = newMesh.size();
@@ -134,15 +137,7 @@ void Affine_doWarp(vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh) {
 	}
 }
 
-
-//TODO: memory release...
-float* rigid_px;
-float* rigid_py;
-float* rigid_ww;
-float** rigid_w;
-int rigid_w_sz;
-
-void Rigid_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh) 
+void VirtualSurgeon_Warp::Rigid_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh) 
 {
 	uint i, j;
 	float alpha = 1.0f;
@@ -194,7 +189,7 @@ void Rigid_Precompute(vector<Point2d> controlPoints, vector<Point2d>& mesh)
 	}
 }
 
-void Rigid_doWarp(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh)
+void VirtualSurgeon_Warp::Rigid_doWarp(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh)
 {
 
 	uint mSz = newMesh.size();
@@ -261,11 +256,11 @@ void Rigid_doWarp(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, 
 	delete[] rigid_w;
 }
 
-void Rigid_release() {
+void VirtualSurgeon_Warp::Rigid_release() {
 	
 }
 
-void Rigid_doAll(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh) {
+void VirtualSurgeon_Warp::Rigid_doAll(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, vector<Point2d>& newMesh) {
 	uint i, j;
 	float alpha = 1.0f;
 
@@ -361,3 +356,5 @@ void Rigid_doAll(vector<Point2d> controlPoints, vector<Point2d> newCtrlPoints, v
 	for(int i=0;i<mSz;i++) delete[] w[i];
 	delete[] w;
 }
+
+}//ns
