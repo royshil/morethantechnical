@@ -93,14 +93,12 @@ extern int btm_wait_time;
 
 extern void face_grab_cut(Mat& orig, Mat& mask);
 
-enum face_warp_method {FACE_WARP_RIGID,FACE_WARP_AFFINE};
-
-extern void face_warp(vector<Mat* >& imgs,
-			   vector<Point2d>& points1,
-			   vector<Point2d>& points2, 
-			   Size im2_size, 
-			   face_warp_method method,
-			   double alpha);
-extern void face_warp_read_points(std::string& str, Size im_size, vector<Point2d>& points);
+//extern void face_warp(vector<Mat* >& imgs,
+//			   vector<Point2d>& points1,
+//			   vector<Point2d>& points2, 
+//			   Size im2_size, 
+//			   face_warp_method method,
+//			   double alpha);
+//extern void face_warp_read_points(std::string& str, Size im_size, vector<Point2d>& points);
 
 #endif

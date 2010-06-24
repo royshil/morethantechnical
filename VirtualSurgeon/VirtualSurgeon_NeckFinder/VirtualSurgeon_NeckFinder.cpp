@@ -262,11 +262,11 @@ Mat findBestTransform(vector<Point>& src, vector<Point>& dst, Mat& im) {
 
 int _main(int argc, char** argv)
 {
-	VIRTUAL_SURGEON_PARAMS p;
-	ParseParams(p,argc,argv);
+	VirtualSurgeon::VIRTUAL_SURGEON_PARAMS p;
+	p.ParseParams(argc,argv);
 
 	Mat im;
-	FaceDotComDetection(p,im);
+	p.FaceDotComDetection(im);
 
 	Mat im_small;
 	resize(im,im_small,Size((int)floor((double)im.cols/p.im_scale_by),

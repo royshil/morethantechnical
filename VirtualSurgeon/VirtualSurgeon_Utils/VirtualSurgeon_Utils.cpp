@@ -19,6 +19,9 @@ using namespace TCLAP;
 #include "../BeTheModel/util.h"
 
 int curl_get(std::string& s, std::string& _s = std::string(""));
+int btm_wait_time = 0;
+
+namespace VirtualSurgeon {
 
 // Define the command line object.
 CmdLine cmd("Command description message", ' ', "0.9");
@@ -55,34 +58,51 @@ SwitchArg use_warp_rigid_arg(string(),"use-warp-rigid","Use rigid warp for neck 
 SwitchArg use_warp_affine_arg(string(),"use-warp-affine","Use affine warp for neck warping?",cmd,false);
 SwitchArg use_double_warp_arg(string(),"use-double-warp","Use 2-way warping?",cmd,false);
 
-void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv) {
+void VirtualSurgeonParams::InitializeDefault() {
+	VirtualSurgeonParams& params = *this;
 	params.gb_sig = 1.0;
 	params.gb_freq = 0.15;
 	params.gb_phase = _PI/2.0;
 	params.gb_gamma = 1.0;
 	params.gb_nstds = 3;
 	params.gb_size = 2;
-	params.km_numc = 10;
+	params.km_numc = 20;
 	params.com_winsize = 5;
 	params.com_thresh = 0.25;
 	params.com_add_type = 0;
 	params.com_calc_type = 1;
 	params.im_scale_by = 2.0;
 	params.gc_iter = 1;
-	params.km_numt = 2;
+	params.km_numt = 1;
 	params.doScore = false;
 	params.relable_type = 1;
 	params.doPositionInKM = false;
 	params.doInitStep = false;
-	params.num_cut_backp_iters = 1;
+	params.num_cut_backp_iters = 2;
 	params.do_alpha_matt = false;
-	params.alpha_matt_dilate_size = 10;
+	params.alpha_matt_dilate_size = 5;
 	params.use_hist_match_hs = false;
 	params.use_hist_match_rgb = false;
 	params.use_overlay = false;
 	params.use_warp_rigid = false;
 	params.use_warp_affine = false;
-	params.use_double_warp = false;
+	params.use_double_warp = false;	
+	params.hair_ellipse_size_mult = 1.1;
+
+	params.snake_snap_weight_edge = 5000.0;
+	params.snake_snap_weight_direction = 12.0;
+	params.snake_snap_weight_consistency = 12.0;
+	params.snake_snap_edge_len_thresh = 200;
+	params.snale_snap_total_width_coeff = 10;
+
+	params.no_gui = false;
+	params.wait_time = 1;
+}
+
+void VirtualSurgeonParams::ParseParams(int argc, char** argv) {
+	VirtualSurgeonParams& params = *this;
+
+	InitializeDefault();
 
 	try {  
 
@@ -127,7 +147,9 @@ void ParseParams(VIRTUAL_SURGEON_PARAMS& params, int argc, char** argv) {
 	{ cerr << "error: " << e.error() << " for arg " << e.argId() << endl; scanf("press any key...\n"); }
 }
 
-void PrintParams(VIRTUAL_SURGEON_PARAMS& p) {
+void VirtualSurgeonParams::PrintParams() {
+	VirtualSurgeonParams& p = *this;
+
 	cout<<"file to work on: "<<p.filename<<endl;
 	cout<<"ground truth file: "<<p.groundtruth<<endl;
 	cout<<"Gabor func frequency: "<<p.gb_freq<<endl;
@@ -172,7 +194,9 @@ This function goes to Face.com APIs (using CURL) to get the facial features of t
 It will take out the image URL from params.filename and fill in the ri,li,yaw,roll,pitch params, an also
 load the image into the im argument
 **/
-void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im) {
+void VirtualSurgeonFaceData::FaceDotComDetection(Mat& im) {
+	VirtualSurgeonFaceData& params = *this;
+
 	struct stat f__stat;
 
 	int indexofslash = params.filename.find_last_of("/");
@@ -243,9 +267,7 @@ void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im) {
 	}
 }
 
-int btm_wait_time = 0;
-
-void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size) {
+void VirtualSurgeonParams::face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size) {
 	Mat tmpMask(mask.rows,mask.cols,CV_8UC1,Scalar(GC_BGD));
 
 	//create "buffer" zones for probably BG and prob. FG.
@@ -264,12 +286,13 @@ void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size) {
 	//Mat(mask).copyTo(tmpMask);
 	Mat bgdModel, fgdModel;
 #ifdef BTM_DEBUG
-
-	Mat _tmp;
-	tmpMask.convertTo(_tmp,CV_32FC1);
-	_tmp = tmpMask / 4.0f * 255.0f;
-	imshow("tmp",_tmp);
-	waitKey(BTM_WAIT_TIME);
+	if(!this->no_gui) {
+		Mat _tmp;
+		tmpMask.convertTo(_tmp,CV_32FC1);
+		_tmp = tmpMask / 4.0f * 255.0f;
+		imshow("tmp",_tmp);
+		waitKey(BTM_WAIT_TIME);
+	}
 
 	cout << "Do grabcut... init... ";
 #endif
@@ -310,7 +333,11 @@ void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size) {
 #ifdef BTM_DEBUG
 	cout << "Done" << endl;
 	//cvShowImage("tmp",mask);
-	imshow("tmp",mask);
-	waitKey(BTM_WAIT_TIME);
+	if(!this->no_gui) {
+		imshow("tmp",mask);
+		waitKey(BTM_WAIT_TIME);
+	}
 #endif
 }
+
+}//ns

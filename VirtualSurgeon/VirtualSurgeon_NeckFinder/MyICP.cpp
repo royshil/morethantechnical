@@ -9,7 +9,11 @@ using namespace cv;
 #include <limits>
 using namespace std;
 
-void ShowPoints(Mat& im, Mat& X,Scalar c = Scalar(255)) {
+#include "../VirtualSurgeon_Utils/VirtualSurgeon_Utils.h"
+#include "VirtualSurgeon_ICP.h"
+namespace VirtualSurgeon {
+
+void ICP::ShowPoints(Mat& im, Mat& X,Scalar c) {
 	for(int i=0;i<X.rows;i++) {
 		Point p;
 		if(X.type() == CV_32SC1 || X.type() == CV_32SC2)
@@ -22,7 +26,7 @@ void ShowPoints(Mat& im, Mat& X,Scalar c = Scalar(255)) {
 	}
 }
 
-void ShowLines(Mat& im, Mat& X, Mat& X_bar, Scalar c1 = Scalar(0,255), Scalar c2 = Scalar(0,0,255)) {
+void ICP::ShowLines(Mat& im, Mat& X, Mat& X_bar, Scalar c1, Scalar c2) {
 	{
 		//Mat im = Mat::zeros(300,500,CV_8UC3);
 		for(int i=0;i<X.rows;i++) {
@@ -56,7 +60,7 @@ void ShowLines(Mat& im, Mat& X, Mat& X_bar, Scalar c1 = Scalar(0,255), Scalar c2
 	}
 }
 
-void ShowQuery(Mat& destinations, Mat& query, Mat& closest) {
+void ICP::ShowQuery(Mat& destinations, Mat& query, Mat& closest) {
 	Mat im = Mat::zeros(300,500,CV_8UC3);
 	ShowPoints(im,destinations);
 	ShowLines(im,query,closest);
@@ -68,7 +72,7 @@ void ShowQuery(Mat& destinations, Mat& query, Mat& closest) {
 Taken from "Estimating 3-D rigid body transformations: a comparison of four major algorithms", Eggert et al 97'
 Originally from Arun et al. (1987) and Umeyama (1991) and Kanatani (1994)
 **/
-void findBestReansformSVD(Mat& _m, Mat& _d) {
+void ICP::findBestReansformSVD(Mat& _m, Mat& _d) {
 	Mat m; _m.convertTo(m,CV_32F);
 	Mat d; _d.convertTo(d,CV_32F);
 
@@ -116,9 +120,9 @@ void findBestReansformSVD(Mat& _m, Mat& _d) {
 
 }
 
-void findBestTransform(Mat& X, Mat& X_bar) {
-	namedWindow("tmp");
-	{
+void ICP::findBestTransform(Mat& X, Mat& X_bar) {
+	if(!params.no_gui) {
+		namedWindow("tmp");
 		Mat im = Mat::zeros(300,500,CV_8UC3);
 		ShowLines(im,X,X_bar);
 		imshow("tmp",im);
@@ -173,7 +177,7 @@ void findBestTransform(Mat& X, Mat& X_bar) {
 	Xnew = Xnew + xm;
 	X_bar = X_bar + xm;
 
-	{
+	if(!params.no_gui) {
 		Mat im = Mat::zeros(300,500,CV_8UC3);
 		ShowLines(im,Xnew,X_bar);
 		imshow("tmp",im);
@@ -184,14 +188,16 @@ void findBestTransform(Mat& X, Mat& X_bar) {
 	Xnew.convertTo(X,CV_32SC1);
 }
 
-float flann_knn(Mat& m_destinations, Mat& m_object, vector<int>& ptpairs, vector<float>& dists = vector<float>()) {
+float ICP::flann_knn(Mat& m_destinations, Mat& m_object, vector<int>& ptpairs, vector<float>& dists) {
 	// find nearest neighbors using FLANN
 	cv::Mat m_indices(m_object.rows, 1, CV_32S);
 	cv::Mat m_dists(m_object.rows, 1, CV_32F);
 
 	Mat dest_32f; m_destinations.convertTo(dest_32f,CV_32FC2);
+	assert(dest_32f.type() == CV_32FC2 || (dest_32f.type() == CV_32FC1 && dest_32f.cols == 2));
+
 	Mat obj_32f; m_object.convertTo(obj_32f,CV_32FC2);
-	assert(dest_32f.type() == CV_32F);
+
 	cv::flann::Index flann_index(dest_32f, cv::flann::KDTreeIndexParams(2));  // using 4 randomized kdtrees
     flann_index.knnSearch(obj_32f, m_indices, m_dists, 1, cv::flann::SearchParams(64) ); // maximum number of leafs checked
 
@@ -207,7 +213,9 @@ float flann_knn(Mat& m_destinations, Mat& m_object, vector<int>& ptpairs, vector
 	return cv::sum(m_dists)[0];
 }
 
-void ICP(Mat& X, Mat& destination) {
+void ICP::doICP(Mat& X, Mat& destination) {
+	assert(X.rows > 0 && destination.rows > 0);
+
 	vector<int> pair;
 	double lastDist = std::numeric_limits<double>::max();
 	Mat lastGood;
@@ -242,7 +250,9 @@ void ICP(Mat& X, Mat& destination) {
 			//}
 		}
 
-		ShowQuery(destination,X,X_bar);
+		if(!params.no_gui) {
+			ShowQuery(destination,X,X_bar);
+		}
 
 		//Mat X_bar(X_barv);
 		//Mat subsetX(X_v);
@@ -264,7 +274,7 @@ void ICP(Mat& X, Mat& destination) {
 	cout << "converged" << endl;
 }
 
-int icp_main(int argc, char** argv) {
+int ICP::icp_main(int argc, char** argv) {
 	//int _X[22] = {7, 198, 37, 155, 76, 138, 126, 123, 177, 112, 229, 114, 277, 110, 363, 136, 399, 151, 433, 196, 439, 222,};
 	//Mat X(11,2,CV_32SC1,_X);
 	
@@ -298,7 +308,9 @@ int icp_main(int argc, char** argv) {
 
 	//findBestTransform(X_1ch,X_bar_1ch);
 
-	ICP(X,destinations);
+	doICP(X,destinations);
 
 	return 0;
 }
+
+}//ns
