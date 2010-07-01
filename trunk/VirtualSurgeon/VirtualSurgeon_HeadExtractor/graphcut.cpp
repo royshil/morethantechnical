@@ -127,7 +127,7 @@ void graphcut(Mat& featureVec, Mat& im, int num_lables) {
 	cv::log((_tmp - minVal) / (maxVal - minVal),_tmp);
 	_tmp = -_tmp * 0.35;
 
-	_tmp.convertTo(grayInt,CV_32SC1);
+	_tmp.convertTo(grayInt,CV_32FC1);
 	
 	//grayInt = grayInt * 5;
 
@@ -141,7 +141,7 @@ void graphcut(Mat& featureVec, Mat& im, int num_lables) {
 	minMaxLoc(_tmp,&minVal,&maxVal);
 	cv::log((_tmp - minVal) / (maxVal - minVal),_tmp);
 	_tmp = -_tmp * 0.35;
-	_tmp.convertTo(grayInt1,CV_32SC1);
+	_tmp.convertTo(grayInt1,CV_32FC1);
 
 	//grayInt1 = grayInt1 * 5;
 	}
@@ -158,9 +158,9 @@ void graphcut(Mat& featureVec, Mat& im, int num_lables) {
 	//	V[i] = 1;
 	//}
 
-	Mat Sc = 10 * (Mat::ones(num_lables,num_lables,CV_32SC1) - Mat::eye(num_lables,num_lables,CV_32SC1));
+	Mat Sc = 10.0 * (Mat::ones(num_lables,num_lables,CV_32FC1) - Mat::eye(num_lables,num_lables,CV_32FC1));
 
-	gc->setSmoothCostVH((int*)(Sc.data),(int*)grayInt.data,(int*)grayInt1.data);
+	gc->setSmoothCostVH((float*)(Sc.data),(float*)grayInt.data,(float*)grayInt1.data);
 	//gc->setSmoothCost((int*)(Sc.data));
 
 	while(true) {
@@ -214,11 +214,11 @@ void graphcut1(Mat& im, Mat& probs, Mat& dx, Mat& dy,int num_lables,Mat& lables 
 		}
 	}
 
-	Mat Sc = 5 * (Mat::ones(num_lables,num_lables,CV_32SC1) - Mat::eye(num_lables,num_lables,CV_32SC1));
+	Mat Sc = 5.0 * (Mat::ones(num_lables,num_lables,CV_32FC1) - Mat::eye(num_lables,num_lables,CV_32FC1));
 	//int score[9] = {0,50,50,
 	//				50,0,50,
 	//				50,50,0};
-	gc.setSmoothCostVH((int*)(/*score*/Sc.data),(int*)dx.data,(int*)dy.data);
+	gc.setSmoothCostVH((float*)(/*score*/Sc.data),(float*)dx.data,(float*)dy.data);
 
 	lables.create(N,1,CV_8UC1);
 

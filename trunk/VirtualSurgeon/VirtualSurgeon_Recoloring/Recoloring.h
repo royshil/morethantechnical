@@ -2,6 +2,7 @@
 
 #include "cv.h"
 #include "ml.h"
+#include "highgui.h"
 using namespace cv;
 
 #include <vector>

@@ -62,8 +62,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="curllib.lib"
-				AdditionalLibraryDirectories="&quot;..\curl-7.19.3\lib\Debug&quot;"
+				AdditionalLibraryDirectories=""
 			/>
 			<Tool
 				Name="VCALinkTool"

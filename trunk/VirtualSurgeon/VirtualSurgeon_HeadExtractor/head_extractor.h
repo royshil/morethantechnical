@@ -10,6 +10,8 @@ using namespace cv;
 
 #include "../VirtualSurgeon_Utils/VirtualSurgeon_Utils.h"
 
+class GCoptimizationGridGraph;
+
 namespace VirtualSurgeon {
 
 class HeadExtractor {
@@ -26,6 +28,15 @@ private:
 	void make_gabor_bank(vector<Mat>& filter_bank, int bank_size, double sigma, int n_stds, double freq, double phase, double gamma);
 	void NaiveRelabeling(Size s, vector<Mat>& backP, vector<Mat>& maskA);
 	void takeBiggestCC(Mat& mask, Mat& bias = Mat());
+
+	void calcSegmentsLikelihood(Mat& labled_im, 
+							   vector<Mat> masks, 
+							   int bins,
+							   GCoptimizationGridGraph* gc,
+							   Mat& vert_edge_score,
+							   Mat& horiz_edge_score, int* score_matrix);
+
+	void getEdgesForGC(Mat& gray, Mat& horiz, Mat& vert);
 
 	VIRTUAL_SURGEON_PARAMS params;
 };

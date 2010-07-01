@@ -60,9 +60,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NoInherit) cv210d.lib highgui210d.lib cxcore210d.lib"
+				AdditionalDependencies="$(NoInherit) curllib.lib cv210d.lib highgui210d.lib cxcore210d.lib ml210d.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;D:\opencv-latest\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\curl-7.19.3\lib\Debug&quot;;&quot;D:\opencv-latest\lib&quot;"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="1"

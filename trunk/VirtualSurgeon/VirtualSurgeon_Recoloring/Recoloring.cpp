@@ -1,7 +1,7 @@
 
 #include "Recoloring.h"
 
-#include "highgui.h"
+
 
 #include <iostream>
 #include <limits>
@@ -167,9 +167,11 @@ namespace VirtualSurgeon {
 		if(!this->m_p.no_gui) {
 			namedWindow("orig target");
 			imshow("orig target",target);
-			namedWindow("source");
+			namedWindow("source orig");
+			imshow("source orig",source);
+			namedWindow("source masked");
 			Mat _tmp_S; source.copyTo(_tmp_S,source_mask);
-			imshow("source",_tmp_S);
+			imshow("source masked",_tmp_S);
 			namedWindow("dest target");
 			imshow("dest target",target_32f);
 
@@ -181,20 +183,25 @@ namespace VirtualSurgeon {
 
 }//ns
 
-//int main(int argc, char** argv) {
-//	VirtualSurgeon::Recoloring r;
-//	
-//	Mat dst = imread("../images/chinese_dude.jpg");
-//	Mat dst_mask = imread("../images/chinese_dude.skin_mask.png",0);
-//	Mat src = imread("../images/40406598_fd4e74d51c_d.jpg");
-//	Mat src_mask = imread("../images/40406598_fd4e74d51c_d.skin_mask.png",0);
-//
-//	Mat _tmp;
-//	resize(dst,_tmp,Size(),0.5,0.5); _tmp.copyTo(dst);
-//	resize(dst_mask,_tmp,Size(),0.5,0.5,INTER_NEAREST); _tmp.copyTo(dst_mask);
-//	resize(src,_tmp,Size(),0.5,0.5); _tmp.copyTo(src);
-//	resize(src_mask,_tmp,Size(),0.5,0.5,INTER_NEAREST); _tmp.copyTo(src_mask);
-//
-//	r.Recolor(src,src_mask,dst,dst_mask);
-//
-//}
+int main(int argc, char** argv) {
+	VirtualSurgeon::VirtualSurgeonParams p;
+	p.InitializeDefault();
+	p.no_gui = false;
+	p.wait_time = 0;
+	VirtualSurgeon::Recoloring r(p);
+	
+	Mat src = imread("C:/Users/Roy/Downloads/2492945625_e7f1c078b3_m.jpg");
+	Mat src_mask = imread("C:/Users/Roy/Downloads/2492945625_e7f1c078b3_m.mask.png",0);
+	Mat dst = imread("C:/Users/Roy/Downloads/2956622857_fee97925a1_m.jpg");
+	Mat dst_mask = imread("C:/Users/Roy/Downloads/2956622857_fee97925a1_m.mask.png",0);
+
+	Mat _tmp;
+	double s = 0.75;
+	resize(dst,_tmp,Size(),s,s); _tmp.copyTo(dst);
+	resize(dst_mask,_tmp,Size(),s,s,INTER_NEAREST); _tmp.copyTo(dst_mask);
+	resize(src,_tmp,Size(),s,s); _tmp.copyTo(src);
+	resize(src_mask,_tmp,Size(),s,s,INTER_NEAREST); _tmp.copyTo(src_mask);
+
+	r.Recolor(src,src_mask,dst,dst_mask);
+
+}

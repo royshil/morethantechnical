@@ -201,6 +201,16 @@ public:
 		void set(double v) { p->hair_ellipse_size_mult = v;}
 	}
 
+	property bool do_eq_hist {
+		bool get() { return p->do_eq_hist;}
+		void set(bool v) { p->do_eq_hist = v;}
+	}
+
+	property bool consider_pixel_neighbourhood {
+		bool get() { return p->consider_pixel_neighbourhood;}
+		void set(bool v) { p->consider_pixel_neighbourhood = v;}
+	}
+
 	VirtualSurgeon_ParamsWrapper(void);
 };
 

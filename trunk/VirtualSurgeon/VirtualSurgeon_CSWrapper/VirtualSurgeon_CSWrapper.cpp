@@ -62,9 +62,37 @@ namespace VirtualSurgeon_CSWrapper {
 	}
 
 	void VirtualSurgeonWrapper::ExtractHead() {
-		HeadExtractor he(*m_params);
-		Mat _tmp; orig_im->copyTo(_tmp);
-		(*headMask) = he.ExtractHead(_tmp);
+		double li_ri = norm(m_params->li - m_params->ri);// / (double)(faceMask.cols);
+		Rect r(MIN(orig_im->cols,MAX(0,m_params->li.x - li_ri*3)),
+				MIN(orig_im->rows,MAX(0,m_params->li.y - li_ri*3)),
+				MIN(orig_im->cols-MAX(0,m_params->li.x - li_ri*3),MAX(0,li_ri*6.5)),
+				MIN(orig_im->rows-MAX(0,m_params->li.y - li_ri*3),MAX(0,li_ri*6.5)));
+
+		try {
+			Mat _tmp; (*orig_im)(r).copyTo(_tmp);
+			if(m_params->do_eq_hist) {
+				vector<Mat> vm(3); split(_tmp,vm);
+				for(int i=0;i<3;i++) equalizeHist(vm[i],vm[i]);
+				merge(vm,_tmp);
+			}
+
+			Point orig_li = m_params->li;
+			Point orig_ri = m_params->ri;
+			m_params->li = m_params->li - r.tl(); 
+			m_params->ri = m_params->ri - r.tl(); 
+
+			HeadExtractor he(*m_params);
+			Mat _tmp_mask = he.ExtractHead(_tmp);
+
+			(*headMask) = Mat::zeros(orig_im->size(),CV_32FC1);
+			_tmp_mask.copyTo((*headMask)(r));
+
+			m_params->li = orig_li;
+			m_params->ri = orig_ri;
+		} catch (cv::Exception cvex) {
+			cerr << "Exception: " << cvex.msg << endl;
+			(*headMask) = Mat::zeros(orig_im->size(),CV_32FC1);
+		}
 	}
 
 	void VirtualSurgeonWrapper::Recolor() {
@@ -75,12 +103,15 @@ namespace VirtualSurgeon_CSWrapper {
 		double li_ri = norm(m_params->li - m_params->ri) / (double)(faceMask.cols);
 		Point2d faceEllipse(
 			((double)(m_params->li.x+m_params->ri.x))/2.0 - li_ri * m_params->yaw * 10.0,
-			((double)(m_params->li.y+m_params->ri.y))/2.0 + (int)(li_ri * (double)faceMask.cols * 1.0)
+			((double)(m_params->li.y+m_params->ri.y))/2.0 - li_ri * m_params->pitch * 10.0 + (int)(li_ri * (double)faceMask.cols * 1.0)
 		);
 		ellipse(faceMask,
 			faceEllipse,
 			//midp,
-			Size((int)floor((double)(faceMask.cols) * li_ri * 1 + li_ri * m_params->yaw * 1),(int)floor(((double)faceMask.cols) * li_ri * 1.58)),
+			Size(
+				m_params->hair_ellipse_size_mult * (int)floor((double)(faceMask.cols) * li_ri * 1 + li_ri * m_params->yaw * 1),
+				m_params->hair_ellipse_size_mult * (int)floor(((double)faceMask.cols) * li_ri * 1.58)
+				),
 			-m_params->roll,	//angle
 			0.0,	//start angle
 			360.0,	//end angle
@@ -88,6 +119,12 @@ namespace VirtualSurgeon_CSWrapper {
 
 		model_recolored = new Mat();
 		model_nohead_im->copyTo(*model_recolored);
+
+		if(!m_params->no_gui) {
+			namedWindow("tmp");
+			imshow("tmp",faceMask);
+			waitKey(m_params->wait_time);
+		}
 
 		r.Recolor(*orig_im,faceMask,*model_recolored,*model_skin_mask);
 	}
@@ -219,8 +256,20 @@ namespace VirtualSurgeon_CSWrapper {
 	void VirtualSurgeonWrapper::MakeModel(VirtualSurgeonPoint^ face_loc, VirtualSurgeonPoint^ model_loc) {
 		if(headMask == NULL || headMask->rows == 0 || headMask->cols==0 ||
 			orig_im == NULL || orig_im->rows == 0 || orig_im->cols==0 ||
-			model_warped == NULL || model_warped->rows == 0 || model_warped->cols==0) 
+			//model_warped == NULL || model_warped->rows == 0 || model_warped->cols==0) 
+			false)
 			return;
+
+		Mat background;
+		if(model_warped == NULL || model_warped->rows == 0) {
+			if(model_recolored == NULL || model_recolored->rows == 0) 
+				model_nohead_im->copyTo(background);
+			else
+				model_recolored->copyTo(background);
+		}
+		else 
+			model_warped->copyTo(background);
+
 
 		Rect faceRect;
 		FindBoundingRect(faceRect,headMask);
@@ -262,7 +311,7 @@ namespace VirtualSurgeon_CSWrapper {
 		//modelRect.y += faceRect.height * scaleFromFaceToBack;
 		modelRect.width = _tmp_o.cols;
 		modelRect.height = _tmp_o.rows;
-		Mat _tmp_m; (*model_warped)(modelRect).convertTo(_tmp_m,CV_32F);
+		Mat _tmp_m; (background)(modelRect).convertTo(_tmp_m,CV_32F);
 
 		if(!m_params->no_gui) {
 			namedWindow("tmp");
@@ -282,7 +331,7 @@ namespace VirtualSurgeon_CSWrapper {
 
 		complete = new Mat();
 
-		model_warped->copyTo(*complete);
+		background.copyTo(*complete);
 		out.convertTo((*complete)(modelRect),CV_8UC3);
 
 		//circle(*complete,Point(model_loc->x,model_loc->y),5,Scalar(255,255),3);
