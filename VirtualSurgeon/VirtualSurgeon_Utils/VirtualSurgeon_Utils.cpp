@@ -3,6 +3,7 @@
 
 #include "VirtualSurgeon_Utils.h"
 
+#include "cv.h"
 #include "highgui.h"
 using namespace cv;
 
@@ -71,7 +72,7 @@ void VirtualSurgeonParams::InitializeDefault() {
 	params.com_thresh = 0.25;
 	params.com_add_type = 0;
 	params.com_calc_type = 1;
-	params.im_scale_by = 2.0;
+	params.im_scale_by = 2;
 	params.gc_iter = 1;
 	params.km_numt = 1;
 	params.doScore = false;
@@ -87,7 +88,9 @@ void VirtualSurgeonParams::InitializeDefault() {
 	params.use_warp_rigid = false;
 	params.use_warp_affine = false;
 	params.use_double_warp = false;	
-	params.hair_ellipse_size_mult = 1.1;
+	params.hair_ellipse_size_mult = 1;
+	params.do_eq_hist = false;
+	params.consider_pixel_neighbourhood = true;
 
 	params.snake_snap_weight_edge = 5000.0;
 	params.snake_snap_weight_direction = 12.0;

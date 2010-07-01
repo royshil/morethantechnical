@@ -263,11 +263,11 @@ namespace VirtualSurgeon_GUI
             for (int i = 0; i < 8; i++)
             {
                 face_points[i] = new VirtualSurgeonPoint();
-                face_points[i].x = (int)image1.points[i+1].X;
-                face_points[i].y = (int)image1.points[i+1].Y;
+                face_points[i].x = (int)image1.points[i+2].X;
+                face_points[i].y = (int)image1.points[i+2].Y;
                 model_points[i] = new VirtualSurgeonPoint();
-                model_points[i].x = (int)image2.points[i+1].X;
-                model_points[i].y = (int)image2.points[i+1].Y;
+                model_points[i].x = (int)image2.points[i+2].X;
+                model_points[i].y = (int)image2.points[i+2].Y;
             }
 
             m_vs_wrapper.Warp(face_points, model_points);

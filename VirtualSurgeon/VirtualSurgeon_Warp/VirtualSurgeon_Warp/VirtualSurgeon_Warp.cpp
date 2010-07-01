@@ -59,7 +59,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	mp.filename = "..\\..\\images\\chinese_dude.jpg";
 	Mat im2;
 	mp.FaceDotComDetection(im2);
-	im2 = imread("..\\..\\images\\chinese_dude.png");
+	im2 = imread("..\\..\\images\\chinese_dude.model.png");
 
 	//while(true) {
 	//Mat im1 = imread(std::string("../../images/40406598_fd4e74d51c_d.jpg"));

@@ -43,6 +43,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPG", "..\WPG\WPG\WPG.csproj", "{022EDA6A-0B76-44C3-A530-8312C1B40030}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualSurgeon_Recoloring", "..\VirtualSurgeon_Recoloring\VirtualSurgeon_Recoloring.vcproj", "{6B11D864-4861-4FA4-81C3-C74461D6BCE6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{15FBF626-C021-4C89-87E9-EDFA63F58418} = {15FBF626-C021-4C89-87E9-EDFA63F58418}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

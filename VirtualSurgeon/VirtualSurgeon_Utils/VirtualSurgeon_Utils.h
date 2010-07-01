@@ -2,9 +2,10 @@
 
 #include "cv.h"
 
-using namespace cv;
-
 #define _PI 3.14159265
+
+#include <string>
+using namespace std;
 
 namespace VirtualSurgeon {
 
@@ -13,12 +14,12 @@ namespace VirtualSurgeon {
 		string filename;
 
 		//face data
-		Point li,ri;
+		cv::Point li,ri;
 		double yaw;
 		double roll;
 		double pitch;
 
-		void FaceDotComDetection(Mat& im);
+		void FaceDotComDetection(cv::Mat& im);
 	};
 
 typedef class VirtualSurgeonParams : public VirtualSurgeonFaceData {
@@ -47,6 +48,8 @@ public:
 	bool do_alpha_matt;
 	int alpha_matt_dilate_size;
 	double hair_ellipse_size_mult;
+	bool do_eq_hist;
+	bool consider_pixel_neighbourhood;
 
 	double snake_snap_weight_edge;
 	double snake_snap_weight_direction;
@@ -67,7 +70,7 @@ public:
 	void InitializeDefault();
 	void ParseParams(int argc, char** argv);
 	void PrintParams();
-	void face_grab_cut(Mat& orig, Mat& mask, int iters, int dilate_size = 30);
+	void face_grab_cut(cv::Mat& orig, cv::Mat& mask, int iters, int dilate_size = 30);
 
 } VIRTUAL_SURGEON_PARAMS;
 
