@@ -8,7 +8,7 @@ import android.telephony.TelephonyManager;
 //import android.util.Log;
 
 public class Listen extends BroadcastReceiver {
-	CallStateListener phoneListener = null;
+	private static CallStateListener phoneListener = null;
 	private static boolean firstTime = true;
 	@Override
 	public void onReceive(final Context context, final Intent intent) {
