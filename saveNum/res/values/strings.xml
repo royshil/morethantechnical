@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="btnSendText">Send SMS</string>
-    <string name="btnImport">Import Last Dialed</string>
+    <string name="btnImport">Get Last Call Log</string>
     <string name="hello">Hello World, saveNum!</string>
     <string name="app_name">Number Saver</string>
 <string name="btnSetText">Save Text</string>
