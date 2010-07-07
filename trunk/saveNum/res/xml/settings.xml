@@ -2,7 +2,7 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-<CheckBoxPreference android:disableDependentsState="true" android:key="allowString" android:defaultValue="false" android:title="Allow text input" android:summary="Allow full text and not only phone number"></CheckBoxPreference>
+<PreferenceCategory android:title="Application Settings"></PreferenceCategory><CheckBoxPreference android:disableDependentsState="true" android:key="allowString" android:defaultValue="false" android:title="Allow text input" android:summary="Allow full text and not only phone number"></CheckBoxPreference>
 <CheckBoxPreference android:summaryOn="Icon will be shown on active calls" android:key="showIcon" android:title="Show Notification" android:disableDependentsState="false" android:defaultValue="true" android:summaryOff="Icon will not be shown at all. Use the app shortcut instead"></CheckBoxPreference><ListPreference android:key="suspendTime" android:title="Suspend notification" android:dialogTitle="Choose delay time" android:entries="@array/entries" android:entryValues="@array/entryValues" android:summary="Suspend notification icon if there is a number in memory" android:dependency="showIcon"></ListPreference>
 
 <CheckBoxPreference android:key="ongoing" android:defaultValue="true" android:title="Ongoing Notification" android:summary="Place the notification on the Ongoing section" android:dependency="showIcon"></CheckBoxPreference><CheckBoxPreference android:key="speaker" android:title="Turn-on Speakerphone" android:summary="Auto-Turn on speakerphone when saving a number"></CheckBoxPreference>
@@ -10,5 +10,8 @@
 
 <CheckBoxPreference android:key="autosave" android:title="Auto Copy on exit" android:summary="Auto copy text to clipboard" android:defaultValue="false"></CheckBoxPreference>
 <CheckBoxPreference android:defaultValue="true" android:summary="Use Clipboard for saving numbers" android:key="useClipboard" android:title="Use Clipboard"></CheckBoxPreference>
+
+
+<PreferenceCategory android:title="Good will section"></PreferenceCategory><Preference android:summary="If you like my app, please consider donating" android:title="Donate" android:key="donation"></Preference>
 
 </PreferenceScreen>
