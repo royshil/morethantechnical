@@ -1,6 +1,7 @@
 package com.arnonse.savenum;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,46 +26,61 @@ import android.widget.Toast;
 
 public class saveNum extends Activity {
 
-	EditText phnNum;
-	Button btnAdd;
-	Button btnDial;
-	Button btnAddContact;
+	private EditText phnNum;
+	private Button btnAdd;
+	private Button btnDial;
+	private Button btnAddContact;
+	private Button btnSendText;
+	private Button btnImportLast;
 	private boolean monitorChange = true;
 	private static boolean iHaveTurnedOnSpeakerphone = false;
-	SharedPreferences prefs;
-	AudioManager audioman;
-	TelephonyManager telephoneman;
+	private SharedPreferences prefs;
+	private AudioManager audioman;
+	private TelephonyManager telephoneman;
+	private ClipboardManager clipboard;
+
+	private void initVars() {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		audioman = (AudioManager) getSystemService(AUDIO_SERVICE);
+		telephoneman = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+		phnNum = (EditText) findViewById(R.id.phnNum);
+		btnAdd = (Button) findViewById(R.id.btnAdd);
+		btnDial = (Button) findViewById(R.id.btnDial);
+		btnAddContact = (Button) findViewById(R.id.btnAddContact);
+		btnSendText = (Button) findViewById(R.id.btnSendText);
+		btnImportLast = (Button) findViewById(R.id.btnImportLast);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// Initialize preferences manager
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		audioman = (AudioManager) getSystemService(AUDIO_SERVICE);
-		telephoneman = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 
 		setContentView(R.layout.main);
 		setTheme(android.R.style.Theme_Dialog);
-		ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-		phnNum = (EditText) findViewById(R.id.phnNum);
 
-		if (!prefs.getBoolean("useClipboard", true))
-		{
+		initVars();
+
+		if (!prefs.getBoolean("useClipboard", true)) {
 			phnNum.setText(prefs.getString("savedNum", ""));
-		}
-		else
-		{
+		} else {
 			phnNum.setText(clipboard.getText());
 		}
 
-		btnAdd = (Button) findViewById(R.id.btnAdd);
-		btnDial = (Button) findViewById(R.id.btnDial);
-		btnAddContact = (Button) findViewById(R.id.btnAddContact);
-		if (clipboard.getText().toString().equals("")) {
+		if ((clipboard.getText().toString().equals("") && (prefs.getBoolean(
+				"useClipboard", true)))
+				|| ((prefs.getString("savedNum", "").equals("")) && (!prefs
+						.getBoolean("useClipboard", true)))) {
 			btnAdd.setText(getString(R.string.btnSetText));
 		}
+
 		adjustInputType();
 
+		initListeners();
+
+	}
+
+	private void initListeners() {
 		phnNum.addTextChangedListener(new TextWatcher() {
 
 			public void afterTextChanged(Editable arg0) {
@@ -91,21 +107,19 @@ public class saveNum extends Activity {
 
 		btnAdd.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				if (btnAdd.getText().equals(getString(R.string.btnClear))) 
-				{
+				if (btnAdd.getText().equals(getString(R.string.btnClear))) {
 					SetText("");
 					phnNum.setText("");
-					
+
 					btnAdd.setText(getString(R.string.btnSetText));
-				} 
-				else if (btnAdd.getText().equals(
+				} else if (btnAdd.getText().equals(
 						getString(R.string.btnSetText))) {
 
 					SetText(phnNum.getText().toString());
 					showToast(getString(R.string.copied));
 
-					InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);   
-					imm.hideSoftInputFromWindow(phnNum.getWindowToken(), 0);  
+					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+					imm.hideSoftInputFromWindow(phnNum.getWindowToken(), 0);
 
 					finish();
 				}
@@ -120,26 +134,36 @@ public class saveNum extends Activity {
 
 		});
 
-		btnAddContact.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
+		btnAddContact.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
 				if (!phnNum.getText().toString().equals(""))
 					AddContact(phnNum.getText().toString());
 			}
 		});
+		
+		btnSendText.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View arg0) {
+			}
+		});
+		
+		btnImportLast.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View arg0) {
+			}
+		});
+
 	}
 
 	public void performDial() {
 		if (!phnNum.getText().toString().equals(""))
-			startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phnNum.getText())));
-		else showToast("Nothing to dial");
+			startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"
+					+ phnNum.getText())));
+		else
+			showToast("Nothing to dial");
 	}
 
 	public void showToast(String s) {
 		Toast.makeText(getBaseContext(), s, Toast.LENGTH_SHORT).show();
 	}
-
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
@@ -147,22 +171,17 @@ public class saveNum extends Activity {
 		return super.onPrepareOptionsMenu(menu);
 	}
 
-
 	@Override
 	protected void onResume() {
 		super.onResume();
 		adjustInputType();
 	}
 
-	private void adjustInputType()
-	{
+	private void adjustInputType() {
 		boolean allowFullString = prefs.getBoolean("allowString", false);
-		if (allowFullString)
-		{
+		if (allowFullString) {
 			phnNum.setInputType(InputType.TYPE_CLASS_TEXT);
-		}
-		else
-		{
+		} else {
 			phnNum.setInputType(InputType.TYPE_CLASS_PHONE);
 		}
 	}
@@ -171,59 +190,58 @@ public class saveNum extends Activity {
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		if (ShouldIStartSpeakerphone())
-		{
+		if (ShouldIStartSpeakerphone()) {
 			audioman.setSpeakerphoneOn(true);
-			iHaveTurnedOnSpeakerphone=true;
+			iHaveTurnedOnSpeakerphone = true;
 		}
+		
+		if (IShouldRemoveNotification())
+		{
+			String ns = Context.NOTIFICATION_SERVICE;
+			NotificationManager mNotificationManager = (NotificationManager)getSystemService(ns);
+			mNotificationManager.cancel(0);
+		}
+		
+	}
+
+	private boolean IShouldRemoveNotification() {
+		return (telephoneman.getCallState()==TelephonyManager.CALL_STATE_IDLE);
 	}
 
 	private boolean ShouldIStartSpeakerphone() {
-		return 
-		( 		prefs.getBoolean("speaker", false) &&
-				!audioman.isSpeakerphoneOn() && 
-				!audioman.isBluetoothScoOn() &&
-				(telephoneman.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK)
-		);
+		return (prefs.getBoolean("speaker", false)
+				&& !audioman.isSpeakerphoneOn() && !audioman.isBluetoothScoOn() && (telephoneman
+				.getCallState() == TelephonyManager.CALL_STATE_OFFHOOK));
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		if (iHaveTurnedOnSpeakerphone)
-		{
+		if (iHaveTurnedOnSpeakerphone) {
 			audioman.setSpeakerphoneOn(false);
-			iHaveTurnedOnSpeakerphone=false;
+			iHaveTurnedOnSpeakerphone = false;
 		}
 
-
-		if (prefs.getBoolean("autosave", false) && !phnNum.getText().equals(""))
-		{
+		if (prefs.getBoolean("autosave", false) && !phnNum.getText().equals("")) {
 			SetText(phnNum.getText().toString());
 		}
 	}
 
-	private void AddContact(String number)
-	{
-		Intent createIntent = new Intent(Intent.ACTION_INSERT_OR_EDIT);                        
-		createIntent.setType(People.CONTENT_ITEM_TYPE);                        
+	private void AddContact(String number) {
+		Intent createIntent = new Intent(Intent.ACTION_INSERT_OR_EDIT);
+		createIntent.setType(People.CONTENT_ITEM_TYPE);
 		createIntent.putExtra(Insert.PHONE, number);
 		startActivity(createIntent);
 	}
-	
-	private void SetText(String Text)
-	{
-		if (prefs.getBoolean("useClipboard", true))
-		{
+
+	private void SetText(String Text) {
+		if (prefs.getBoolean("useClipboard", true)) {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 			clipboard.setText(Text);
-		}
-		else
-		{
+		} else {
 			prefs.edit().putString("savedNum", Text).commit();
 		}
-		
-	}
 
+	}
 
 }

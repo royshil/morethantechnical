@@ -18,11 +18,11 @@ import android.text.ClipboardManager;
 
 public class CallStateListener extends PhoneStateListener {
 
-	Context ctx = null;
-	SharedPreferences prefs;
-	Timer t = null;
-	PowerManager pm; 
-	PowerManager.WakeLock wl;
+	private Context ctx = null;
+	private SharedPreferences prefs;
+	private Timer t = null;
+	private PowerManager pm; 
+	private PowerManager.WakeLock wl;
 	private static boolean hasLock = false;
 
 	CallStateListener(Context ctx) {
@@ -131,7 +131,7 @@ public class CallStateListener extends PhoneStateListener {
 	
 	
 
-	public void clearNotification() {
+	void clearNotification() {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager mNotificationManager = (NotificationManager) ctx
 				.getSystemService(ns);
