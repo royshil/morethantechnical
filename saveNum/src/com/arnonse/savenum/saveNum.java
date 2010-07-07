@@ -2,13 +2,17 @@ package com.arnonse.savenum;
 
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.BaseColumns;
+import android.provider.CallLog;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Intents.Insert;
 import android.telephony.TelephonyManager;
@@ -143,11 +147,44 @@ public class saveNum extends Activity {
 		
 		btnSendText.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View arg0) {
+				if (!phnNum.getText().toString().equals(""))
+				{
+				Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("smsto", 
+						phnNum.getText().toString(), null));
+				startActivity(intent);
+				}
+				else
+				{
+					showToast("No number to send");
+				}
+				
 			}
 		});
 		
 		btnImportLast.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View arg0) {
+				String number = "";
+				if (prefs.getString("currentNumber", "").equals(""))
+				{
+					String[] projection = new String[] { BaseColumns._ID,
+							CallLog.Calls.NUMBER, CallLog.Calls.TYPE };
+					ContentResolver resolver = getContentResolver();
+					Cursor cur = resolver.query(CallLog.Calls.CONTENT_URI, projection,
+							null, null, CallLog.Calls.DEFAULT_SORT_ORDER);
+					int numberColumn = cur.getColumnIndex(CallLog.Calls.NUMBER);
+					if (!cur.moveToNext()) {
+						cur.close();
+					}
+					if (cur.getCount()!=0)
+						number = cur.getString(numberColumn);
+				}
+				else
+				{
+					number = prefs.getString("currentNumber", "");
+				}
+				
+				if (!number.equals(""))
+					phnNum.setText(number);
 			}
 		});
 

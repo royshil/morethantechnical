@@ -37,9 +37,11 @@ public class CallStateListener extends PhoneStateListener {
 		switch (state) {
 		case TelephonyManager.CALL_STATE_IDLE:
 			handleRemoveNotification();
+			prefs.edit().putString("currentNumber", "").commit();
 			break;
 		case TelephonyManager.CALL_STATE_OFFHOOK:
 			activateNotification();
+			prefs.edit().putString("currentNumber", incomingNumber).commit();
 			break;
 		case TelephonyManager.CALL_STATE_RINGING:
 			break;
