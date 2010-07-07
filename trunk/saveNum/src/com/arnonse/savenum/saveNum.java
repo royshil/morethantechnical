@@ -155,7 +155,7 @@ public class saveNum extends Activity {
 				}
 				else
 				{
-					showToast("No number to send");
+					showToast("No number to send to");
 				}
 				
 			}
@@ -164,7 +164,7 @@ public class saveNum extends Activity {
 		btnImportLast.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View arg0) {
 				String number = "";
-				if (prefs.getString("currentNumber", "").equals(""))
+//				if (prefs.getString("currentNumber", "").equals(""))
 				{
 					String[] projection = new String[] { BaseColumns._ID,
 							CallLog.Calls.NUMBER, CallLog.Calls.TYPE };
@@ -178,13 +178,22 @@ public class saveNum extends Activity {
 					if (cur.getCount()!=0)
 						number = cur.getString(numberColumn);
 				}
-				else
-				{
-					number = prefs.getString("currentNumber", "");
-				}
+//				else
+//				{
+//					number = prefs.getString("currentNumber", "");
+//				}
 				
-				if (!number.equals(""))
+				if (!number.equals("") && !number.equals("-1"))
+				{
 					phnNum.setText(number);
+					btnAdd.setText(getString(R.string.btnSetText));
+				}
+				else
+					if (number.equals(""))
+						showToast("Call log is empty");
+					else
+						if (number.equals("-1"))
+							showToast("Last number was unkonwn");
 			}
 		});
 
