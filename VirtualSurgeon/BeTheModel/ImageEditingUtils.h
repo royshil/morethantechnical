@@ -18,12 +18,14 @@ const int BLACK = 0;
 typedef gmm::row_matrix< gmm::rsvector<double> > SparseMatrix;
 typedef std::vector<double > Vector;
 
-int getSingleColor(int rgb, int color);
 int getColorInPixel(IImage& image, int y, int x, int color);
-int getUpper(int pixel, int n);
-int getLower(int pixel, int n, int mn);
-int getLeft(int pixel, int n);
-int getRight(int pixel, int n);
+
+inline int getSingleColor(int rgb, int color) { return ((rgb >> (color * 8)) & 0x000000ff); }
+inline int getUpper(int pixel, int n) {	return ((pixel - n) >= 0) ? (pixel - n) : -1; }
+inline int getLower(int pixel, int n, int mn) { return ((pixel + n) < mn) ? (pixel + n) : -1; }
+inline int getLeft(int pixel, int n) { return ((pixel % n) != 0) ? (pixel - 1) : -1; }
+inline int getRight(int pixel, int n) {	return ((((pixel + 1) % n) != 0) ? (pixel + 1) : -1); }
+
 void matrixCreate(SparseMatrix& outMatrix, int n, int mn, IImage& maskImage);
 int solveLinear(const SparseMatrix& M, Vector& X, const Vector& B);
 int getUpdatedRGBValue(int currentValue, int updateValue, int color);

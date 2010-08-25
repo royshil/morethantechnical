@@ -42,8 +42,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D_SCL_SECURE_NO_DEPRECATE"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE; BTM_DEBUG"
+				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\imgproc\include&quot;;&quot;D:\opencv-latest\modules\core\include&quot;;&quot;D:\opencv-latest\modules\video\include&quot;;&quot;D:\opencv-latest\modules\features2d\include&quot;;&quot;D:\opencv-latest\modules\calib3d\include&quot;;&quot;D:\opencv-latest\modules\objdetect\include&quot;;&quot;D:\opencv-latest\modules\highgui\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE; BTM_DEBUG; _UTILS_MAIN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -62,7 +62,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalLibraryDirectories=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -108,7 +107,74 @@
 				AdditionalOptions="/D_SCL_SECURE_NO_DEPRECATE"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
+				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\imgproc\include&quot;;&quot;D:\opencv-latest\modules\core\include&quot;;&quot;D:\opencv-latest\modules\video\include&quot;;&quot;D:\opencv-latest\modules\features2d\include&quot;;&quot;D:\opencv-latest\modules\calib3d\include&quot;;&quot;D:\opencv-latest\modules\objdetect\include&quot;;&quot;D:\opencv-latest\modules\highgui\include&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_UTILS_MAIN"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				LinkLibraryDependencies="true"
+				AdditionalDependencies="curllib.lib"
+				AdditionalLibraryDirectories="&quot;d:\opencv-latest\lib&quot;;&quot;..\curl-7.19.3\lib\Debug&quot;"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release-Head-Extractor|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/D_SCL_SECURE_NO_DEPRECATE"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;..\curl-7.19.3\include&quot;;&quot;..\gmm-4.0.0\gmm-4.0.0\include\gmm&quot;;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\imgproc\include&quot;;&quot;D:\opencv-latest\modules\core\include&quot;;&quot;D:\opencv-latest\modules\video\include&quot;;&quot;D:\opencv-latest\modules\features2d\include&quot;;&quot;D:\opencv-latest\modules\calib3d\include&quot;;&quot;D:\opencv-latest\modules\objdetect\include&quot;;&quot;D:\opencv-latest\modules\highgui\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -165,6 +231,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OpenCV2ImageWrapper.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\BeTheModel\util.cpp"
 				>
 			</File>
@@ -180,6 +250,10 @@
 			>
 			<File
 				RelativePath="..\BeTheModel\ImageEditingUtils.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OpenCV2ImageWrapper.h"
 				>
 			</File>
 			<File

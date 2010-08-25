@@ -17,6 +17,7 @@ namespace VirtualSurgeon {
 class HeadExtractor {
 public:
 	Mat ExtractHead(Mat& im);
+	void CreateEllipses(Mat& im, Mat &maskFace, Mat &hairMask, Point& hairEllipse);
 	HeadExtractor(VIRTUAL_SURGEON_PARAMS& _p):params(_p) {};
 //void FaceDotComDetection(VIRTUAL_SURGEON_PARAMS& params, Mat& im);
 private:
@@ -27,7 +28,7 @@ private:
 	int head_extract_main(int argc, char** argv);
 	void make_gabor_bank(vector<Mat>& filter_bank, int bank_size, double sigma, int n_stds, double freq, double phase, double gamma);
 	void NaiveRelabeling(Size s, vector<Mat>& backP, vector<Mat>& maskA);
-	void takeBiggestCC(Mat& mask, Mat& bias = Mat());
+	//void takeBiggestCC(Mat& mask, Mat& bias = Mat());
 
 	void calcSegmentsLikelihood(Mat& labled_im, 
 							   vector<Mat> masks, 
@@ -37,6 +38,7 @@ private:
 							   Mat& horiz_edge_score, int* score_matrix);
 
 	void getEdgesForGC(Mat& gray, Mat& horiz, Mat& vert);
+	void getEdgesUsingTextons(Mat& lables, Mat& descriptors, Mat& horiz, Mat& vert);
 
 	VIRTUAL_SURGEON_PARAMS params;
 };

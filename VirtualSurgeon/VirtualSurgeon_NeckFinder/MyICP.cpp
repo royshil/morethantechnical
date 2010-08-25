@@ -22,7 +22,7 @@ void ICP::ShowPoints(Mat& im, Mat& X,Scalar c) {
 			Point2f _p = X.at<Point2f>(i,0); 
 			p.x = _p.x; p.y = _p.y;
 		}
-		circle(im,p,3,c,CV_FILLED);
+		circle(im,p,2,c,CV_FILLED);
 	}
 }
 
@@ -38,10 +38,10 @@ void ICP::ShowLines(Mat& im, Mat& X, Mat& X_bar, Scalar c1, Scalar c2) {
 				p.x = _p.x; p.y = _p.y;
 			}
 			circle(im,p,3,c1,CV_FILLED);
-			Point p1 = X_bar.at<Point>(i,0);
-			circle(im,p1,3,c2,CV_FILLED);
+			//Point p1 = X_bar.at<Point>(i,0);
+			//circle(im,p1,3,c2,CV_FILLED);
 
-			line(im,p,p1,Scalar(0,0,255),2);
+			//line(im,p,p1,Scalar(0,0,255),2);
 
 			if(i>=1) {
 				Point p_tag;
@@ -53,19 +53,26 @@ void ICP::ShowLines(Mat& im, Mat& X, Mat& X_bar, Scalar c1, Scalar c2) {
 				}
 				
 				line(im,p,p_tag,Scalar(255,150,0),2);
-				Point p1_tag = X_bar.at<Point>(i-1,0);
-				line(im,p1,p1_tag,Scalar(155,255,0),2);
+				//Point p1_tag = X_bar.at<Point>(i-1,0);
+				//line(im,p1,p1_tag,Scalar(155,255,0),2);
 			}
 		}
 	}
 }
 
 void ICP::ShowQuery(Mat& destinations, Mat& query, Mat& closest) {
-	Mat im = Mat::zeros(300,500,CV_8UC3);
-	ShowPoints(im,destinations);
-	ShowLines(im,query,closest);
-	imshow("tmp",im);
+	if(q_iter == 0) {
+		q_im = Mat::zeros(300,500,CV_8UC3);
+	}
+
+	q_im = q_im * 0.85;
+
+	ShowPoints(q_im,destinations);
+	ShowLines(q_im,query,closest);
+	imshow("tmp",q_im);
 	waitKey();
+
+	q_iter++;
 }
 
 /**
@@ -105,11 +112,12 @@ void ICP::findBestReansformSVD(Mat& _m, Mat& _d) {
 	float* _R = R.ptr<float>(0);
 	Scalar T(d_bar[0] - (m_bar[0]*_R[0] + m_bar[1]*_R[1]),d_bar[1] - (m_bar[0]*_R[2] + m_bar[1]*_R[3]));
 
-	m = m.reshape(1);
-	m = m * R;
-	m = m.reshape(2);
-	m = m + T;// + m_bar;
-	m.convertTo(_m,CV_32S);
+	mc = mc.reshape(1);
+	mc = mc * R;
+	mc = mc.reshape(2);
+	mc = mc + T*0.5;// + m_bar;
+	mc = mc + m_bar;
+	mc.convertTo(_m,CV_32S);
 
 	//{
 	//	Mat im = Mat::zeros(300,500,CV_8UC3);

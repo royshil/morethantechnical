@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\matting\matting;&quot;..\curl-7.19.3\include&quot;;..\GCv2p3;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
-				PreprocessorDefinitions="BTM_DEBUG"
+				AdditionalIncludeDirectories="&quot;d:\opencv-latest\modules\highgui\include&quot;;&quot;d:\opencv-latest\modules\objdetect\include&quot;;&quot;d:\opencv-latest\modules\calib3d\include&quot;;&quot;d:\opencv-latest\modules\features2d\include&quot;;&quot;d:\opencv-latest\modules\video\include&quot;;&quot;d:\opencv-latest\modules\imgproc\include&quot;;&quot;d:\opencv-latest\modules\core\include&quot;;..\matting\matting;&quot;..\curl-7.19.3\include&quot;;..\GCv2p3;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\ml\include&quot;"
+				PreprocessorDefinitions="BTM_DEBUG; HEAD_EXTRACTOR_MAIN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -60,8 +60,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="cv210d.lib cxcore210d.lib highgui210d.lib ml210d.lib curllib.lib"
-				AdditionalLibraryDirectories="&quot;d:\opencv-latest\lib&quot;;&quot;..\curl-7.19.3\lib\Debug&quot;"
+				AdditionalDependencies="opencv_core211d.lib opencv_features2d211d.lib opencv_highgui211d.lib opencv_ml211d.lib opencv_objdetect211d.lib opencv_imgproc211d.lib opencv_calib3d211d.lib curllib.lib"
+				AdditionalLibraryDirectories="&quot;d:\opencv-latest\out\lib\Debug&quot;;&quot;d:\opencv-latest\lib&quot;;&quot;..\curl-7.19.3\lib\Debug&quot;"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
@@ -111,9 +111,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/I &quot;D:\opencv-latest\modules\imgproc\include&quot; /I &quot;D:\opencv-latest\modules\core\include&quot; /I &quot;D:\opencv-latest\modules\video\include&quot; /I &quot;D:\opencv-latest\modules\features2d\include&quot; /I &quot;D:\opencv-latest\modules\calib3d\include&quot; /I &quot;D:\opencv-latest\modules\objdetect\include&quot; /I &quot;D:\opencv-latest\modules\highgui\include&quot;"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\matting\matting;&quot;..\curl-7.19.3\include&quot;;..\GCv2p3;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
+				AdditionalIncludeDirectories="..\matting\matting;&quot;..\curl-7.19.3\include&quot;;..\GCv2p3;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\ml\include&quot;"
 				PreprocessorDefinitions="BTM_DEBUG"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -149,6 +150,78 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release-Head-Extractor|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;d:\opencv-latest\modules\highgui\include&quot;;&quot;d:\opencv-latest\modules\objdetect\include&quot;;&quot;d:\opencv-latest\modules\calib3d\include&quot;;&quot;d:\opencv-latest\modules\features2d\include&quot;;&quot;d:\opencv-latest\modules\video\include&quot;;&quot;d:\opencv-latest\modules\imgproc\include&quot;;&quot;d:\opencv-latest\modules\core\include&quot;;..\matting\matting;&quot;..\curl-7.19.3\include&quot;;..\GCv2p3;&quot;..\tclap-1.2.0\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;;&quot;D:\opencv-latest\modules\ml\include&quot;"
+				PreprocessorDefinitions="BTM_DEBUG; HEAD_EXTRACTOR_MAIN"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opencv_core211.lib opencv_highgui211.lib opencv_ml211.lib opencv_imgproc211.lib opencv_features2d211.lib opencv_objdetect211.lib opencv_calib3d211.lib $(NOINHERIT)"
+				AdditionalLibraryDirectories="&quot;D:\opencv-latest\out\lib\Release&quot;"
+				GenerateDebugInformation="false"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
@@ -172,6 +245,10 @@
 			>
 			<File
 				RelativePath=".\head_extractor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\head_extractor_main.cpp"
 				>
 			</File>
 		</Filter>

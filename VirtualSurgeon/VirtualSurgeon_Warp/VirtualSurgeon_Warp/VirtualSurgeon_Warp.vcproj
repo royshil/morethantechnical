@@ -103,6 +103,70 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/I &quot;D:\opencv-latest\modules\imgproc\include&quot; /I &quot;D:\opencv-latest\modules\core\include&quot; /I &quot;D:\opencv-latest\modules\video\include&quot; /I &quot;D:\opencv-latest\modules\features2d\include&quot; /I &quot;D:\opencv-latest\modules\calib3d\include&quot; /I &quot;D:\opencv-latest\modules\objdetect\include&quot; /I &quot;D:\opencv-latest\modules\highgui\include&quot; /I &quot;D:\opencv-latest\modules\legacy\include&quot; /I &quot;D:\opencv-latest\modules\contrib\include&quot; /I &quot;D:\opencv-latest\modules\ml\include&quot;"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="..\..\mls_deform\Common;&quot;D:\opencv-latest\include\opencv&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release-Head-Extractor|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="..\..\mls_deform\Common;&quot;D:\opencv-latest\include\opencv&quot;"
@@ -175,6 +239,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release-Head-Extractor|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

@@ -33,6 +33,7 @@ namespace VirtualSurgeon_GUI
 
         private BitmapSource myBitmapImage;
         private string image_filename;
+        private string model_filename;
 
         private void load_from_file(object sender, RoutedEventArgs e)
         {
@@ -162,9 +163,9 @@ namespace VirtualSurgeon_GUI
             Nullable<bool> result = dlg.ShowDialog();
             if (result == true)
             {
-                string filename = dlg.FileName;
+                model_filename = dlg.FileName;
 
-                m_vs_wrapper.InitializeModel(filename);
+                m_vs_wrapper.InitializeModel(model_filename);
 
                 // Create source
                 //BitmapImage bi = new BitmapImage();
@@ -177,7 +178,7 @@ namespace VirtualSurgeon_GUI
 
                 SetOriginalModel();
 
-                Point[] _points = load_points(filename);
+                Point[] _points = load_points(model_filename);
                 if (_points == null)
                 {
                     MessageBox.Show("Cannot load neck points for model");
@@ -419,6 +420,24 @@ namespace VirtualSurgeon_GUI
         } 
 
         #endregion
+
+        private void button9_Click(object sender, RoutedEventArgs e)
+        {
+            image2.ShowMidPoint();
+            image2.InvalidateVisual();
+        }
+
+        private void save_completed(object sender, RoutedEventArgs e)
+        {
+            int pos = model_filename.LastIndexOf('\\') + 1;
+            string fname = model_filename.Substring(pos, model_filename.LastIndexOf('.')-pos);
+            pos = image_filename.LastIndexOf('\\') + 1;
+            fname += "_" + image_filename.Substring(pos, image_filename.LastIndexOf('.')-pos) + ".png";
+            FileStream stream5 = new FileStream(fname, FileMode.Create);
+            PngBitmapEncoder encoder5 = new PngBitmapEncoder();
+            encoder5.Frames.Add(BitmapFrame.Create(image2.UnderlayImage));
+            encoder5.Save(stream5);
+        }
     }
 
 
@@ -427,7 +446,9 @@ namespace VirtualSurgeon_GUI
         public Point[] points { get; set; }
         public BitmapSource UnderlayImage { get; set; }
         GeometryDrawing mousePointGeometryDrwaing;
-        GeometryGroup pointsAndLinesGeometryGroup;
+        GeometryGroup pointsGeometryGroup;
+        GeometryGroup linesGeometryGroup;
+        GeometryGroup middlePointGeoGrp;
         int chosenPoint;
 
         public void Init()
@@ -436,14 +457,22 @@ namespace VirtualSurgeon_GUI
             ImageDrawing id = new ImageDrawing(UnderlayImage, new Rect(0, 0, UnderlayImage.PixelWidth, UnderlayImage.PixelHeight));
             dg.Children.Add(id);
 
-            pointsAndLinesGeometryGroup = new GeometryGroup();
+            pointsGeometryGroup = new GeometryGroup();
+            linesGeometryGroup = new GeometryGroup();
+            middlePointGeoGrp = new GeometryGroup();
             if (points != null)
             {
                 SetPointsGeometry();
             }
 
-            GeometryDrawing gd = new GeometryDrawing(Brushes.Yellow, new Pen(Brushes.Purple, 3), pointsAndLinesGeometryGroup);
+            GeometryDrawing gd = new GeometryDrawing(Brushes.Blue, null, pointsGeometryGroup);
             dg.Children.Add(gd);
+
+            GeometryDrawing gd2 = new GeometryDrawing(null, new Pen(Brushes.LightGreen,3), linesGeometryGroup);
+            dg.Children.Add(gd2);
+
+            GeometryDrawing gd1 = new GeometryDrawing(Brushes.Red, null, middlePointGeoGrp);
+            dg.Children.Add(gd1);
 
             Brush b = new SolidColorBrush(Colors.Red);
             b.Opacity = 0.5;
@@ -456,22 +485,40 @@ namespace VirtualSurgeon_GUI
             chosenPoint = -1;
         }
 
+        public void ShowMidPoint()
+        {
+            DrawingGroup dg = new DrawingGroup();
+            ImageDrawing id = new ImageDrawing(UnderlayImage, new Rect(0, 0, UnderlayImage.PixelWidth, UnderlayImage.PixelHeight));
+            dg.Children.Add(id);
+            GeometryDrawing gd1 = new GeometryDrawing(Brushes.Red, null, middlePointGeoGrp);
+            dg.Children.Add(gd1);
+            DrawingImage di = new DrawingImage(dg);
+            this.Source = di;
+        }
+
         private void SetPointsGeometry()
         {
-            pointsAndLinesGeometryGroup.Children.Clear();
+            pointsGeometryGroup.Children.Clear();
+            linesGeometryGroup.Children.Clear();
+            middlePointGeoGrp.Children.Clear();
 
             if (points == null) return;
 
             for (int i = 0; i < points.Length; i++)
             {
                 Point p = points[i];
-                pointsAndLinesGeometryGroup.Children.Add(new EllipseGeometry(p, 5, 5));
+                pointsGeometryGroup.Children.Add(new EllipseGeometry(p, 4, 4));
                 if (i > 0)
                 {
                     Point p_1 = points[i - 1];
-                    pointsAndLinesGeometryGroup.Children.Add(new LineGeometry(p_1, p));
+                    linesGeometryGroup.Children.Add(new LineGeometry(p_1, p));
                 }
             }
+            Point tmpP = new Point();
+            tmpP.X = (points[points.Length / 2 - 1].X + points[points.Length / 2].X) / 2.0;
+            tmpP.Y = (points[points.Length / 2 - 1].Y + points[points.Length / 2].Y) / 2.0;
+            middlePointGeoGrp.Children.Add(new EllipseGeometry(tmpP, 8, 8));
+
         }
 
         Point start;

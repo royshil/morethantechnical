@@ -93,7 +93,7 @@ namespace VirtualSurgeon {
 		}
 
 		source_model.clear();
-		CvEMParams ps(3/* = number of gaussians*/);
+		CvEMParams ps(1/* = number of gaussians*/);
 		source_model.train(source_samples,Mat(),ps,NULL);
 	}
 
@@ -146,15 +146,22 @@ namespace VirtualSurgeon {
 					Mat Xnew(1,3,CV_64FC1,Scalar(0));
 					for(int i=0;i<num_g;i++) {
 						if(((float*)pr.data)[i] <= 0) continue;
-						Xnew += Mat((
-							//Mat(source_covs[match[i]]) *
-							//Mat(target_covs[i]).inv() * 
-							Mat(samp_64f - tMu_64f(Range(i,i+1),Range(0,3))).t() +
-							sMu_64f(Range(match[i],match[i]+1),Range(0,3)).t()
-							) * (double)(((float*)pr.data)[i])).t();
+						Mat A = /*Mat(*/
+							//Mat(target_covs[i]) * 
+							//Mat(source_covs[match[i]]).inv() *
+							Mat(samp_64f - tMu_64f(Range(i,i+1),Range(0,3))).t();
+						Mat B = sMu_64f(Range(match[i],match[i]+1),Range(0,3)).t();
+						Xnew += Mat((A + B) * (double)(((float*)pr.data)[i])).t();
 					}
 
 					Mat _tmp; Xnew.convertTo(_tmp,CV_32F);
+
+					//allow for mask with alpha
+					float* _d = ((float*)_tmp.data);
+					float alpha = mask_row[x] / 255.0f;
+					for(int cl=0;cl<3;cl++)
+						_d[cl] = _d[cl] * (alpha) + row[x][cl] * (1-alpha);
+					
 					memcpy(&(row[x][0]),_tmp.data,sizeof(float)*3);
 				}
 			}
@@ -190,13 +197,13 @@ int main(int argc, char** argv) {
 	p.wait_time = 0;
 	VirtualSurgeon::Recoloring r(p);
 	
-	Mat src = imread("C:/Users/Roy/Downloads/2492945625_e7f1c078b3_m.jpg");
-	Mat src_mask = imread("C:/Users/Roy/Downloads/2492945625_e7f1c078b3_m.mask.png",0);
-	Mat dst = imread("C:/Users/Roy/Downloads/2956622857_fee97925a1_m.jpg");
-	Mat dst_mask = imread("C:/Users/Roy/Downloads/2956622857_fee97925a1_m.mask.png",0);
+	Mat dst = imread("../images/454867616_1c0006f61a_o_d.model.png");
+	Mat dst_mask = imread("../images/454867616_1c0006f61a_o_d.skin_mask.png",0);
+	Mat src = imread("../images/2402378006_c5b9bb75c9_o_d.model.png");
+	Mat src_mask = imread("../images/2402378006_c5b9bb75c9_o_d.skin_mask.png",0);
 
 	Mat _tmp;
-	double s = 0.75;
+	double s = 0.5;
 	resize(dst,_tmp,Size(),s,s); _tmp.copyTo(dst);
 	resize(dst_mask,_tmp,Size(),s,s,INTER_NEAREST); _tmp.copyTo(dst_mask);
 	resize(src,_tmp,Size(),s,s); _tmp.copyTo(src);

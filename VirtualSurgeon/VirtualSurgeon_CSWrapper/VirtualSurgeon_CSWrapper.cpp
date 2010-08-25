@@ -63,10 +63,10 @@ namespace VirtualSurgeon_CSWrapper {
 
 	void VirtualSurgeonWrapper::ExtractHead() {
 		double li_ri = norm(m_params->li - m_params->ri);// / (double)(faceMask.cols);
-		Rect r(MIN(orig_im->cols,MAX(0,m_params->li.x - li_ri*3)),
-				MIN(orig_im->rows,MAX(0,m_params->li.y - li_ri*3)),
-				MIN(orig_im->cols-MAX(0,m_params->li.x - li_ri*3),MAX(0,li_ri*6.5)),
-				MIN(orig_im->rows-MAX(0,m_params->li.y - li_ri*3),MAX(0,li_ri*6.5)));
+		Rect r(MIN(orig_im->cols,MAX(0,m_params->li.x - li_ri*3 * m_params->head_mask_size_mult)),
+				MIN(orig_im->rows,MAX(0,m_params->li.y - li_ri*3 * m_params->head_mask_size_mult)),
+				MIN(orig_im->cols-MAX(0,m_params->li.x - li_ri*3 * m_params->head_mask_size_mult),MAX(0,li_ri*6.5 * m_params->head_mask_size_mult)),
+				MIN(orig_im->rows-MAX(0,m_params->li.y - li_ri*3 * m_params->head_mask_size_mult),MAX(0,li_ri*6.5 * m_params->head_mask_size_mult)));
 
 		try {
 			Mat _tmp; (*orig_im)(r).copyTo(_tmp);
@@ -189,6 +189,11 @@ namespace VirtualSurgeon_CSWrapper {
 		s = filename->Substring(0, filename->LastIndexOf('.')) + ".skin_mask.png";
 		MarshalString(s,_s);
 		*model_skin_mask = imread(_s,0);
+
+		model_body_mask = new Mat();
+		s = filename->Substring(0, filename->LastIndexOf('.')) + ".body_mask.png";
+		MarshalString(s,_s);
+		*model_body_mask = imread(_s,0);
 	}
 
 	void VirtualSurgeonWrapper::Warp(cli::array<VirtualSurgeonPoint^>^ face_points_cli,
@@ -226,33 +231,6 @@ namespace VirtualSurgeon_CSWrapper {
 		_model_im.copyTo(*model_warped);
 	}
 
-	void FindBoundingRect(Rect& faceRect, Mat* headMask) {	//get bounding rect (TODO: move to utils..)
-			Mat arow(1,headMask->cols,CV_32SC1);
-			for(int i=0;i<headMask->cols;i++) {
-				((int*)arow.data)[i] = i;
-			}
-			Mat allrows; repeat(arow,headMask->rows,1,allrows);
-			Mat rows; allrows.copyTo(rows,(*headMask > 0));
-			rows.setTo(Scalar(headMask->cols/2),(*headMask == 0));
-			double minv,maxv;
-			minMaxLoc(rows,&minv,&maxv);
-
-			faceRect.x = minv;
-			faceRect.width = maxv - minv;
-
-			Mat acol(headMask->rows,1,CV_32SC1);
-			for(int i=0;i<headMask->rows;i++) {
-				((int*)acol.data)[i] = i;
-			}
-			Mat allcols; repeat(acol,1,headMask->cols,allcols);
-			Mat cols; allcols.copyTo(cols,(*headMask > 0));
-			cols.setTo(Scalar(headMask->rows/2),(*headMask == 0));
-			minMaxLoc(cols,&minv,&maxv);
-
-			faceRect.y = minv;
-			faceRect.height = maxv - minv;
-		}
-
 	void VirtualSurgeonWrapper::MakeModel(VirtualSurgeonPoint^ face_loc, VirtualSurgeonPoint^ model_loc) {
 		if(headMask == NULL || headMask->rows == 0 || headMask->cols==0 ||
 			orig_im == NULL || orig_im->rows == 0 || orig_im->cols==0 ||
@@ -274,6 +252,12 @@ namespace VirtualSurgeon_CSWrapper {
 		Rect faceRect;
 		FindBoundingRect(faceRect,headMask);
 
+		//enlarge ROI by a bit
+		faceRect.x = MAX(0,faceRect.x - m_params->poisson_cloning_band_size);
+		faceRect.y = MAX(0,faceRect.y - m_params->poisson_cloning_band_size);
+		faceRect.width = MIN(faceRect.width + 2*m_params->poisson_cloning_band_size,headMask->cols - faceRect.x);
+		faceRect.height = MIN(faceRect.height + 2*m_params->poisson_cloning_band_size,headMask->rows - faceRect.y);
+
 		double model_dist = norm(m_model_data->li - m_model_data->ri);
 		model_dist /= cos(m_model_data->yaw / 180.0 * CV_PI);
 		double face_dist = norm(m_params->li - m_params->ri);
@@ -294,9 +278,7 @@ namespace VirtualSurgeon_CSWrapper {
 
 		Mat mask; //(*headMask)(faceRect).copyTo(mask);
 		resize((*headMask)(faceRect),mask,Size(),scaleFromFaceToBack,scaleFromFaceToBack);
-		Mat antiMask = -mask + 1.0;
 
-		//TODO: use face_loc & model_loc
 		Point face_p(face_loc->x,face_loc->y);
 		Point face_p1((int)((double)face_loc->x * scaleFromFaceToBack), 
 						(int)((double)face_loc->y * scaleFromFaceToBack));
@@ -313,12 +295,70 @@ namespace VirtualSurgeon_CSWrapper {
 		modelRect.height = _tmp_o.rows;
 		Mat _tmp_m; (background)(modelRect).convertTo(_tmp_m,CV_32F);
 
+
+		//Eliminate any skin that penetrates the skin masks of the model
+		{
+			Mat modelMask_8UC; (*model_skin_mask)(modelRect).convertTo(modelMask_8UC,CV_8UC1);
+			//Mat modelSkinMask_8UC; (*model_skin_mask)(modelRect).convertTo(modelSkinMask_8UC,CV_8UC1);
+			threshold(modelMask_8UC,modelMask_8UC,1.0,255.0,THRESH_BINARY);
+			Mat mask_8UC; mask.convertTo(mask_8UC,CV_8UC1,255.0);
+			threshold(mask_8UC,mask_8UC,1.0,255.0,THRESH_BINARY);
+
+			if(!m_params->no_gui) {
+				Mat tmp; cvtColor(modelMask_8UC,tmp,CV_GRAY2BGR);
+				putText(tmp,"modelMask_8UC",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+
+				cvtColor(mask_8UC,tmp,CV_GRAY2BGR);
+				putText(tmp,"mask_8UC",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+			}
+
+			Mat A = modelMask_8UC & mask_8UC;
+			if(!m_params->no_gui) {
+				Mat tmp; cvtColor(A,tmp,CV_GRAY2BGR);
+				putText(tmp,"A = modelMask_8UC & mask_8UC",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+			}
+			Mat B = mask_8UC - A;
+			if(!m_params->no_gui) {
+				Mat tmp; cvtColor(B,tmp,CV_GRAY2BGR);
+				putText(tmp,"B = mask_8UC - A",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+			}
+			takeBiggestCC(B);
+			if(!m_params->no_gui) {
+				Mat tmp; cvtColor(B,tmp,CV_GRAY2BGR);
+				putText(tmp,"takeBiggestCC(B)",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+			}
+			mask_8UC = B + A;
+			if(!m_params->no_gui) {
+				Mat tmp; cvtColor(mask_8UC,tmp,CV_GRAY2BGR);
+				putText(tmp,"mask_8UC = B + A",Point(10,10),FONT_HERSHEY_PLAIN,1.0,Scalar(0,0,255),2);
+				imshow("tmp",tmp);
+				waitKey(m_params->wait_time);
+			}
+			
+			{
+				Mat tmp; mask_8UC.convertTo(tmp,CV_32FC1,1.0/255.0);
+				mask = mask.mul(tmp);
+			}
+		}
+
+		Mat antiMask = -mask + 1.0;
+
 		if(!m_params->no_gui) {
 			namedWindow("tmp");
 			imshow("tmp",mask);
-			waitKey();
+			waitKey(m_params->wait_time);
 			imshow("tmp",_tmp_m / 255.0);
-			waitKey();
+			waitKey(m_params->wait_time);
 		}
 
 		vector<Mat> ov; split(_tmp_o,ov);
@@ -328,6 +368,23 @@ namespace VirtualSurgeon_CSWrapper {
 		}
 		Mat out;
 		merge(ov,out);
+
+		Mat modelMask; (*model_skin_mask)(modelRect).convertTo(modelMask,CV_32FC1);
+		{
+			threshold(mask,mask,50.0/255.0,1.0,CV_THRESH_BINARY);
+
+			//create a "band" around the contour
+
+			//Dilate-Erode
+			Mat dil; dilate(mask,dil,Mat::ones(m_params->poisson_cloning_band_size,m_params->poisson_cloning_band_size,CV_8UC1));
+			Mat ero; erode (mask,ero,Mat::ones(m_params->poisson_cloning_band_size,m_params->poisson_cloning_band_size,CV_8UC1));
+			mask = dil - ero;
+
+			//Gaussian-Threshold
+			GaussianBlur(mask,mask,Size(5,5),1.5);
+			threshold(mask,mask,0.5,1.0,CV_THRESH_BINARY);
+		}
+		m_params->PoissonImageEditing(out,modelMask,_tmp_m,mask,true);
 
 		complete = new Mat();
 
