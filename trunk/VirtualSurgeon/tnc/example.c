@@ -69,7 +69,7 @@ int simple_tnc(int n, double x[], /*double _xopt[],*/ double *f, double g[], tnc
   low = (double*)malloc(sizeof(double)*n);
 
   //for(i=0;i<n;i++) { if(x[i] > maxv) maxv = x[i]; }
-  for(i=0;i<n;i++) { up[i] = ((i%2==0)?ubound1:ubound2); low[i] = 0.0; }
+  for(i=0;i<n;i++) { up[i] = ((i%2==0)?ubound1:ubound2); low[i] = 2.0; }
 
   rc = tnc(n, x, f, g, function, state, low, up, NULL, NULL, TNC_MSG_ALL,
     maxCGit, maxnfeval, eta, stepmx, accuracy, fmin, ftol, xtol, pgtol,

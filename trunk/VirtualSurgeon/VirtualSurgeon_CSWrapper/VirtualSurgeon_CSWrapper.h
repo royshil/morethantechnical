@@ -35,6 +35,7 @@ namespace VirtualSurgeon_CSWrapper {
 		Mat* model_warped;
 		Mat* model_recolored;
 		Mat* model_skin_mask;
+		Mat* model_body_mask;
 
 		Mat* complete;
 

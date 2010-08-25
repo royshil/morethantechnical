@@ -44,6 +44,8 @@ typedef struct data_for_tnc {
 	Mat im_dy_orig;
 
 	Mat laplacian;
+
+	MatND faceHist;
 } DATA_FOR_TNC;
 
 //Calculate the sum of the square values of the 2-channel matrix
@@ -121,19 +123,24 @@ typedef struct data_for_tnc {
 //	//	strength, abnormality, orientation, uncertainty);
 //}
 
-Mat laplacian_mtx(int N) {
+Mat laplacian_mtx(int N, bool closed_poly) {
 	Mat A = Mat::zeros(N, N, CV_64FC1);
 	Mat d = Mat::zeros(N, 1, CV_64FC1);
     
     //## endpoints
-    A.at<double>(0,1) = 1;
-    A.at<double>(N-1,N-2) = 1;
-    
-    d.at<double>(0,0) = 1;
-    d.at<double>(N-1,0) = 1;
+	//if(closed_poly) {
+		A.at<double>(0,1) = 1;
+		d.at<double>(0,0) = 1;
+
+		A.at<double>(N-1,N-2) = 1;
+		d.at<double>(N-1,0) = 1;
+	//} else {
+	//	A.at<double>(0,1) = 1;
+	//	d.at<double>(0,0) = 1;
+	//}
     
     //## interior points
-	for(int i = 1; i < N-2; i++) {
+	for(int i = 1; i <= N-2; i++) {
         A.at<double>(i, i-1) = 1;
         A.at<double>(i, i+1) = 1;
         
@@ -143,6 +150,26 @@ Mat laplacian_mtx(int N) {
 	Mat Dinv = Mat::diag( d );
     
 	return Mat::eye(N,N,CV_64FC1) - Dinv * A;
+}
+
+void normalize_per_element(Mat& Xv) {
+	for(int i=0;i<Xv.rows;i++) {
+		Vec2d v = Xv.at<Vec2d>(i,0);
+		double n = norm(v);
+		Xv.at<Vec2d>(i,0) = Vec2d(v[0]/n,v[1]/n);
+	}
+}
+
+void calc_laplacian(Mat& X, Mat& Xlap) {
+	static Mat lapX = laplacian_mtx(X.rows,false);
+	if(lapX.rows != X.rows) lapX = laplacian_mtx(X.rows,false);
+
+	vector<Mat> v; split(X,v);
+	v[0] = v[0].t() * lapX.t();
+	v[1] = v[1].t() * lapX.t();
+	cv::merge(v,Xlap);
+
+	Xlap = Xlap.t();
 }
 
 static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
@@ -171,23 +198,11 @@ static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
 		//float _dx_dy = d.im_dx_dy.at<float>(p.y,p.x);
 		Xe.at<Point2f>(i,0) = Point2f(_dx,_dy);
 	}
-	
-	//Mat diff = Xe - d.Xedges;
-	//sum += TwoD_SqSum(diff);			
-	sum += d.w_edge*cv::norm(Xe,d.Xedges);
+	sum += d.w_edge * cv::norm(Xe,d.Xedges);
 
-	//E_tension_direction
+	//E direction
 	Mat Xv = X(Range(0,X.rows-1),Range(0,1)) - X(Range(1,X.rows),Range(0,1));
-	Mat Xl(X.rows-1,1,CV_64FC1);
-	for(int i=0;i<Xv.rows;i++) {
-		Vec2d v = Xv.at<Vec2d>(i,0);
-		double n = norm(v);
-		Xv.at<Vec2d>(i,0) = Vec2d(v[0]/n,v[1]/n);
-
-		Xl.at<double>(i,0) = n;
-	}
-	
-	//sum += 25.0*cv::norm(Xv,d.Xvector,NORM_L1);
+	normalize_per_element(Xv);
 	Mat x_m_orig = Xv - d.Xvector;
 	sum += d.w_direction*norm(x_m_orig(Range(0,x_m_orig.rows-1),Range(0,1)),x_m_orig(Range(1,x_m_orig.rows),Range(0,1)));
 
@@ -196,36 +211,18 @@ static double calc_Energy(Mat& X, DATA_FOR_TNC& d) {
 	//Mat _a = Xl / d.Xlength;
 	//sum += 5.0*cv::norm(_a(Range(0,_a.rows-1),Range(0,1)),_a(Range(1,_a.rows),Range(0,1)));
 
-	//E model consistency
-	//sum += 0.1 * cv::norm(X,d.Xorig);
-	Mat x_m_orig1 = d.Xorig - X;
-	sum += d.w_consistency*norm(x_m_orig1(Range(0,x_m_orig1.rows-1),Range(0,1)),x_m_orig1(Range(1,x_m_orig1.rows),Range(0,1)),NORM_L1);
-
+	//E model curvature (shape) consistency
 	//Laplacian coordinates?
-	//Mat lapX = laplacian_mtx(d.Xorig.rows);
-	//Mat Xlap; 
-	//{
-	//	vector<Mat> v; split(X,v);
-	//	v[0] = v[0].t() * lapX;
-	//	v[1] = v[1].t() * lapX;
-	//	cv::merge(v,Xlap);
-	//}
-	//Mat Xorig_lap;
-	//{
-	//	vector<Mat> v; split(d.Xorig,v);
-	//	v[0] = v[0].t() * lapX;
-	//	v[1] = v[1].t() * lapX;
-	//	cv::merge(v,Xorig_lap);
-	//}
+	Mat Xlap; calc_laplacian(X,Xlap);
+	Mat Xorig_lap; calc_laplacian(d.Xorig,Xorig_lap);
+	sum += d.w_consistency * norm(Xlap,Xorig_lap);
 
-	//sum += norm(Xlap,Xorig_lap);
-
-	return sum;
+	return (sum != sum) ? DBL_MAX : sum;
 }
 
 static tnc_function my_f;
 
-#define EPSILON 1.0
+#define EPSILON 0.1
 
 static int my_f(double x[], double *f, double g[], void *state) {
 	DATA_FOR_TNC* d_ptr = (DATA_FOR_TNC*)state;
@@ -262,6 +259,15 @@ static int my_f(double x[], double *f, double g[], void *state) {
 				}
 				circle(im,p1,3,Scalar(255),CV_FILLED);
 				line(im,p1,_xo[ti],Scalar(0,0,255),2);
+
+				p1 = Point(MAX(MIN(_xo[ti].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_xo[ti].y,d_ptr->im_dx.cols-1),0));
+				if(ti > 0) {
+					Point p2(MAX(MIN(_xo[ti-1].x,d_ptr->im_dx.cols-1),0),MAX(MIN(_xo[ti-1].y,d_ptr->im_dx.cols-1),0));
+					line(im,p1,p2,Scalar(0,255,255),2);
+				}
+				circle(im,p1,3,Scalar(255,255),CV_FILLED);
+				//line(im,p1,_xo[ti],Scalar(0,0,255),2);
+
 			}
 			imshow("tmp",im);
 			waitKey(30);
@@ -357,9 +363,21 @@ int NeckFinder::SnakeSnap(int argc, char** argv) {
 	return FindNeck(_im);
 }
 
+void NeckFinder::calcHistogramWMask(Mat& im, Mat& mask, MatND& hist) {
+    int bins = 256;
+    int histSize[3] = {bins,bins,bins};
+    float range[2] = { 0, 256 };
+    float* ranges[3] = { range,range,range };
+    int channels[3] = {0,1,2};
+
+	calcHist((const Mat*)(&(im)),1,(const int*)channels,mask,hist,3,histSize,(const float**)ranges);
+}
+
 int NeckFinder::FindNeck(Mat& _im) {
 	Mat im_clean; _im.copyTo(im_clean);
 	Mat _maskFace=Mat::zeros(_im.size(),CV_8UC1);
+
+	MatND faceHist;
 
 	Rect r; //interesting part of picture
 	{
@@ -407,21 +425,31 @@ int NeckFinder::FindNeck(Mat& _im) {
 		//imshow("tmp",_maskFace);
 		//waitKey(p.wait_time);
 
-		p.face_grab_cut(_im,_maskFace,1);//,200.0*li_ri);
+		{
+			double li_ri = norm(p.li - p.ri);// / (double)(faceMask.cols);
+			Rect r(MIN(_im.cols,MAX(0,p.li.x - li_ri*3 * p.head_mask_size_mult)),
+					MIN(_im.rows,MAX(0,p.li.y - li_ri*3 * p.head_mask_size_mult)),
+					MIN(_im.cols-MAX(0,p.li.x - li_ri*3 * p.head_mask_size_mult),MAX(0,li_ri*6.5 * p.head_mask_size_mult)),
+					MIN(_im.rows-MAX(0,p.li.y - li_ri*3 * p.head_mask_size_mult),MAX(0,li_ri*6.5 * p.head_mask_size_mult)));
 
-		Mat ___im; _im.copyTo(___im,_maskFace);
+			p.face_grab_cut(_im(r),_maskFace(r),1);//,200.0*li_ri);
+		}
+
+		calcHistogramWMask(_im,_maskFace,faceHist);
+
+		Mat im_no_face(_im.size(),CV_8UC3); // _im.copyTo(___im,_maskFace);
 		//imshow("tmp",___im);
 		//waitKey(p.wait_time);
 
-		___im.setTo(Scalar(128,128,128));
+		im_no_face.setTo(Scalar(128,128,128));
 
-		_im.copyTo(___im,~_maskFace);
+		_im.copyTo(im_no_face,~_maskFace);
 		if(!p.no_gui) {
-			imshow("tmp",___im);
+			imshow("tmp",im_no_face);
 			waitKey(p.wait_time);
 		}
 
-		___im.copyTo(_im);
+		im_no_face.copyTo(_im);
 	}
 
 	//Mat __im;
@@ -716,6 +744,8 @@ int NeckFinder::FindNeck(Mat& _im) {
 		d.im_dx_orig = im_dx_orig;
 		d.im_dy_orig = im_dy_orig;
 
+		d.faceHist = faceHist;
+
 		d.do_gui = !p.no_gui;
 
 		d.w_edge = p.snake_snap_weight_edge;
@@ -729,7 +759,7 @@ int NeckFinder::FindNeck(Mat& _im) {
 
 		Mat X; Xorig_64f.copyTo(X);
 		
-		simple_tnc(Xorig_64f.rows*2,(double*)X.data,&f,(double*)Grad.data,my_f,(void*)&d,im.cols-1,im.rows-1);
+		simple_tnc(Xorig_64f.rows*2,(double*)X.data,&f,(double*)Grad.data,my_f,(void*)&d,im.cols-3,im.rows-3);
 
 		if(!p.no_gui) {
 			Mat _tmp; im_clean.copyTo(_tmp);
@@ -747,6 +777,11 @@ int NeckFinder::FindNeck(Mat& _im) {
 					line(_tmp,Point(p.x+r.x,p.y+r.y),Point(p1.x+r.x,p1.y+r.y),Scalar(0,255),2);
 				}
 			}
+
+			Point m1 = X.at<Point2d>(floor(X.rows/2.0)-1,0);
+			Point m2 = X.at<Point2d>(floor(X.rows/2.0),0);
+			circle(_tmp,Point2d(r.x,r.y) + Point2d((m1+m2)*0.5),5,Scalar(0,0,255),CV_FILLED);
+
 			imshow("tmp",_tmp);
 			waitKey(p.wait_time);
 		} else {
@@ -761,3 +796,30 @@ int NeckFinder::FindNeck(Mat& _im) {
 }
 
 }//ns
+
+#ifdef NECKFINDER_MAIN
+int main(int argc, char** argv) {
+	VirtualSurgeon::VirtualSurgeonParams p;
+	p.InitializeDefault();
+	p.im_scale_by = 1;
+	p.no_gui = false;
+	p.wait_time = 1;
+	p.gc_iter = 0;
+	p.km_numc = 50;
+	p.hair_ellipse_size_mult = 1.1;
+	p.do_alpha_matt = false;
+	p.consider_pixel_neighbourhood = false;
+	p.do_two_segments = false;
+	p.do_kmeans = false;
+
+	p.filename = std::string(argv[1]);
+	Mat _tmp,im;
+	p.FaceDotComDetection(_tmp);
+	p.PrintParams();
+
+	VirtualSurgeon::NeckFinder nf(p);
+	nf.FindNeck(_tmp);
+
+	waitKey();
+}
+#endif

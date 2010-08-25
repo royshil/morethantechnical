@@ -211,6 +211,31 @@ public:
 		void set(bool v) { p->consider_pixel_neighbourhood = v;}
 	}
 
+	property bool do_two_segments {
+		bool get() { return p->do_two_segments;}
+		void set(bool v) { p->do_two_segments = v;}
+	}
+	property int poisson_cloning_band_size {
+		int get() { return p->poisson_cloning_band_size;}
+		void set(int v) { p->poisson_cloning_band_size = v;}
+	}
+	property bool do_kmeans {
+		bool get() { return p->do_kmeans;}
+		void set(bool v) { p->do_kmeans = v;}
+	}
+	property double head_mask_size_mult {
+		double get() { return p->head_mask_size_mult;}
+		void set(double v) { p->head_mask_size_mult = v;}
+	}
+	property int num_DoG {
+		int get() { return p->num_DoG;}
+		void set(int v) { p->num_DoG = v;}
+	}
+	property bool do_two_back_kernels {
+		bool get() { return p->do_two_back_kernels;}
+		void set(bool v) { p->do_two_back_kernels = v;}
+	}
+
 	VirtualSurgeon_ParamsWrapper(void);
 };
 

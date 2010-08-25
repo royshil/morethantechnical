@@ -18,6 +18,8 @@ using namespace std;
 using namespace TCLAP;
 
 #include "../BeTheModel/util.h"
+#include "../BeTheModel/ImageEditingUtils.h"
+#include "OpenCV2ImageWrapper.h"
 
 int curl_get(std::string& s, std::string& _s = std::string(""));
 int btm_wait_time = 0;
@@ -72,8 +74,8 @@ void VirtualSurgeonParams::InitializeDefault() {
 	params.com_thresh = 0.25;
 	params.com_add_type = 0;
 	params.com_calc_type = 1;
-	params.im_scale_by = 2;
-	params.gc_iter = 1;
+	params.im_scale_by = 1;
+	params.gc_iter = 0;
 	params.km_numt = 1;
 	params.doScore = false;
 	params.relable_type = 1;
@@ -90,7 +92,14 @@ void VirtualSurgeonParams::InitializeDefault() {
 	params.use_double_warp = false;	
 	params.hair_ellipse_size_mult = 1;
 	params.do_eq_hist = false;
-	params.consider_pixel_neighbourhood = true;
+	params.consider_pixel_neighbourhood = false;
+	params.do_two_segments = false;
+	params.do_kmeans = false;
+	params.head_mask_size_mult = 1.0;
+	params.num_DoG = 2;
+	params.do_two_back_kernels = false;
+
+	params.poisson_cloning_band_size = 4;
 
 	params.snake_snap_weight_edge = 5000.0;
 	params.snake_snap_weight_direction = 12.0;
@@ -182,6 +191,7 @@ void VirtualSurgeonParams::PrintParams() {
 	cout<<"Use rigid warp for neck warping?: "<<p.use_warp_rigid<<endl;
 	cout<<"Use affine warp for neck warping?: "<<p.use_warp_affine<<endl;
 	cout<<"Use 2-way warping?: "<<p.use_double_warp<<endl;
+	cout<<"Use only 2 segments for segmentation?"<<p.do_two_segments<<endl;
 
 	cout<<"Face:"<<endl<<"------"<<endl;
 	cout<<"Left eye: "<<p.li.x<<","<<p.li.y<<endl;
@@ -238,11 +248,18 @@ void VirtualSurgeonFaceData::FaceDotComDetection(Mat& im) {
 	{
 		ifstream ifs(img_fn_txtext.c_str());
 		string line;
-		ifs >> line;
+		string _line;
+		while(!ifs.eof())
+		{
+			ifs >> _line;
+			line += _line;
+		}
 		ifs.close();
 
-		//cout << line;
+		cout << line;
+
 		stringstream ss(line);
+		
 		int p = line.find("eye_left\":{\"x\":");
 		ss.seekg(p+strlen("eye_left\":{\"x\":"));
 		double d;
@@ -288,7 +305,7 @@ void VirtualSurgeonParams::face_grab_cut(Mat& orig, Mat& mask, int iters, int di
 
 	//Mat(mask).copyTo(tmpMask);
 	Mat bgdModel, fgdModel;
-#ifdef BTM_DEBUG
+
 	if(!this->no_gui) {
 		Mat _tmp;
 		tmpMask.convertTo(_tmp,CV_32FC1);
@@ -298,7 +315,6 @@ void VirtualSurgeonParams::face_grab_cut(Mat& orig, Mat& mask, int iters, int di
 	}
 
 	cout << "Do grabcut... init... ";
-#endif
 
 	Rect mr = find_bounding_rect_of_mask(&((IplImage)mask));
 	//initialize
@@ -333,14 +349,222 @@ void VirtualSurgeonParams::face_grab_cut(Mat& orig, Mat& mask, int iters, int di
 	Mat __tm = tmpMask & GC_FGD;
 	__tm.setTo(Scalar(255),__tm);
 	__tm.copyTo(Mat(mask));
-#ifdef BTM_DEBUG
-	cout << "Done" << endl;
-	//cvShowImage("tmp",mask);
+
 	if(!this->no_gui) {
+		cout << "Done" << endl;
 		imshow("tmp",mask);
 		waitKey(BTM_WAIT_TIME);
 	}
-#endif
+
+}
+
+void FindBoundingRect(Rect& faceRect, Mat* headMask) {
+	Mat arow(1,headMask->cols,CV_32SC1);
+	for(int i=0;i<headMask->cols;i++) {
+		((int*)arow.data)[i] = i;
+	}
+	Mat allrows; repeat(arow,headMask->rows,1,allrows);
+	Mat rows; allrows.copyTo(rows,(*headMask > 0));
+	rows.setTo(Scalar(headMask->cols/2),(*headMask == 0));
+	double minv,maxv;
+	minMaxLoc(rows,&minv,&maxv);
+
+	faceRect.x = minv;
+	faceRect.width = maxv - minv;
+
+	Mat acol(headMask->rows,1,CV_32SC1);
+	for(int i=0;i<headMask->rows;i++) {
+		((int*)acol.data)[i] = i;
+	}
+	Mat allcols; repeat(acol,1,headMask->cols,allcols);
+	Mat cols; allcols.copyTo(cols,(*headMask > 0));
+	cols.setTo(Scalar(headMask->rows/2),(*headMask == 0));
+	minMaxLoc(cols,&minv,&maxv);
+
+	faceRect.y = minv;
+	faceRect.height = maxv - minv;
+}
+
+void takeBiggestCC(Mat& mask, Mat& bias) {
+	if(bias.rows == 0 || bias.cols == 0) bias = Mat::ones(mask.size(),CV_64FC1);
+
+	vector<vector<Point> > contours;
+	contours.clear();
+	cv::findContours(mask,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+
+	//compute areas
+	vector<double> areas(contours.size());
+	for(int ai=0;ai<contours.size();ai++) {
+		Mat _pts(contours[ai]);
+		Scalar mp = mean(_pts);
+
+		//bias score according to distance from center face
+		areas[ai] = contourArea(Mat(contours[ai])) * bias.at<double>(mp.val[1],mp.val[0]);
+	}
+
+	//find largest connected component
+	double max; Point maxLoc;
+	minMaxLoc(Mat(areas),0,&max,0,&maxLoc);
+
+	//draw back on mask
+	mask.setTo(Scalar(0)); //clear...
+	drawContours(mask,contours,maxLoc.y,Scalar(255),CV_FILLED);
+}
+
+void VirtualSurgeonParams::PoissonImageEditing(Mat& back, Mat& _backMask, Mat& front, Mat& _frontMask, bool doLaplacian = true) {
+	Mat backMask,frontMask;
+
+	if(_backMask.type() != CV_8UC1)
+		_backMask.convertTo(backMask,CV_8UC1,255.0);
+	else
+		backMask = _backMask;
+
+	if(_frontMask.type() != CV_8UC1)
+		_frontMask.convertTo(frontMask,CV_8UC1,255.0);
+	else
+		frontMask = _frontMask;
+
+	assert(backMask.type() == frontMask.type());
+	assert(backMask.type() == CV_8UC1);
+
+	Mat _mask = backMask & frontMask;
+	Rect bound; FindBoundingRect(bound,&_mask);
+	bound.x = MAX(bound.x - this->poisson_cloning_band_size,0); 
+	bound.y = MAX(bound.y - this->poisson_cloning_band_size,0); 
+	bound.width = MIN(bound.width + this->poisson_cloning_band_size*2, _mask.cols - bound.x); 
+	bound.height = MIN(bound.height + this->poisson_cloning_band_size*2, _mask.rows - bound.y);
+	Mat mask; _mask(bound).copyTo(mask);
+
+	assert(mask.type() == CV_8UC1);
+	
+	assert(back.channels() == 3);
+
+	Mat back_64f; 
+	//if(back.type() == CV_8UC3) {
+	//	cout << "back.type() == CV_8UC3"<<endl;
+		back(bound).convertTo(back_64f,CV_64FC3,1.0/255.0);
+	//} else if(back.type() == CV_32FC3) {
+	//	cout << "back.type() == CV_32FC3"<<endl;
+	//	back(bound).convertTo(back_64f,CV_64FC3,1.0/255.0);
+	//} else if(back.type() == CV_64FC3) {
+	//	cout << "back.type() == CV_64FC3"<<endl;
+	//	back(bound).copyTo(back_64f);
+	//}
+
+	if(!this->no_gui) {
+		imshow("tmp",back_64f);
+		waitKey(this->wait_time);
+	}
+
+	Mat front_64f; 
+	//if(front.type() == CV_8UC3)
+		front(bound).convertTo(front_64f,CV_64FC3,1.0/255.0);
+	//else
+	//	front(bound).convertTo(front_64f,CV_64FC3);
+
+	if(!this->no_gui) {
+		imshow("tmp",front_64f);
+		waitKey(this->wait_time);
+	}
+	Laplacian(front_64f,front_64f,-1);
+	//Mat lap_back_64; Laplacian(back_64f,lap_back_64,-1);
+
+	vector<Mat> v_b(3), v_f(3);//, v_b_lap(3); 
+	split(back_64f,v_b); 
+	split(front_64f,v_f);
+	//split(lap_back_64,v_b_lap);
+	
+	int n = back_64f.cols;
+	int m = back_64f.rows;
+	int mn = m*n;
+	
+	if(!this->no_gui) {
+		imshow("tmp",backMask);
+		waitKey(this->wait_time);
+		imshow("tmp",frontMask);
+		waitKey(this->wait_time);
+		imshow("tmp",mask);
+		waitKey(this->wait_time);
+	}
+
+	gmm::row_matrix< gmm::rsvector<double> > M(mn,mn);
+	//Mat eroded; dilate(mask,eroded,Mat::ones(3,3,CV_64FC1));
+	OpenCV2ImageWrapper<uchar> maskImage(mask);
+	ImageEditingUtils::matrixCreate(M, n, mn, maskImage);
+
+	vector<double > solutionVectors(mn);
+	vector<double> v_color(mn); 
+	Mat v_c_mat(back.size(),CV_64FC1);
+
+	for(int color = 0; color < 3; color++) {
+		v_c_mat.setTo(Scalar(0));
+		solutionVectors.assign(mn,0.0);
+		//v_color.assign(mn,0.0);
+
+		if(doLaplacian)
+			v_f[color].copyTo(v_c_mat,mask);
+
+		//Mat tmp = v_b_lap[c] > v_c_mat;
+		//v_b_lap[c].copyTo(v_c_mat,tmp);
+
+		v_b[color].copyTo(v_c_mat,~mask);
+
+		if(!this->no_gui) {
+			imshow("tmp",v_c_mat);
+			waitKey(this->wait_time);
+		}
+
+		v_c_mat.reshape(1,mn).copyTo(Mat(v_color));
+
+		ImageEditingUtils::solveLinear(M,solutionVectors,v_color);
+
+		Mat(solutionVectors).reshape(1,m).convertTo(v_b[color],back.type(),255.0);
+		cout <<"done with color " << color << endl;
+
+		if(!this->no_gui) {
+			imshow("tmp",v_b[color]);
+			waitKey(this->wait_time);
+		}
+	}
+
+	Mat output; cv::merge(v_b,output);
+	
+	if(!this->no_gui) {
+		imshow("tmp",output);
+		waitKey(this->wait_time);
+	}
+	output.copyTo(back(bound));
 }
 
 }//ns
+
+#ifdef UTILS_MAIN
+int main(int argc, char** argv) {
+	/*Mat blue(200,200,CV_8UC3,Scalar(255,0,0));*/
+	Mat blue(200,200,CV_8UC3); 
+	//RNG& rng = theRNG();
+	//rng.fill(blue,RNG::UNIFORM,Scalar(0,0,0),Scalar(256,256,256));
+	Mat im = imread("../images/40406598_fd4e74d51c_d.jpg");
+	im(Rect(200,200,200,200)).copyTo(blue);
+
+	Mat red(200,200,CV_8UC3,Scalar(0,0,255));
+	im = imread("../images/59600641_acd478ae71_d.jpg");
+	im(Rect(200,200,200,200)).copyTo(red);
+
+	Mat blumask = Mat::zeros(blue.size(),CV_8UC1);
+	Mat redmask = Mat::zeros(blue.size(),CV_8UC1);
+	circle(blumask,Point(100,75),50,Scalar(255),CV_FILLED);
+	circle(redmask,Point(100,125),50,Scalar(255),CV_FILLED);
+
+	namedWindow("tmp");
+	imshow("tmp",blue);
+	waitKey();
+	imshow("tmp",red);
+	waitKey();
+
+	VirtualSurgeonParams p;
+	p.InitializeDefaults();
+	p.no_gui = false;
+	p.PoissonImageEditing(red,redmask,blue,blumask);
+}
+#endif

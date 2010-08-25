@@ -115,6 +115,79 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/I &quot;D:\opencv-latest\modules\imgproc\include&quot; /I &quot;D:\opencv-latest\modules\core\include&quot; /I &quot;D:\opencv-latest\modules\video\include&quot; /I &quot;D:\opencv-latest\modules\features2d\include&quot; /I &quot;D:\opencv-latest\modules\calib3d\include&quot; /I &quot;D:\opencv-latest\modules\objdetect\include&quot; /I &quot;D:\opencv-latest\modules\highgui\include&quot; /I &quot;D:\opencv-latest\modules\legacy\include&quot; /I &quot;D:\opencv-latest\modules\contrib\include&quot; /I &quot;D:\opencv-latest\modules\ml\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\opencv-latest\modules\core\include&quot;;&quot;D:\opencv-latest\include\opencv&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opencv_core211.lib opencv_highgui211.lib opencv_ml211.lib opencv_imgproc211.lib opencv_features2d211.lib opencv_objdetect211.lib opencv_calib3d211.lib $(NOINHERIT)"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;D:\opencv-latest\out\lib\Release&quot;"
+				GenerateDebugInformation="true"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release-Head-Extractor|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="1"
+			ManagedExtensions="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;D:\opencv-latest\include\opencv&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
@@ -210,6 +283,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OpenCVImageWrapper.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Stdafx.cpp"
 				>
 				<FileConfiguration
@@ -222,6 +299,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release-Head-Extractor|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -243,6 +328,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\OpenCVImageWrapper.h"
+				>
+			</File>
 			<File
 				RelativePath=".\resource.h"
 				>

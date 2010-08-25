@@ -41,7 +41,10 @@
                 <RadioButton Name="radio_warped" Margin="0" GroupName="model_btns" Checked="set_warped_model">Warped</RadioButton>
                 <RadioButton Name="radio_recolored" GroupName="model_btns" Checked="set_recolored_model" VerticalAlignment="Stretch">Recolored</RadioButton>
             </StackPanel>
-            <RadioButton Name="radio_complete" Margin="6,0" GroupName="model_btns" Checked="set_complete_model" VerticalAlignment="Center">Completed</RadioButton>
+            <StackPanel Name="stackPanel1" VerticalAlignment="Center">
+                <RadioButton Name="radio_complete" Margin="6,0" GroupName="model_btns" Checked="set_complete_model" VerticalAlignment="Center">Completed</RadioButton>
+                <Button Name="button9" FontSize="7" HorizontalContentAlignment="Center" Width="50" Click="button9_Click">Show Mid Pt</Button>
+            </StackPanel>
         </StackPanel>
         <Border Margin="10,0,11,0" Name="border1" BorderThickness="2" BorderBrush="Black" ClipToBounds="True" Padding="2" Grid.Row="1">
             <this:PointsImage x:Name="image1" Stretch="Uniform" MinWidth="250" MinHeight="250" ClipToBounds="True" HorizontalAlignment="Center" VerticalAlignment="Center" Height="250" Width="250" RenderTransformOrigin="0.5,0.5">
@@ -108,7 +111,12 @@
                     <TextBlock VerticalAlignment="Center">Make A Model!</TextBlock>
                 </StackPanel>
             </Button>
-            
+            <Button HorizontalAlignment="Right" Margin="0,0,6,0" Height="34" Click="save_completed">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="Images/Save.png"></Image>
+                    <TextBlock VerticalAlignment="Center">Save</TextBlock>
+                </StackPanel>
+            </Button>
         </StackPanel>
        
     </Grid>

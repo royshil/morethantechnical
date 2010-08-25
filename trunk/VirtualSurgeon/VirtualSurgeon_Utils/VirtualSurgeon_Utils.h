@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cv.h"
+#include <cv.h>
 
 #define _PI 3.14159265
 
@@ -50,12 +50,19 @@ public:
 	double hair_ellipse_size_mult;
 	bool do_eq_hist;
 	bool consider_pixel_neighbourhood;
+	bool do_two_segments;
+	bool do_kmeans;
+	double head_mask_size_mult;
+	int num_DoG;
+	bool do_two_back_kernels;
 
 	double snake_snap_weight_edge;
 	double snake_snap_weight_direction;
 	double snake_snap_weight_consistency;
 	int snake_snap_edge_len_thresh;
 	int snale_snap_total_width_coeff;
+
+	int poisson_cloning_band_size;
 
 	bool use_hist_match_hs;
 	bool use_hist_match_rgb;
@@ -71,8 +78,12 @@ public:
 	void ParseParams(int argc, char** argv);
 	void PrintParams();
 	void face_grab_cut(cv::Mat& orig, cv::Mat& mask, int iters, int dilate_size = 30);
+	void PoissonImageEditing(cv::Mat& back, cv::Mat& backMask, cv::Mat& front, cv::Mat& frontMask, bool doLaplacian);
 
 } VIRTUAL_SURGEON_PARAMS;
 
+
+void FindBoundingRect(cv::Rect& faceRect, cv::Mat* headMask);
+void takeBiggestCC(cv::Mat& mask, cv::Mat& bias = cv::Mat());
 
 }//ns
