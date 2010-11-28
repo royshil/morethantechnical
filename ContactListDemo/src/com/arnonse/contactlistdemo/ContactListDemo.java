@@ -30,7 +30,7 @@ public class ContactListDemo extends ListActivity implements Runnable{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		prog = ProgressDialog.show(this, "PeleSms", "Getting Contacts", true, false);
+		prog = ProgressDialog.show(this, "ContactListDemo", "Getting Contacts", true, false);
 		Thread thread = new Thread(this);
 		thread.start();
 
