@@ -19,17 +19,20 @@ class MainHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", "text/html")
 	self.write("<html><body>")
         self.write("You sent a file with name " + self.request.files.items()[0][1][0]['filename'] +"<br/>" )
-
+	
+	# create a unique ID file
 	tempname = str(uuid.uuid4()) + ".jpg"
 	myimg = Image.open(StringIO.StringIO(self.request.files.items()[0][1][0]['body']))
 	myfilename = os.path.join(os.path.dirname(__file__),"static",tempname);
+
+	# save image to file as JPEG
 	myimg.save(myfilename)
 
 	self.write("<img src=\"static/" + tempname + "\" /><br/>") 
+
+	# do OCR, print result
 	self.write(image_to_string(myimg))
 	self.write("</body></html>")
-
-# TODO: probably add another handler for NLP issues
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
