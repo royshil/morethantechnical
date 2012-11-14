@@ -11,7 +11,7 @@ class Recoloring
 {
 private:
 	void TrainGMM(CvEM& source_model, Mat& source, Mat& source_mask);
-	vector<int> Recoloring::MatchGaussians(CvEM& source_model, CvEM& target_model);
+	vector<int> MatchGaussians(CvEM& source_model, CvEM& target_model);
 
 	VirtualSurgeonParams m_p;
 public:
